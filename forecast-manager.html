@@ -587,11 +587,36 @@ function saveGH(){
 async function testGH(){
   const s=JSON.parse(localStorage.getItem(GHK)||'{}');
   if(!s.tok){flash('ghTestErr','Please save your settings first.');return;}
+  if(!s.user||!s.repo){flash('ghTestErr','Please fill in all fields and save first.');return;}
+  document.getElementById('ghTestOk').style.display='none';
+  document.getElementById('ghTestErr').textContent='⏳ Testing connection...';
+  document.getElementById('ghTestErr').style.display='block';
+  document.getElementById('ghTestErr').style.color='var(--gold)';
   try{
-    const r=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}`,{headers:{'Authorization':`token ${s.tok}`,'Accept':'application/vnd.github.v3+json'}});
-    if(r.ok){document.getElementById('ghTestOk').textContent='✓ Connected!';document.getElementById('ghTestOk').style.display='block';document.getElementById('ghTestErr').style.display='none';}
-    else throw new Error();
-  }catch(e){document.getElementById('ghTestErr').textContent='✗ Could not connect.';document.getElementById('ghTestErr').style.display='block';document.getElementById('ghTestOk').style.display='none';}
+    const r=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}`,{
+      headers:{
+        'Authorization':`Bearer ${s.tok}`,
+        'Accept':'application/vnd.github+json',
+        'X-GitHub-Api-Version':'2022-11-28'
+      }
+    });
+    const data = await r.json();
+    if(r.ok){
+      document.getElementById('ghTestOk').textContent='✓ Connected! Repository: ' + data.full_name;
+      document.getElementById('ghTestOk').style.display='block';
+      document.getElementById('ghTestErr').style.display='none';
+    } else {
+      document.getElementById('ghTestErr').textContent='✗ Error ' + r.status + ': ' + (data.message||'Could not connect');
+      document.getElementById('ghTestErr').style.display='block';
+      document.getElementById('ghTestErr').style.color='#ff6b6b';
+      document.getElementById('ghTestOk').style.display='none';
+    }
+  }catch(e){
+    document.getElementById('ghTestErr').textContent='✗ Network error: ' + e.message + ' — Try opening the browser console (F12) for details.';
+    document.getElementById('ghTestErr').style.display='block';
+    document.getElementById('ghTestErr').style.color='#ff6b6b';
+    document.getElementById('ghTestOk').style.display='none';
+  }
 }
 
 function copyJSON(){
@@ -610,11 +635,11 @@ async function publishToGH(){
   btn.textContent='⏳ Publishing...';btn.disabled=true;
   try{
     const content=btoa(unescape(encodeURIComponent(JSON.stringify(d,null,2))));
-    const getR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{headers:{'Authorization':`token ${s.tok}`,'Accept':'application/vnd.github.v3+json'}});
+    const getR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
     let sha=null;if(getR.ok){const dd=await getR.json();sha=dd.sha;}
     const putR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{
       method:'PUT',
-      headers:{'Authorization':`token ${s.tok}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
       body:JSON.stringify({message:`Forecast: ${d.date||new Date().toLocaleDateString()}`,content,...(sha?{sha}:{})})
     });
     if(putR.ok){btn.textContent='✅ Published!';flash('pubOk','🎉 Live at firstwarnwx.com/forecast.html in ~60 seconds!');setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';btn.disabled=false;},4000);}
