@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Warn Weather — Daily Forecast</title>
+<meta name="description" content="First Warn Weather daily forecast for St. Louis, Central Missouri, Southeast Missouri, and Southern Illinois.">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:#cc1a1a; --red-dark:#9e0e0e; --red-bright:#e82222;
+    --blue:#1a2a8f; --blue-mid:#1e3aab; --blue-light:#2a4fd4;
+    --gold:#f0b020; --gold-light:#f5c840;
+    --silver:#c8d4e8; --white:#ffffff;
+    --dark:#080c18; --dark-mid:#0e1428; --dark-blue:#0a1030;
+    --text:#e8eaf0; --text-mid:#a8b4cc; --border:rgba(255,255,255,0.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);overflow-x:hidden}
+
+  /* ALERT DAY BANNER */
+  #alertBanner{display:none;background:linear-gradient(135deg,var(--red-dark),var(--red),var(--red-dark));padding:1rem 2rem;text-align:center;position:relative;z-index:200;border-bottom:2px solid var(--gold);animation:alertPulse 2s infinite}
+  @keyframes alertPulse{0%,100%{background:linear-gradient(135deg,var(--red-dark),var(--red),var(--red-dark))}50%{background:linear-gradient(135deg,var(--red),var(--red-bright),var(--red))}}
+  .alert-banner-inner{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+  .alert-banner-icon{font-size:2rem;animation:shake 0.5s infinite}
+  @keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+  .alert-banner-text h2{font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+  .alert-banner-text h2 span{color:var(--gold)}
+  .alert-banner-text p{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.85);margin-top:0.2rem}
+  #alertMessage{font-style:italic;color:rgba(255,255,255,0.9);font-size:0.95rem;font-weight:400;text-transform:none!important;letter-spacing:0!important}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:100;background:rgba(8,12,24,0.97);backdrop-filter:blur(12px);border-bottom:2px solid var(--red);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
+  .nav-brand{display:flex;align-items:center;gap:0.8rem;text-decoration:none}
+  .nav-brand img{height:38px;object-fit:contain}
+  .nav-brand-text{font-family:'Oswald',sans-serif;font-size:1rem;font-weight:700;color:var(--white);letter-spacing:0.05em;line-height:1.2}
+  .nav-brand-text span{color:var(--gold);display:block;font-size:0.6rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase}
+  .nav-links{display:flex;gap:1.5rem;list-style:none;align-items:center}
+  .nav-links a{font-family:'Barlow',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid);text-decoration:none;transition:color 0.2s}
+  .nav-links a:hover{color:var(--gold)}
+  .nav-links a.active{color:var(--gold)}
+
+  /* FORECAST HERO */
+  .forecast-hero{background:linear-gradient(135deg,var(--dark-blue) 0%,var(--blue) 50%,var(--dark) 100%);padding:3rem 2rem 2rem;border-bottom:1px solid var(--border)}
+  .container{max-width:1200px;margin:0 auto}
+  .forecast-date-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem}
+  .forecast-date{font-family:'Oswald',sans-serif;font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--white)}
+  .forecast-date span{color:var(--gold)}
+  .forecast-updated{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-mid)}
+  .coverage-pills{display:flex;gap:0.6rem;flex-wrap:wrap}
+  .pill{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;background:rgba(240,176,32,0.15);border:1px solid rgba(240,176,32,0.35);color:var(--gold);padding:0.3rem 0.8rem;border-radius:2px}
+
+  /* NO FORECAST */
+  #noForecast{text-align:center;padding:5rem 2rem}
+  #noForecast .nf-icon{font-size:4rem;margin-bottom:1rem;display:block}
+  #noForecast h2{font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;text-transform:uppercase;color:var(--white);margin-bottom:0.5rem}
+  #noForecast p{font-size:0.95rem;color:var(--text-mid);line-height:1.8}
+
+  /* FORECAST CONTENT */
+  #forecastContent{display:none;padding:2rem 0}
+
+  /* SECTION HEADERS */
+  .sec-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem}
+  .sec-header-line{flex:1;height:2px;background:linear-gradient(90deg,var(--red),transparent)}
+  .sec-label{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);white-space:nowrap}
+
+  /* GRAPHIC CONTAINERS */
+  .forecast-graphic{background:var(--dark-mid);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:2rem}
+  .forecast-graphic img{width:100%;display:block}
+  .forecast-graphic .placeholder{padding:3rem;text-align:center;color:var(--text-mid);font-style:italic}
+
+  /* NARRATIVE */
+  .narrative-box{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:2rem;margin-bottom:2rem;border-left:4px solid var(--red)}
+  .narrative-box h3{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--white);margin-bottom:1rem}
+  .narrative-box h3 span{color:var(--gold)}
+  #narrativeText{font-size:1rem;line-height:1.9;color:var(--text-mid);font-weight:300;white-space:pre-line}
+
+  /* STRIPE */
+  .stripe{height:4px;background:linear-gradient(90deg,var(--red-dark),var(--red),var(--gold),var(--red),var(--blue),var(--red))}
+
+  /* FOLLOW BAR */
+  .follow-bar{background:var(--dark-mid);padding:2rem;text-align:center;border-top:1px solid var(--border)}
+  .follow-bar p{font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid);margin-bottom:1rem}
+  .follow-links{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+  .follow-link{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text);text-decoration:none;padding:0.6rem 1.2rem;border-radius:2px;transition:all 0.2s}
+  .follow-link:hover{border-color:var(--gold);color:var(--gold)}
+
+  /* FOOTER */
+  footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:1.5rem 2rem;text-align:center}
+  footer p{font-size:0.75rem;color:rgba(255,255,255,0.3)}
+  footer a{color:var(--gold);text-decoration:none}
+  .footer-tagline{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--red);margin-top:0.4rem;display:block}
+
+  @media(max-width:640px){.nav-links{display:none}.forecast-date-bar{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<!-- ALERT DAY BANNER -->
+<div id="alertBanner">
+  <div class="alert-banner-inner">
+    <div class="alert-banner-icon">⚡</div>
+    <div class="alert-banner-text">
+      <h2>First Warn <span>Alert Day</span></h2>
+      <p id="alertMessage">Significant weather is possible. Stay prepared and monitor updates.</p>
+    </div>
+    <div class="alert-banner-icon">⚡</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <img src="fw-logo.png" alt="First Warn Weather">
+    <div class="nav-brand-text">First Warn Weather<span>First. Accurate. Trusted.</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="forecast.html" class="active">Forecast</a></li>
+    <li><a href="index.html#alerts">Alerts</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="index.html#connect">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- FORECAST HERO -->
+<div class="forecast-hero">
+  <div class="container">
+    <div class="forecast-date-bar">
+      <div>
+        <div class="forecast-date">First Warn <span>Daily Forecast</span></div>
+        <div class="forecast-updated" id="forecastDateLine">Loading forecast...</div>
+      </div>
+      <div class="coverage-pills">
+        <span class="pill">St. Louis Metro</span>
+        <span class="pill">Central MO</span>
+        <span class="pill">SE Missouri</span>
+        <span class="pill">Southern IL</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stripe"></div>
+
+<!-- MAIN FORECAST CONTENT -->
+<div style="padding:2rem 2rem 0">
+  <div class="container">
+
+    <!-- NO FORECAST STATE -->
+    <div id="noForecast">
+      <span class="nf-icon">⛅</span>
+      <h2>Forecast Coming Soon</h2>
+      <p>Dr. Nick's daily forecast will appear here each morning.<br>Follow on <a href="https://facebook.com/nickswx" style="color:var(--gold)">Facebook</a> and <a href="https://tiktok.com/@nickwx" style="color:var(--gold)">TikTok @nickwx</a> for the latest updates.</p>
+    </div>
+
+    <!-- FORECAST CONTENT (shown when forecast exists) -->
+    <div id="forecastContent">
+
+      <!-- 24-HOUR FORECAST GRAPHIC -->
+      <div class="sec-header">
+        <span class="sec-label">24-Hour Forecast</span>
+        <div class="sec-header-line"></div>
+      </div>
+      <div class="forecast-graphic" id="graphic24hr"></div>
+
+      <!-- FORECAST NARRATIVE -->
+      <div class="sec-header">
+        <span class="sec-label">Dr. Nick's Forecast Discussion</span>
+        <div class="sec-header-line"></div>
+      </div>
+      <div class="narrative-box">
+        <h3>Today's <span>Forecast</span></h3>
+        <div id="narrativeText"></div>
+      </div>
+
+      <!-- EXTRA GRAPHICS -->
+      <div id="extraGraphicsSection" style="display:none">
+        <div class="forecast-graphic" id="graphicExtra1" style="margin-bottom:1rem"></div>
+        <div class="forecast-graphic" id="graphicExtra2"></div>
+      </div>
+
+      <!-- 10-DAY FORECAST GRAPHIC -->
+      <div class="sec-header" style="margin-top:2rem">
+        <span class="sec-label">10-Day Outlook</span>
+        <div class="sec-header-line"></div>
+      </div>
+      <div class="forecast-graphic" id="graphic10day"></div>
+
+      <!-- SEVERE WEATHER SECTION -->
+      <div id="severeSection" style="display:none;margin-top:2rem">
+        <div style="background:linear-gradient(135deg,rgba(100,10,10,0.6),rgba(204,26,26,0.3));border:2px solid var(--red);border-radius:4px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem">
+          <span style="font-size:1.8rem">⚠️</span>
+          <div>
+            <div style="font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff">First Warn Severe Weather</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#ff8080">Threat graphics and discussion below</div>
+          </div>
+        </div>
+        <div class="forecast-graphic" id="graphicSevere1" style="margin-bottom:1rem"></div>
+        <div class="forecast-graphic" id="graphicSevere2" style="margin-bottom:1rem"></div>
+        <div class="forecast-graphic" id="graphicSevere3" style="margin-bottom:1rem"></div>
+        <div class="forecast-graphic" id="graphicSevere4" style="margin-bottom:1rem"></div>
+        <div class="narrative-box" id="severeNarrativeBox" style="border-left-color:var(--red);display:none">
+          <h3>Severe Weather <span>Discussion</span></h3>
+          <div id="severeNarrativeText"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="stripe" style="margin-top:2rem"></div>
+
+<!-- RADAR SECTION -->
+<div style="background:var(--dark-mid);padding:3rem 2rem" id="radar">
+  <div class="container">
+    <div class="sec-header">
+      <span class="sec-label">Live Radar</span>
+      <div class="sec-header-line"></div>
+    </div>
+    <div style="background:var(--dark);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:1rem">
+      <iframe src="https://radar.weather.gov/station/KLSX/standard" width="100%" height="550" frameborder="0" style="display:block;border:none" title="NWS Radar St. Louis"></iframe>
+    </div>
+    <p style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-mid);text-align:center">
+      NWS St. Louis (KLSX) Radar · <a href="https://radar.weather.gov/station/KLSX/standard" target="_blank" style="color:var(--gold)">Open Full Screen ↗</a>
+    </p>
+  </div>
+</div>
+
+<div class="stripe"></div>
+
+<!-- POLLEN SECTION -->
+<div style="background:var(--dark);padding:3rem 2rem" id="pollen">
+  <div class="container">
+    <div class="sec-header">
+      <span class="sec-label">Pollen &amp; Air Quality</span>
+      <div class="sec-header-line"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+      <div style="background:var(--dark-mid);border:1px solid var(--border);border-radius:4px;overflow:hidden">
+        <div style="background:linear-gradient(135deg,rgba(45,138,78,0.2),rgba(45,100,45,0.1));padding:0.8rem 1.2rem;border-bottom:1px solid var(--border)">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#5ee080">🌿 Pollen Forecast — St. Louis</span>
+        </div>
+        <iframe src="https://www.pollen.com/forecast/current/pollen/63101" width="100%" height="300" frameborder="0" style="display:block;border:none;background:#fff" title="Pollen Forecast St. Louis"></iframe>
+        <div style="padding:0.6rem 1rem;text-align:center">
+          <a href="https://www.pollen.com/forecast/current/pollen/63101" target="_blank" style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);text-decoration:none">View Full Pollen Forecast ↗</a>
+        </div>
+      </div>
+      <div style="background:var(--dark-mid);border:1px solid var(--border);border-radius:4px;overflow:hidden">
+        <div style="background:linear-gradient(135deg,rgba(30,74,114,0.3),rgba(26,42,143,0.1));padding:0.8rem 1.2rem;border-bottom:1px solid var(--border)">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold)">💨 Air Quality — St. Louis</span>
+        </div>
+        <iframe src="https://www.airnow.gov/index.cfm?action=airnow.local_city&cityid=326" width="100%" height="300" frameborder="0" style="display:block;border:none;background:#fff" title="Air Quality St. Louis"></iframe>
+        <div style="padding:0.6rem 1rem;text-align:center">
+          <a href="https://www.airnow.gov/index.cfm?action=airnow.local_city&cityid=326" target="_blank" style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);text-decoration:none">View Full Air Quality ↗</a>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center">
+      <a href="https://www.pollen.com/forecast/current/pollen/63101" target="_blank" style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.35);color:#5ee080;text-decoration:none;padding:0.6rem 1.2rem;border-radius:2px">🌿 St. Louis Pollen</a>
+      <a href="https://www.pollen.com/forecast/current/pollen/65201" target="_blank" style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.35);color:#5ee080;text-decoration:none;padding:0.6rem 1.2rem;border-radius:2px">🌿 Columbia MO Pollen</a>
+      <a href="https://www.pollen.com/forecast/current/pollen/63701" target="_blank" style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.35);color:#5ee080;text-decoration:none;padding:0.6rem 1.2rem;border-radius:2px">🌿 Cape Girardeau Pollen</a>
+      <a href="https://www.pollen.com/forecast/current/pollen/62901" target="_blank" style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.35);color:#5ee080;text-decoration:none;padding:0.6rem 1.2rem;border-radius:2px">🌿 Carbondale IL Pollen</a>
+    </div>
+  </div>
+</div>
+
+<div class="stripe" style="margin-top:2rem"></div>
+
+<!-- FOLLOW BAR -->
+<div class="follow-bar">
+  <p>Follow First Warn Weather for real-time updates</p>
+  <div class="follow-links">
+    <a href="https://facebook.com/nickswx" target="_blank" class="follow-link">📘 Facebook</a>
+    <a href="https://tiktok.com/@nickwx" target="_blank" class="follow-link">🎵 TikTok @nickwx</a>
+    <a href="index.html" class="follow-link">🌐 First Warn WX Home</a>
+    <a href="https://inspirewithdrnick.com" target="_blank" class="follow-link">✍️ Inspire with Dr. Nick</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© <span id="yr"></span> First Warn Weather · Nicholas G. Palisch · <a href="index.html">firstwarnwx.com</a></p>
+  <span class="footer-tagline">First. Accurate. Trusted.</span>
+</footer>
+
+<script>
+const FORECAST_KEY = 'fwForecast2026';
+
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+// Try loading from forecast.json first (GitHub hosted), fall back to localStorage
+async function loadForecast() {
+  let data = null;
+
+  // Try GitHub hosted forecast.json first
+  try {
+    const res = await fetch('/forecast.json?v=' + Date.now());
+    if (res.ok) {
+      data = await res.json();
+    }
+  } catch(e) {}
+
+  // Fall back to localStorage
+  if (!data || !data.narrative) {
+    try {
+      data = JSON.parse(localStorage.getItem(FORECAST_KEY));
+    } catch(e) {}
+  }
+
+  if (!data || !data.narrative) {
+    document.getElementById('noForecast').style.display = 'block';
+    document.getElementById('forecastContent').style.display = 'none';
+    document.getElementById('forecastDateLine').textContent = 'No forecast posted yet';
+    return;
+  }
+
+  // Show forecast
+  document.getElementById('noForecast').style.display = 'none';
+  document.getElementById('forecastContent').style.display = 'block';
+  document.getElementById('forecastDateLine').textContent = 'Posted: ' + (data.date || 'Today') + ' · Dr. Nick';
+  document.getElementById('narrativeText').textContent = data.narrative;
+
+  // Helper to show/hide graphic slot
+  function setGraphic(id, src) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (src) { el.innerHTML = `<img src="${src}" alt="" style="width:100%;display:block">`; el.style.display='block'; }
+    else { el.innerHTML = ''; el.style.display='none'; }
+  }
+
+  setGraphic('graphic24hr', data.img_24);
+  setGraphic('graphic10day', data.img_10);
+  setGraphic('graphicExtra1', data.img_extra1);
+  setGraphic('graphicExtra2', data.img_extra2);
+
+  // Show extra graphics section if either exists
+  const extra = document.getElementById('extraGraphicsSection');
+  if (extra) extra.style.display = (data.img_extra1 || data.img_extra2) ? 'block' : 'none';
+
+  // Severe weather
+  const severeSection = document.getElementById('severeSection');
+  if (data.severeActive) {
+    severeSection.style.display = 'block';
+    setGraphic('graphicSevere1', data.img_severe1);
+    setGraphic('graphicSevere2', data.img_severe2);
+    setGraphic('graphicSevere3', data.img_severe3);
+    setGraphic('graphicSevere4', data.img_severe4);
+    if (data.severeNarrative) {
+      document.getElementById('severeNarrativeText').textContent = data.severeNarrative;
+      document.getElementById('severeNarrativeBox').style.display = 'block';
+    } else {
+      document.getElementById('severeNarrativeBox').style.display = 'none';
+    }
+  } else {
+    severeSection.style.display = 'none';
+  }
+
+  // Alert Day banner
+  if (data.alertDay) {
+    document.getElementById('alertBanner').style.display = 'block';
+    if (data.alertMessage) document.getElementById('alertMessage').textContent = data.alertMessage;
+  } else {
+    document.getElementById('alertBanner').style.display = 'none';
+  }
+}
+
+loadForecast();
+</script>
+</body>
+</html>
