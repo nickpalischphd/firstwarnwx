@@ -163,26 +163,27 @@ hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
     <div class="fg"><label>Forecast Date</label><input type="text" id="fDate" placeholder="e.g. Sunday, May 4, 2026"></div>
 
     <!-- FORECAST GRAPHICS -->
-    <div class="section-divider">Forecast Graphics</div>
+    <div class="section-divider">Forecast Graphics — Upload to GitHub First, Then Enter Filename</div>
+    <div style="background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:1rem 1.2rem;margin-bottom:1.2rem">
+      <p style="font-size:0.82rem;color:var(--mid);line-height:1.7">
+        💡 <strong style="color:#fff">How to add graphics:</strong> Upload your forecast images directly to your GitHub repository first, then enter the filename below (e.g. <code style="color:var(--gold)">forecast-24hr.png</code>). The image will appear automatically on your forecast page.
+      </p>
+    </div>
     <div class="graphics-grid">
       <div class="graphic-slot">
-        <h4>🌤️ 24-Hour Forecast Card</h4>
-        <div class="upload" id="up-24">
-          <input type="file" id="file-24" accept="image/*" onchange="handleImg('24',event)">
-          <img class="prev-img" id="prev-24" alt="">
-          <span class="upload-icon" id="icon-24">🌤️</span>
-          <div class="upload-text" id="text-24"><strong>Click to upload</strong><br>24-hour forecast graphic</div>
-          <button class="rm-btn" id="rm-24" onclick="rmImg('24',event)">✕ Remove</button>
+        <h4>🌤️ 24-Hour Forecast Graphic</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fname24" placeholder="e.g. forecast-24hr.png">
+          <p class="hint">Upload the file to GitHub first, then enter its exact filename here</p>
         </div>
       </div>
       <div class="graphic-slot">
-        <h4>📅 10-Day Forecast Card</h4>
-        <div class="upload" id="up-10">
-          <input type="file" id="file-10" accept="image/*" onchange="handleImg('10',event)">
-          <img class="prev-img" id="prev-10" alt="">
-          <span class="upload-icon" id="icon-10">📅</span>
-          <div class="upload-text" id="text-10"><strong>Click to upload</strong><br>10-day forecast graphic</div>
-          <button class="rm-btn" id="rm-10" onclick="rmImg('10',event)">✕ Remove</button>
+        <h4>📅 10-Day Forecast Graphic</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fname10" placeholder="e.g. forecast-10day.png">
+          <p class="hint">Upload the file to GitHub first, then enter its exact filename here</p>
         </div>
       </div>
     </div>
@@ -203,22 +204,16 @@ Clear. Practical. Easy to understand."></textarea>
     <div class="graphics-grid">
       <div class="graphic-slot">
         <h4>🗺️ Additional Graphic 1</h4>
-        <div class="upload" id="up-extra1">
-          <input type="file" id="file-extra1" accept="image/*" onchange="handleImg('extra1',event)">
-          <img class="prev-img" id="prev-extra1" alt="">
-          <span class="upload-icon" id="icon-extra1">🗺️</span>
-          <div class="upload-text" id="text-extra1"><strong>Click to upload</strong><br>Any additional forecast graphic</div>
-          <button class="rm-btn" id="rm-extra1" onclick="rmImg('extra1',event)">✕ Remove</button>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameExtra1" placeholder="e.g. forecast-extra1.png">
         </div>
       </div>
       <div class="graphic-slot">
         <h4>🗺️ Additional Graphic 2</h4>
-        <div class="upload" id="up-extra2">
-          <input type="file" id="file-extra2" accept="image/*" onchange="handleImg('extra2',event)">
-          <img class="prev-img" id="prev-extra2" alt="">
-          <span class="upload-icon" id="icon-extra2">🗺️</span>
-          <div class="upload-text" id="text-extra2"><strong>Click to upload</strong><br>Any additional forecast graphic</div>
-          <button class="rm-btn" id="rm-extra2" onclick="rmImg('extra2',event)">✕ Remove</button>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameExtra2" placeholder="e.g. forecast-extra2.png">
         </div>
       </div>
     </div>
@@ -247,46 +242,34 @@ Clear. Practical. Easy to understand."></textarea>
     </div>
 
     <!-- SEVERE GRAPHICS -->
-    <div class="section-divider">Severe Weather Graphics</div>
+    <div class="section-divider">Severe Weather Graphics — Upload to GitHub First</div>
     <div class="graphics-grid">
       <div class="graphic-slot">
         <h4>⚠️ Severe Weather Threat Map</h4>
-        <div class="upload" id="up-severe1">
-          <input type="file" id="file-severe1" accept="image/*" onchange="handleImg('severe1',event)">
-          <img class="prev-img" id="prev-severe1" alt="">
-          <span class="upload-icon" id="icon-severe1">⚠️</span>
-          <div class="upload-text" id="text-severe1"><strong>Click to upload</strong><br>Severe weather threat map</div>
-          <button class="rm-btn" id="rm-severe1" onclick="rmImg('severe1',event)">✕ Remove</button>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameSevere1" placeholder="e.g. severe-threat.png">
         </div>
       </div>
       <div class="graphic-slot">
         <h4>🌪️ Tornado / Wind / Hail Breakdown</h4>
-        <div class="upload" id="up-severe2">
-          <input type="file" id="file-severe2" accept="image/*" onchange="handleImg('severe2',event)">
-          <img class="prev-img" id="prev-severe2" alt="">
-          <span class="upload-icon" id="icon-severe2">🌪️</span>
-          <div class="upload-text" id="text-severe2"><strong>Click to upload</strong><br>Tornado/Wind/Hail breakdown</div>
-          <button class="rm-btn" id="rm-severe2" onclick="rmImg('severe2',event)">✕ Remove</button>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameSevere2" placeholder="e.g. severe-breakdown.png">
         </div>
       </div>
       <div class="graphic-slot">
         <h4>🗺️ Additional Severe Graphic 1</h4>
-        <div class="upload" id="up-severe3">
-          <input type="file" id="file-severe3" accept="image/*" onchange="handleImg('severe3',event)">
-          <img class="prev-img" id="prev-severe3" alt="">
-          <span class="upload-icon" id="icon-severe3">🗺️</span>
-          <div class="upload-text" id="text-severe3"><strong>Click to upload</strong><br>Additional severe graphic</div>
-          <button class="rm-btn" id="rm-severe3" onclick="rmImg('severe3',event)">✕ Remove</button>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameSevere3" placeholder="e.g. severe-extra1.png">
         </div>
       </div>
       <div class="graphic-slot">
         <h4>🗺️ Additional Severe Graphic 2</h4>
-        <div class="upload" id="up-severe4">
-          <input type="file" id="file-severe4" accept="image/*" onchange="handleImg('severe4',event)">
-          <img class="prev-img" id="prev-severe4" alt="">
-          <span class="upload-icon" id="icon-severe4">🗺️</span>
-          <div class="upload-text" id="text-severe4"><strong>Click to upload</strong><br>Additional severe graphic</div>
-          <button class="rm-btn" id="rm-severe4" onclick="rmImg('severe4',event)">✕ Remove</button>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameSevere4" placeholder="e.g. severe-extra2.png">
         </div>
       </div>
     </div>
@@ -432,11 +415,19 @@ function boot(){
   loadAlertState();
   loadSevereState();
   loadGH();
-  // Restore existing images from storage
+  // Restore existing filenames from storage
   const d=getData();
-  SLOTS.forEach(s=>{if(d['img_'+s]){imgs[s]=d['img_'+s];showImg(s,d['img_'+s]);}});
-  if(d.narrative)document.getElementById('fNarrative').value=d.narrative;
-  if(d.severeNarrative)document.getElementById('severeNarrative').value=d.severeNarrative;
+  if(d.narrative) document.getElementById('fNarrative').value=d.narrative;
+  if(d.date) document.getElementById('fDate').value=d.date;
+  if(d.img_24) document.getElementById('fname24').value=d.img_24;
+  if(d.img_10) document.getElementById('fname10').value=d.img_10;
+  if(d.img_extra1) document.getElementById('fnameExtra1').value=d.img_extra1;
+  if(d.img_extra2) document.getElementById('fnameExtra2').value=d.img_extra2;
+  if(d.img_severe1) document.getElementById('fnameSevere1').value=d.img_severe1;
+  if(d.img_severe2) document.getElementById('fnameSevere2').value=d.img_severe2;
+  if(d.img_severe3) document.getElementById('fnameSevere3').value=d.img_severe3;
+  if(d.img_severe4) document.getElementById('fnameSevere4').value=d.img_severe4;
+  if(d.severeNarrative) document.getElementById('severeNarrative').value=d.severeNarrative;
 }
 
 function setDefaultDate(){
@@ -476,10 +467,11 @@ function saveForecast(){
   const d=getData();
   d.date=document.getElementById('fDate').value.trim();
   d.narrative=narrative;
-  d.img_24=imgs['24']||d.img_24||null;
-  d.img_10=imgs['10']||d.img_10||null;
-  d.img_extra1=imgs['extra1']||d.img_extra1||null;
-  d.img_extra2=imgs['extra2']||d.img_extra2||null;
+  // Never store images in localStorage - use filenames instead
+  d.img_24=document.getElementById('fname24').value.trim()||d.img_24||'';
+  d.img_10=document.getElementById('fname10').value.trim()||d.img_10||'';
+  d.img_extra1=document.getElementById('fnameExtra1').value.trim()||d.img_extra1||'';
+  d.img_extra2=document.getElementById('fnameExtra2').value.trim()||d.img_extra2||'';
   d.updated=new Date().toISOString();
   setData(d);
   flash('forecastOk','✓ Forecast saved! Go to Publish to send it live.');
@@ -490,10 +482,10 @@ function saveSevere(){
   const d=getData();
   d.severeActive=document.getElementById('severeToggle').checked;
   d.severeNarrative=document.getElementById('severeNarrative').value.trim();
-  d.img_severe1=imgs['severe1']||d.img_severe1||null;
-  d.img_severe2=imgs['severe2']||d.img_severe2||null;
-  d.img_severe3=imgs['severe3']||d.img_severe3||null;
-  d.img_severe4=imgs['severe4']||d.img_severe4||null;
+  d.img_severe1=document.getElementById('fnameSevere1').value.trim()||d.img_severe1||'';
+  d.img_severe2=document.getElementById('fnameSevere2').value.trim()||d.img_severe2||'';
+  d.img_severe3=document.getElementById('fnameSevere3').value.trim()||d.img_severe3||'';
+  d.img_severe4=document.getElementById('fnameSevere4').value.trim()||d.img_severe4||'';
   setData(d);
   flash('severeOk','✓ Severe weather saved!');
   loadSevereState();
