@@ -422,9 +422,6 @@ Clear. Practical. Easy to understand."></textarea>
 
 <script>
 const PWD='FirstWarn2026!',AK='fwForecastAdmin',FK='fwForecast2026',GHK='fwGH2026';
-const SLOTS=['24','10','extra1','extra2','severe1','severe2','severe3','severe4'];
-const imgs={};
-
 function doLogin(){
   if(document.getElementById('pwd').value===PWD){
     sessionStorage.setItem(AK,'1');
@@ -477,29 +474,8 @@ function setDefaultDate(){
   document.getElementById('fDate').value=`${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
 }
 
-function handleImg(slot,ev){
-  const f=ev.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{imgs[slot]=e.target.result;showImg(slot,e.target.result);};
-  r.readAsDataURL(f);
-}
-function showImg(slot,src){
-  const p=document.getElementById('prev-'+slot);
-  p.src=src;p.style.display='block';
-  document.getElementById('icon-'+slot).style.display='none';
-  document.getElementById('text-'+slot).style.display='none';
-  document.getElementById('rm-'+slot).style.display='inline';
-  document.getElementById('up-'+slot).classList.add('has');
-}
-function rmImg(slot,e){
-  e.stopPropagation();delete imgs[slot];
-  const p=document.getElementById('prev-'+slot);p.style.display='none';p.src='';
-  document.getElementById('icon-'+slot).style.display='block';
-  document.getElementById('text-'+slot).style.display='block';
-  document.getElementById('rm-'+slot).style.display='none';
-  document.getElementById('up-'+slot).classList.remove('has');
-  document.getElementById('file-'+slot).value='';
-}
+// Image functions removed - use filename inputs instead
+
 
 function saveForecast(){
   const narrative=document.getElementById('fNarrative').value.trim();
@@ -532,18 +508,22 @@ function saveSevere(){
 }
 
 function clearSection(sec){
-  if(!confirm('Clear this section? This cannot be undone.'))return;
+  if(!confirm('Clear this section?'))return;
   const d=getData();
   if(sec==='forecast'){
-    ['24','10','extra1','extra2'].forEach(s=>{delete imgs[s];rmImg(s,{stopPropagation:()=>{}});delete d['img_'+s];});
     document.getElementById('fNarrative').value='';
-    delete d.narrative;
+    ['fname24','fname10','fnameExtra1','fnameExtra2'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value='';
+    });
+    delete d.narrative;delete d.img_24;delete d.img_10;delete d.img_extra1;delete d.img_extra2;
   }
   if(sec==='severe'){
-    ['severe1','severe2','severe3','severe4'].forEach(s=>{delete imgs[s];rmImg(s,{stopPropagation:()=>{}});delete d['img_'+s];});
     document.getElementById('severeNarrative').value='';
-    d.severeActive=false;
-    delete d.severeNarrative;
+    ['fnameSevere1','fnameSevere2','fnameSevere3','fnameSevere4'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value='';
+    });
+    d.severeActive=false;delete d.severeNarrative;
+    delete d.img_severe1;delete d.img_severe2;delete d.img_severe3;delete d.img_severe4;
   }
   setData(d);
 }
