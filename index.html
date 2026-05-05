@@ -420,32 +420,28 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
   <div class="container">
     <div class="window-inner">
       <div class="window-illustration fade-up">
-        <div class="window-frame">
-          <div class="window-top">
-            <div class="window-pane" id="leftPane">
-              <div class="window-clouds">
-                <div class="cloud"></div>
-                <div class="cloud"></div>
-                <div class="cloud"></div>
-              </div>
-              <div class="window-lightning">⚡</div>
-              <div class="window-rain" id="windowRain"></div>
-            </div>
-            <div class="window-pane" id="rightPane">
-              <div class="window-clouds">
-                <div class="cloud"></div>
-                <div class="cloud"></div>
-              </div>
-            </div>
+        <!-- Clean professional card -->
+        <div style="background:linear-gradient(160deg,var(--dark-blue) 0%,var(--blue-mid) 100%);border-radius:8px;overflow:hidden;border:2px solid rgba(42,79,212,0.5);box-shadow:0 20px 60px rgba(0,0,0,0.6);text-align:center">
+          <!-- Header bar -->
+          <div style="background:var(--red);padding:0.6rem 1rem;display:flex;align-items:center;justify-content:center;gap:0.8rem">
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#fff">🪟 Weather From Dr. Nick's Window</span>
           </div>
-          <div class="window-bottom">
-            <div class="window-sill"></div>
+          <!-- Weather icon display -->
+          <div style="padding:1.5rem 1rem 1rem;position:relative">
+            <div style="font-size:4rem;margin-bottom:0.5rem" id="windowWeatherIcon">⛅</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid)" id="windowWeatherDesc">Current Conditions</div>
+          </div>
+          <!-- Dr. Nick photo -->
+          <div style="padding:0 2rem 1.5rem">
+            <img src="dr-nick.jpg" alt="Dr. Nick" style="width:130px;height:155px;object-fit:cover;object-position:top;border-radius:8px;border:3px solid rgba(255,255,255,0.15);display:block;margin:0 auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)">
+          </div>
+          <!-- Name plate -->
+          <div style="background:rgba(0,0,0,0.3);padding:0.8rem;border-top:1px solid var(--border)">
+            <div style="font-family:'Oswald',sans-serif;font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#fff">Dr. Nick</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-top:0.2rem">First Warn Weather</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid);margin-top:0.1rem">NWS WRN Ambassador</div>
           </div>
         </div>
-        <div class="dr-nick-silhouette">
-          <img src="dr-nick.jpg" alt="Dr. Nick looking out his window" id="windowPhoto">
-        </div>
-        <div class="window-label">Dr. Nick · First Warn Weather</div>
       </div>
       <div class="window-content fade-up" style="transition-delay:0.15s">
         <p class="sec-label">Weather Blog</p>
@@ -882,33 +878,17 @@ async function loadForecast(){
 function updateWindowWeather(narrative){
   if(!narrative)return;
   const n=narrative.toLowerCase();
-  const rain=document.getElementById('windowRain');
-  const lightning=document.querySelector('.window-lightning');
-
-  if(n.includes('storm')||n.includes('thunder')||n.includes('severe')){
-    // Stormy - add rain drops and lightning
-    let drops='';
-    for(let i=0;i<12;i++){
-      drops+=`<div class="rain-drop" style="left:${Math.random()*100}%;animation-delay:${Math.random()*0.8}s;animation-duration:${0.6+Math.random()*0.4}s"></div>`;
-    }
-    if(rain)rain.innerHTML=drops;
-    if(lightning)lightning.style.display='block';
-    document.getElementById('leftPane').style.background='linear-gradient(180deg,#0a1a2a 0%,#050d15 100%)';
-    document.getElementById('rightPane').style.background='linear-gradient(180deg,#0a1a2a 0%,#050d15 100%)';
-  }else if(n.includes('rain')||n.includes('shower')){
-    let drops='';
-    for(let i=0;i<8;i++){
-      drops+=`<div class="rain-drop" style="left:${Math.random()*100}%;animation-delay:${Math.random()*0.8}s"></div>`;
-    }
-    if(rain)rain.innerHTML=drops;
-    document.getElementById('leftPane').style.background='linear-gradient(180deg,#1a2a3a 0%,#0d1a28 100%)';
-  }else if(n.includes('sun')||n.includes('clear')||n.includes('sunny')){
-    document.getElementById('leftPane').style.background='linear-gradient(180deg,#1a4a7a 0%,#0d3a5a 50%,#f0901020 100%)';
-    document.getElementById('rightPane').style.background='linear-gradient(180deg,#1a4a7a 0%,#0d3a5a 50%,#f0901020 100%)';
-  }else if(n.includes('snow')||n.includes('winter')||n.includes('ice')){
-    document.getElementById('leftPane').style.background='linear-gradient(180deg,#2a3a4a 0%,#1a2a3a 100%)';
-    document.getElementById('rightPane').style.background='linear-gradient(180deg,#2a3a4a 0%,#1a2a3a 100%)';
-  }
+  const icon=document.getElementById('windowWeatherIcon');
+  const desc=document.getElementById('windowWeatherDesc');
+  if(n.includes('tornado')){if(icon)icon.textContent='🌪️';if(desc)desc.textContent='Tornado Threat';}
+  else if(n.includes('storm')||n.includes('thunder')||n.includes('severe')){if(icon)icon.textContent='⛈️';if(desc)desc.textContent='Storms Possible';}
+  else if(n.includes('rain')||n.includes('shower')){if(icon)icon.textContent='🌧️';if(desc)desc.textContent='Rain Expected';}
+  else if(n.includes('snow')||n.includes('winter')||n.includes('ice')||n.includes('sleet')){if(icon)icon.textContent='❄️';if(desc)desc.textContent='Winter Weather';}
+  else if(n.includes('sun')||n.includes('clear')||n.includes('sunny')){if(icon)icon.textContent='☀️';if(desc)desc.textContent='Sunny & Clear';}
+  else if(n.includes('cloud')||n.includes('overcast')){if(icon)icon.textContent='☁️';if(desc)desc.textContent='Cloudy Skies';}
+  else if(n.includes('wind')){if(icon)icon.textContent='🌬️';if(desc)desc.textContent='Windy Conditions';}
+  else if(n.includes('fog')||n.includes('mist')){if(icon)icon.textContent='🌫️';if(desc)desc.textContent='Foggy Conditions';}
+  else{if(icon)icon.textContent='⛅';if(desc)desc.textContent='Partly Cloudy';}
 }
 
 // ── CONTACT FORM ──
