@@ -339,27 +339,39 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
   <div class="container">
     <p class="sec-label">Live Radar & Satellite</p>
     <h2 class="sec-title">First Warn <span>Live Radar</span></h2>
-    <p class="sec-body">Interactive live radar for the St. Louis region and full coverage area — updated continuously.</p>
+    <p class="sec-body">Live interactive radar — zoom, pan, and animate storms across your coverage area.</p>
     <div class="radar-grid fade-up">
-      <div class="radar-frame">
-        <iframe src="https://web.weatherwise.app/#map=3.69/27.46/-109.59&rt=KLSX&rp=REF0" title="First Warn Live Radar" allowfullscreen style="width:100%;height:500px;display:block;border:none"></iframe>
+      <div class="radar-frame" style="position:relative">
+        <!-- Windy.com embed - allows iframe embedding, fully interactive -->
+        <iframe
+          width="100%"
+          height="500"
+          src="https://embed.windy.com/embed2.html?lat=38.627&lon=-90.197&detailLat=38.627&detailLon=-90.197&width=650&height=500&zoom=7&level=surface&overlay=radar&product=radar&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1"
+          frameborder="0"
+          style="display:block;border:none"
+          title="First Warn Weather Live Radar">
+        </iframe>
+        <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:0.8rem;flex-wrap:wrap;justify-content:center">
+          <a href="https://web.weatherwise.app/#map=3.69/27.46/-109.59&rt=KLSX&rp=REF0" target="_blank" class="btn-red" style="font-size:0.75rem;padding:0.6rem 1.2rem">🌐 Open WeatherWise Radar →</a>
+          <a href="https://radar.weather.gov/station/KLSX/standard" target="_blank" class="btn-outline-w" style="font-size:0.75rem;padding:0.6rem 1.2rem">📡 NWS KLSX Radar →</a>
+        </div>
       </div>
       <div class="radar-sidebar">
         <a href="https://web.weatherwise.app/#map=3.69/27.46/-109.59&rt=KLSX&rp=REF0" target="_blank" class="radar-card">
-          <h4>📡 St. Louis (KLSX) Radar</h4>
-          <p>Primary radar — full interactive view for St. Louis Metro, Central MO, and Southern IL</p>
+          <h4>🌐 WeatherWise Interactive</h4>
+          <p>Full interactive KLSX radar — zoom, pan, animate. Best for detailed storm tracking.</p>
+        </a>
+        <a href="https://radar.weather.gov/station/KLSX/standard" target="_blank" class="radar-card">
+          <h4>📡 NWS St. Louis (KLSX)</h4>
+          <p>Official NWS radar for St. Louis Metro, Central MO, and Southern IL</p>
         </a>
         <a href="https://radar.weather.gov/station/KPAH/standard" target="_blank" class="radar-card">
           <h4>📡 Paducah (KPAH)</h4>
-          <p>Southeast MO and Southern IL Bootheel region radar coverage</p>
-        </a>
-        <a href="https://radar.weather.gov/station/KSRX/standard" target="_blank" class="radar-card">
-          <h4>📡 Fort Smith (KSRX)</h4>
-          <p>Southern Missouri and Ozarks region supplemental coverage</p>
+          <p>Southeast MO and Southern IL Bootheel region radar</p>
         </a>
         <a href="https://www.star.nesdis.noaa.gov/GOES/sector_band.php?sat=G16&sector=umv&band=11&length=12" target="_blank" class="radar-card">
           <h4>🛰️ GOES-16 Satellite</h4>
-          <p>Live GOES-16 satellite imagery — cloud cover and storm development for the region</p>
+          <p>Live satellite imagery — cloud cover and storm development</p>
         </a>
         <a href="https://www.weather.gov/lsx/warnings" target="_blank" class="radar-card">
           <h4>⚠️ NWS Active Warnings</h4>
@@ -840,10 +852,12 @@ async function loadForecast(){
     document.getElementById('forecastNarrativeText').textContent=d.narrative;
 
     if(d.img_24){
-      document.getElementById('fg24hr').innerHTML=`<img src="${d.img_24}" alt="24-Hour Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
+      const src = d.img_24.startsWith('http') ? d.img_24 : '/'+d.img_24;
+      document.getElementById('fg24hr').innerHTML=`<img src="${src}" alt="24-Hour Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem" onerror="this.parentElement.innerHTML='<p style=color:var(--text-mid);padding:1rem;font-style:italic>24-hour graphic not found. Make sure the filename matches exactly what was uploaded to GitHub.</p>'">`;
     }
     if(d.img_10){
-      document.getElementById('fg10day').innerHTML=`<img src="${d.img_10}" alt="10-Day Forecast" style="width:100%;border-radius:4px;margin-top:1rem">`;
+      const src = d.img_10.startsWith('http') ? d.img_10 : '/'+d.img_10;
+      document.getElementById('fg10day').innerHTML=`<img src="${src}" alt="10-Day Forecast" style="width:100%;border-radius:4px;margin-top:1rem" onerror="this.parentElement.innerHTML='<p style=color:var(--text-mid);padding:1rem;font-style:italic>10-day graphic not found. Make sure the filename matches exactly what was uploaded to GitHub.</p>'">`;
     }
 
     // Alert day banner
