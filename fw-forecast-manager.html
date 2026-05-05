@@ -642,40 +642,44 @@ async function publishToGH(){
   const s=JSON.parse(localStorage.getItem(GHK)||'{}');
   if(!s.tok||!s.user||!s.repo){alert('Please set up GitHub Settings first!');goTab('settings');return;}
   const d=getData();
-  if(!d.narrative){flash('pubErr','Please save a forecast first.');return;}
+  const blog=getBlog();
+  if(!d.narrative && blog.length===0){flash('pubErr','Please save a forecast or write a blog post first.');return;}
   const btn=document.getElementById('pubBtn');
   btn.textContent='⏳ Publishing...';btn.disabled=true;
   try{
-    // Publish forecast.json
-    const fContent=btoa(unescape(encodeURIComponent(JSON.stringify(d,null,2))));
-    const fGetR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
-    let fSha=null;if(fGetR.ok){const dd=await fGetR.json();fSha=dd.sha;}
-    const fPutR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{
-      method:'PUT',
-      headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
-      body:JSON.stringify({message:`Forecast: ${d.date||new Date().toLocaleDateString()}`,content:fContent,...(fSha?{sha:fSha}:{})})
-    });
-    if(!fPutR.ok)throw new Error('forecast.json failed');
-
-    // Also publish weather-blog.json
-    const blog=getBlog();
-    if(blog.length>0){
-      const bContent=btoa(unescape(encodeURIComponent(JSON.stringify(blog,null,2))));
-      const bGetR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
-      let bSha=null;if(bGetR.ok){const dd=await bGetR.json();bSha=dd.sha;}
-      await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{
+    let published = [];
+    // Publish forecast.json if narrative exists
+    if(d.narrative){
+      const fContent=btoa(unescape(encodeURIComponent(JSON.stringify(d,null,2))));
+      const fGetR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
+      let fSha=null;if(fGetR.ok){const dd=await fGetR.json();fSha=dd.sha;}
+      const fPutR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{
         method:'PUT',
         headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
-        body:JSON.stringify({message:`Weather blog update`,content:bContent,...(bSha?{sha:bSha}:{})})
+        body:JSON.stringify({message:`Forecast: ${d.date||new Date().toLocaleDateString()}`,content:fContent,...(fSha?{sha:fSha}:{})})
       });
+      if(fPutR.ok) published.push('Forecast');
     }
 
-    btn.textContent='✅ Published!';
-    flash('pubOk','🎉 Forecast & weather blog are live! firstwarnwx.com updates in ~60 seconds.');
-    setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';btn.disabled=false;},4000);
+    // Always publish weather-blog.json
+    const bContent=btoa(unescape(encodeURIComponent(JSON.stringify(blog,null,2))));
+    const bGetR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
+    let bSha=null;if(bGetR.ok){const dd=await bGetR.json();bSha=dd.sha;}
+    const bPutR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{
+      method:'PUT',
+      headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
+      body:JSON.stringify({message:`Weather blog update`,content:bContent,...(bSha?{sha:bSha}:{})})
+    });
+    if(bPutR.ok) published.push('Weather Blog');
+
+    if(published.length>0){
+      btn.textContent='✅ Published!';
+      flash('pubOk',`🎉 Published: ${published.join(' & ')}! Live on firstwarnwx.com in ~60 seconds.`);
+      setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';btn.disabled=false;},4000);
+    } else throw new Error();
   }catch(e){
     btn.textContent='❌ Failed';btn.disabled=false;
-    flash('pubErr','Publishing failed. Check GitHub Settings.');
+    flash('pubErr','Publishing failed. Check your GitHub Settings and try again.');
     setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';},4000);
   }
 }
