@@ -918,7 +918,7 @@ async function submitContact(){
   const msg=document.getElementById('cMsg').value.trim();
   if(!name||!email){alert('Please fill in your name and email.');return;}
   try{
-    const res=await fetch('https://formspree.io/f/xjglwdbw',{
+    const res=await fetch('https://formspree.io/f/mkoybrrg',{
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({_subject:'First Warn WX Contact',Name:name,Email:email,Subject:document.getElementById('cSubject').value,Message:msg})
