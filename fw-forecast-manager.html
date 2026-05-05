@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forecast Manager — First Warn Weather</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#cc1a1a;--red-bright:#e82222;--blue:#1a2a8f;--blue-mid:#1e3aab;
+  --gold:#f0b020;--gold-light:#f5c840;--dark:#080c18;--dark-mid:#0e1428;
+  --dark-blue:#0a1030;--text:#e8eaf0;--mid:#a8b4cc;--border:rgba(255,255,255,0.12);
+}
+body{font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);min-height:100vh}
+#login{position:fixed;inset:0;background:linear-gradient(135deg,var(--dark-blue),var(--blue));display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;padding:2.5rem;width:380px;text-align:center}
+.login-box img{height:60px;margin-bottom:1rem;object-fit:contain}
+.login-box h1{font-family:'Oswald',sans-serif;font-size:1.4rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#fff;margin-bottom:0.3rem}
+.login-box p{font-size:0.75rem;color:var(--mid);margin-bottom:1.5rem;letter-spacing:0.05em;text-transform:uppercase}
+.login-box input{width:100%;padding:0.8rem;background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:3px;color:#fff;font-size:1rem;text-align:center;letter-spacing:0.2em;outline:none;margin-bottom:0.8rem}
+.login-box input:focus{border-color:var(--gold)}
+.login-err{color:#ff6b6b;font-size:0.8rem;margin-bottom:0.8rem;display:none}
+.btn{background:var(--red);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:0.85rem 2rem;border:none;border-radius:3px;cursor:pointer;transition:all 0.2s}
+.btn:hover{background:var(--red-bright)}
+.btn-full{width:100%}
+.btn-gold{background:var(--gold);color:var(--dark)}
+.btn-gold:hover{background:var(--gold-light)}
+.btn-outline{background:transparent;color:var(--mid);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--mid);color:#fff;background:transparent}
+.btn-blue{background:var(--blue-mid);color:#fff}
+.btn-blue:hover{background:var(--blue)}
+.btn-sm{padding:0.35rem 0.8rem;font-size:0.72rem}
+.back-link{display:block;margin-top:1rem;font-size:0.78rem;color:var(--gold);text-decoration:none}
+#app{display:none;min-height:100vh}
+header{background:var(--dark-blue);border-bottom:3px solid var(--red);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff}
+header h1 span{color:var(--gold)}
+.h-right{display:flex;gap:1rem;align-items:center}
+.h-right a{font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);text-decoration:none;font-family:'Barlow Condensed',sans-serif}
+.h-right a:hover{color:var(--gold)}
+.signout{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.4);font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.8rem;border-radius:2px;cursor:pointer}
+.signout:hover{color:#fff;border-color:rgba(255,255,255,0.5)}
+.tabs{background:var(--dark-blue);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;flex-wrap:wrap}
+.tab{background:none;border:none;color:rgba(255,255,255,0.4);font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.85rem 1.2rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s}
+.tab:hover{color:rgba(255,255,255,0.8)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.pane{display:none;padding:2rem;max-width:980px;margin:0 auto}
+.pane.active{display:block}
+.pane-title{font-family:'Oswald',sans-serif;font-size:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;margin-bottom:0.3rem}
+.pane-title span{color:var(--gold)}
+.pane-sub{font-size:0.82rem;color:var(--mid);margin-bottom:1.5rem}
+
+/* ALERT TOGGLE */
+.alert-toggle-box{background:linear-gradient(135deg,rgba(100,10,10,0.4),rgba(204,26,26,0.2));border:2px solid rgba(204,26,26,0.5);border-radius:6px;padding:1.5rem 2rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.alert-toggle-box.active-alert{background:linear-gradient(135deg,rgba(204,26,26,0.5),rgba(232,34,34,0.3));border-color:var(--red);animation:alertGlow 2s infinite}
+@keyframes alertGlow{0%,100%{box-shadow:0 0 0 rgba(204,26,26,0)}50%{box-shadow:0 0 20px rgba(204,26,26,0.4)}}
+.alert-toggle-text h3{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff;margin-bottom:0.2rem}
+.alert-toggle-text p{font-size:0.82rem;color:var(--mid)}
+.alert-status{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:0.3rem 0.8rem;border-radius:2px;margin-top:0.4rem;display:inline-block}
+.alert-status.on{background:var(--red);color:#fff}
+.alert-status.off{background:rgba(255,255,255,0.1);color:var(--mid)}
+.tog{position:relative;display:inline-block;width:56px;height:28px}
+.tog input{opacity:0;width:0;height:0}
+.tog-sl{position:absolute;cursor:pointer;inset:0;background:#333;border-radius:28px;transition:0.3s}
+.tog-sl:before{position:absolute;content:'';height:22px;width:22px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s}
+input:checked + .tog-sl{background:var(--red)}
+input:checked + .tog-sl:before{transform:translateX(28px)}
+
+/* FORM */
+.fg{margin-bottom:1.2rem}
+.fg label{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:0.4rem}
+.fg input,.fg select,.fg textarea{width:100%;padding:0.75rem 1rem;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
+.fg textarea{min-height:220px;resize:vertical;line-height:1.8}
+.fg input::placeholder,.fg textarea::placeholder{color:rgba(255,255,255,0.2)}
+.fg select option{background:var(--dark)}
+.hint{font-size:0.72rem;color:var(--mid);margin-top:0.3rem;line-height:1.5}
+
+/* GRAPHICS GRID */
+.graphics-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.graphic-slot{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1rem}
+.graphic-slot h4{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.5rem}
+.upload{border:2px dashed var(--border);border-radius:4px;padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.03);position:relative}
+.upload:hover{border-color:var(--gold);background:rgba(240,176,32,0.05)}
+.upload.has{border-style:solid;border-color:rgba(45,138,78,0.6)}
+.upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-icon{font-size:1.8rem;display:block;margin-bottom:0.4rem}
+.upload-text{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid)}
+.upload-text strong{color:var(--gold)}
+.prev-img{width:100%;max-height:140px;object-fit:contain;border-radius:3px;display:none;margin-bottom:0.4rem;background:rgba(0,0,0,0.3)}
+.rm-btn{background:none;border:none;cursor:pointer;color:#ff6b6b;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;display:none;margin-top:0.3rem}
+
+/* ALERTS */
+.ok{background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.35);color:#5ee080;padding:0.85rem 1.2rem;border-radius:3px;font-size:0.85rem;font-weight:600;margin-bottom:1rem;display:none}
+.err{background:rgba(204,26,26,0.15);border:1px solid rgba(204,26,26,0.35);color:#ff6b6b;padding:0.85rem 1.2rem;border-radius:3px;font-size:0.85rem;font-weight:600;margin-bottom:1rem;display:none}
+.notice{background:rgba(45,138,78,0.08);border:1px solid rgba(45,138,78,0.25);border-radius:3px;padding:0.8rem 1rem;font-size:0.82rem;color:var(--mid);margin-bottom:1.2rem;line-height:1.6}
+.settings-box{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.5rem;margin-bottom:1rem}
+
+/* CURRENT PREVIEW */
+.preview-box{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-top:3px solid var(--gold);border-radius:4px;padding:1.2rem;margin-bottom:1.5rem}
+.preview-box h3{font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--gold);margin-bottom:0.6rem}
+.preview-thumb-row{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.6rem}
+.preview-thumb{height:50px;border-radius:3px;object-fit:contain;background:rgba(0,0,0,0.3);border:1px solid var(--border)}
+
+.pub-box{background:linear-gradient(135deg,var(--dark-blue),var(--blue-mid));border:1px solid rgba(42,79,212,0.4);border-radius:4px;padding:1.5rem 2rem;margin-bottom:1.5rem}
+.pub-box h3{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#fff;margin-bottom:0.5rem}
+.pub-box p{font-size:0.85rem;color:rgba(255,255,255,0.6);margin-bottom:1.2rem;line-height:1.6}
+.btn-row{display:flex;gap:0.8rem;flex-wrap:wrap;align-items:center}
+hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+.section-divider{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--red);margin:1.5rem 0 1rem;display:flex;align-items:center;gap:0.8rem}
+.section-divider::after{content:'';flex:1;height:1px;background:rgba(204,26,26,0.3)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <img src="fw-logo.png" alt="First Warn Weather" onerror="this.style.display='none'">
+    <h1>Forecast <span style="color:var(--gold)">Manager</span></h1>
+    <p>First Warn Weather</p>
+    <input type="password" id="pwd" placeholder="••••••••">
+    <div class="login-err" id="loginErr">Incorrect password.</div>
+    <button class="btn btn-full" onclick="doLogin()">Sign In →</button>
+    <a href="index.html" class="back-link">← Back to First Warn Weather</a>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <h1>First Warn <span>Forecast Manager</span></h1>
+    <div class="h-right">
+      <a href="forecast.html" target="_blank">View Forecast ↗</a>
+      <a href="index.html" target="_blank">View Site ↗</a>
+      <button class="signout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" id="t-forecast" onclick="goTab('forecast')">⛅ Daily Forecast</button>
+    <button class="tab" id="t-severe" onclick="goTab('severe')">⚡ Severe Weather</button>
+    <button class="tab" id="t-blog" onclick="goTab('blog')">🪟 Dr. Nick's Window</button>
+    <button class="tab" id="t-alert" onclick="goTab('alert')">🚨 Alert Day</button>
+    <button class="tab" id="t-publish" onclick="goTab('publish')">🚀 Publish</button>
+    <button class="tab" id="t-settings" onclick="goTab('settings')">⚙️ GitHub</button>
+  </div>
+
+  <!-- DAILY FORECAST PANE -->
+  <div class="pane active" id="p-forecast">
+    <div class="pane-title">Daily <span>Forecast</span></div>
+    <div class="pane-sub">Upload your forecast graphics and write your narrative. Save then Publish.</div>
+    <div class="ok" id="forecastOk"></div>
+    <div class="err" id="forecastErr"></div>
+
+    <!-- CURRENT PREVIEW -->
+    <div class="preview-box" id="fPreview" style="display:none">
+      <h3>⛅ Currently Posted — <span id="fPreviewDate" style="color:#fff;font-weight:400;font-style:italic"></span></h3>
+      <div id="fPreviewText" style="font-size:0.82rem;color:var(--mid);line-height:1.6;max-height:60px;overflow:hidden"></div>
+      <div class="preview-thumb-row" id="fPreviewThumbs"></div>
+    </div>
+
+    <div class="fg"><label>Forecast Date</label><input type="text" id="fDate" placeholder="e.g. Sunday, May 4, 2026"></div>
+
+    <!-- FORECAST GRAPHICS -->
+    <div class="section-divider">Forecast Graphics — Upload to GitHub First, Then Enter Filename</div>
+    <div style="background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:1rem 1.2rem;margin-bottom:1.2rem">
+      <p style="font-size:0.82rem;color:var(--mid);line-height:1.7">
+        💡 <strong style="color:#fff">How to add graphics:</strong> Upload your forecast images directly to your GitHub repository first, then enter the filename below (e.g. <code style="color:var(--gold)">forecast-24hr.png</code>). The image will appear automatically on your forecast page.
+      </p>
+    </div>
+    <div class="graphics-grid">
+      <div class="graphic-slot">
+        <h4>🌤️ 24-Hour Forecast Graphic</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fname24" placeholder="e.g. forecast-24hr.png">
+          <p class="hint">Upload the file to GitHub first, then enter its exact filename here</p>
+        </div>
+      </div>
+      <div class="graphic-slot">
+        <h4>📅 10-Day Forecast Graphic</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fname10" placeholder="e.g. forecast-10day.png">
+          <p class="hint">Upload the file to GitHub first, then enter its exact filename here</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- NARRATIVE -->
+    <div class="section-divider">Forecast Narrative</div>
+    <div class="fg">
+      <label>Dr. Nick's Forecast Discussion *</label>
+      <textarea id="fNarrative" placeholder="Good morning! Here is your First Warn Weather forecast...
+
+Write your complete forecast discussion here. Include temperatures, winds, storm timing, overnight conditions, and anything viewers need to know.
+
+Clear. Practical. Easy to understand."></textarea>
+    </div>
+
+    <!-- ADDITIONAL GRAPHICS -->
+    <div class="section-divider">Additional Graphics (Optional)</div>
+    <div class="graphics-grid">
+      <div class="graphic-slot">
+        <h4>🗺️ Additional Graphic 1</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameExtra1" placeholder="e.g. forecast-extra1.png">
+        </div>
+      </div>
+      <div class="graphic-slot">
+        <h4>🗺️ Additional Graphic 2</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameExtra2" placeholder="e.g. forecast-extra2.png">
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="saveForecast()" style="padding:0.85rem 2.5rem;font-size:0.9rem">💾 Save Forecast</button>
+      <button class="btn btn-outline btn-sm" onclick="clearSection('forecast')">Clear</button>
+      <button class="btn btn-blue btn-sm" onclick="goTab('publish')">→ Go to Publish</button>
+    </div>
+  </div>
+
+  <!-- SEVERE WEATHER PANE -->
+  <div class="pane" id="p-severe">
+    <div class="pane-title">Severe <span>Weather</span></div>
+    <div class="pane-sub">Upload your severe weather threat graphics and add a written discussion.</div>
+    <div class="ok" id="severeOk"></div>
+
+    <!-- SEVERE TOGGLE -->
+    <div class="alert-toggle-box" id="severeToggleBox" style="border-color:rgba(204,100,26,0.5);background:linear-gradient(135deg,rgba(100,40,10,0.4),rgba(204,100,26,0.2))">
+      <div class="alert-toggle-text">
+        <h3>⚡ Severe Weather Active</h3>
+        <p>Toggle ON to show the severe weather section on the forecast page.</p>
+        <span class="alert-status off" id="severeStatusBadge">● INACTIVE</span>
+      </div>
+      <label class="tog"><input type="checkbox" id="severeToggle" onchange="updateSevereStatus()"><span class="tog-sl" style=""></span></label>
+    </div>
+
+    <!-- SEVERE GRAPHICS -->
+    <div class="section-divider">Severe Weather Graphics — Upload to GitHub First</div>
+    <div class="graphics-grid">
+      <div class="graphic-slot">
+        <h4>⚠️ Severe Weather Threat Map</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameSevere1" placeholder="e.g. severe-threat.png">
+        </div>
+      </div>
+      <div class="graphic-slot">
+        <h4>🌪️ Tornado / Wind / Hail Breakdown</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameSevere2" placeholder="e.g. severe-breakdown.png">
+        </div>
+      </div>
+      <div class="graphic-slot">
+        <h4>🗺️ Additional Severe Graphic 1</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameSevere3" placeholder="e.g. severe-extra1.png">
+        </div>
+      </div>
+      <div class="graphic-slot">
+        <h4>🗺️ Additional Severe Graphic 2</h4>
+        <div class="fg" style="margin:0">
+          <label>Filename on GitHub</label>
+          <input type="text" id="fnameSevere4" placeholder="e.g. severe-extra2.png">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider">Severe Weather Discussion</div>
+    <div class="fg">
+      <label>Severe Weather Discussion</label>
+      <textarea id="severeNarrative" style="min-height:160px" placeholder="Describe the severe weather threat — timing, affected areas, main hazards, what people should do to prepare..."></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="saveSevere()" style="padding:0.85rem 2.5rem;font-size:0.9rem">💾 Save Severe Weather</button>
+      <button class="btn btn-outline btn-sm" onclick="clearSection('severe')">Clear</button>
+    </div>
+  </div>
+
+  <!-- WEATHER BLOG PANE -->
+  <div class="pane" id="p-blog">
+    <div class="pane-title">Weather From <span>Dr. Nick's Window</span></div>
+    <div class="pane-sub">Write and publish weather blog posts that appear in the "Dr. Nick's Window" section on your homepage.</div>
+    <div class="ok" id="blogOk"></div>
+    <div class="err" id="blogErr"></div>
+    <input type="hidden" id="blogEditId">
+
+    <div class="fg"><label>Post Title *</label><input type="text" id="blogTitle" placeholder="e.g. Why Today's Cold Front Matters..."></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="fg">
+        <label>Category</label>
+        <select id="blogCat">
+          <option>Weather Observation</option>
+          <option>Storm Analysis</option>
+          <option>Seasonal Weather</option>
+          <option>Weather Education</option>
+          <option>Severe Weather</option>
+          <option>Winter Weather</option>
+          <option>Climate & Patterns</option>
+          <option>Weather from the Window</option>
+        </select>
+      </div>
+      <div class="fg"><label>Date</label><input type="text" id="blogDate" placeholder="May 5, 2026"></div>
+    </div>
+    <div class="fg"><label>Excerpt <span style="font-weight:400;text-transform:none;letter-spacing:0">(one sentence preview)</span></label>
+      <input type="text" id="blogExcerpt" placeholder="A brief sentence about today's weather..."></div>
+    <div class="fg"><label>Full Post *</label>
+      <textarea id="blogContent" style="min-height:240px" placeholder="Write your weather observation, analysis, or education post here...&#10;&#10;Leave a blank line between paragraphs.&#10;&#10;Tell the weather story in your own voice!"></textarea>
+    </div>
+    <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1.5rem">
+      <button class="btn btn-gold" onclick="saveBlogPost()" style="padding:0.85rem 2rem">💾 Save Post</button>
+      <button class="btn btn-outline btn-sm" onclick="clearBlogForm()">Clear</button>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Published Posts</div>
+    <div id="blogList"><p style="color:var(--mid);font-style:italic;font-size:0.85rem">No posts yet.</p></div>
+  </div>
+
+  <!-- ALERT DAY PANE -->
+  <div class="pane" id="p-alert">
+    <div class="pane-title">Alert <span>Day</span></div>
+    <div class="pane-sub">Declare an Alert Day — triggers the flashing red banner on your forecast page.</div>
+    <div class="ok" id="alertOk"></div>
+
+    <div class="alert-toggle-box" id="alertToggleBox">
+      <div class="alert-toggle-text">
+        <h3>⚡ Alert Day Status</h3>
+        <p>Toggle ON to activate the red warning banner on your forecast page.</p>
+        <span class="alert-status off" id="alertStatusBadge">● INACTIVE</span>
+      </div>
+      <label class="tog"><input type="checkbox" id="alertToggle" onchange="updateAlertStatus()"><span class="tog-sl"></span></label>
+    </div>
+
+    <div class="fg">
+      <label>Alert Day Message</label>
+      <input type="text" id="alertMsg" placeholder="e.g. Tornado and damaging wind threat possible this afternoon. Stay weather aware.">
+      <p class="hint">This message appears in the red banner at the top of the forecast page.</p>
+    </div>
+    <div class="fg">
+      <label>Primary Threat</label>
+      <select id="alertType">
+        <option value="">Select primary threat...</option>
+        <option>🌪️ Tornado Threat</option>
+        <option>⚡ Severe Thunderstorm Threat</option>
+        <option>🌬️ Damaging Wind Threat</option>
+        <option>🧊 Large Hail Threat</option>
+        <option>❄️ Winter Storm</option>
+        <option>🌊 Flash Flood Threat</option>
+        <option>🔥 Extreme Heat</option>
+        <option>🌫️ Dense Fog Advisory</option>
+        <option>⚠️ Multiple Weather Threats</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="saveAlert()" style="padding:0.85rem 2rem">💾 Save Alert Settings</button>
+      <button class="btn btn-outline btn-sm" onclick="cancelAlert()">Cancel Alert Day</button>
+    </div>
+  </div>
+
+  <!-- PUBLISH PANE -->
+  <div class="pane" id="p-publish">
+    <div class="pane-title">Publish to <span>Live Site</span></div>
+    <div class="pane-sub">One click sends everything live to firstwarnwx.com/forecast.html</div>
+    <div class="ok" id="pubOk"></div>
+    <div class="err" id="pubErr"></div>
+
+    <div class="pub-box">
+      <h3>🚀 Ready to Go Live?</h3>
+      <p>Publishes your forecast, severe weather graphics, and alert status all at once.</p>
+      <button class="btn btn-gold" id="pubBtn" onclick="publishToGH()" style="padding:0.85rem 2.5rem;font-size:0.9rem">Publish to firstwarnwx.com →</button>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.5rem;margin-bottom:1rem">
+      <p style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Your Morning Workflow:</p>
+      <p style="font-size:0.85rem;color:var(--mid);line-height:2.2">
+        1️⃣ <strong style="color:#fff">Daily Forecast</strong> tab — upload 24hr &amp; 10-day graphics, write narrative<br>
+        2️⃣ <strong style="color:#fff">Severe Weather</strong> tab — upload threat maps if severe weather expected<br>
+        3️⃣ <strong style="color:#fff">Alert Day</strong> tab — toggle ON if significant weather possible<br>
+        4️⃣ <strong style="color:#fff">Publish</strong> — one click sends it all live ✅
+      </p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline btn-sm" onclick="goTab('settings')">⚙️ GitHub Settings</button>
+      <button class="btn btn-outline btn-sm" onclick="copyJSON()">📋 Copy forecast.json</button>
+      <span id="cpOk" style="font-size:0.78rem;color:#5ee080;display:none">✓ Copied!</span>
+    </div>
+  </div>
+
+  <!-- SETTINGS PANE -->
+  <div class="pane" id="p-settings">
+    <div class="pane-title">GitHub <span>Settings</span></div>
+    <div class="pane-sub">Enter once — then publishing is one click forever.</div>
+    <div class="ok" id="ghOk"></div>
+    <div class="settings-box">
+      <div class="notice">🔒 Your token is stored only in your browser — never shared with anyone.</div>
+      <div class="fg"><label>GitHub Username</label><input type="text" id="ghUser" placeholder="e.g. nickpalischphd"></div>
+      <div class="fg"><label>Repository Name</label><input type="text" id="ghRepo" placeholder="e.g. firstwarnwx"></div>
+      <div class="fg"><label>Personal Access Token</label>
+        <input type="password" id="ghTok" placeholder="ghp_••••••••••••••••">
+        <p class="hint">Paste your GitHub token — starts with ghp_</p>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveGH()" style="padding:0.75rem 1.8rem">Save Settings</button>
+        <button class="btn btn-blue btn-sm" onclick="testGH()">Test Connection</button>
+      </div>
+      <div class="ok" id="ghTestOk" style="margin-top:1rem"></div>
+      <div class="err" id="ghTestErr" style="margin-top:1rem"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PWD='FirstWarn2026!',AK='fwForecastAdmin',FK='fwForecast2026',GHK='fwGH2026';
+const SLOTS=['24','10','extra1','extra2','severe1','severe2','severe3','severe4'];
+const imgs={};
+
+function doLogin(){
+  if(document.getElementById('pwd').value===PWD){
+    sessionStorage.setItem(AK,'1');
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='block';
+    boot();
+  }else{document.getElementById('loginErr').style.display='block';document.getElementById('pwd').value='';}
+}
+document.getElementById('pwd').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+function doLogout(){sessionStorage.removeItem(AK);location.reload();}
+
+const TABS=['forecast','severe','blog','alert','publish','settings'];
+function goTab(name){
+  TABS.forEach(n=>{document.getElementById('p-'+n).style.display='none';document.getElementById('t-'+n).classList.remove('active');});
+  document.getElementById('p-'+name).style.display='block';
+  document.getElementById('t-'+name).classList.add('active');
+  if(name==='forecast')loadForecastPreview();
+  if(name==='alert')loadAlertState();
+  if(name==='severe')loadSevereState();
+}
+
+function getData(){try{return JSON.parse(localStorage.getItem(FK))||{};}catch(e){return{};}}
+function setData(d){localStorage.setItem(FK,JSON.stringify(d));}
+
+function boot(){
+  setDefaultDate();
+  loadForecastPreview();
+  loadAlertState();
+  loadSevereState();
+  loadGH();
+  // Restore existing filenames from storage
+  const d=getData();
+  if(d.narrative) document.getElementById('fNarrative').value=d.narrative;
+  if(d.date) document.getElementById('fDate').value=d.date;
+  if(d.img_24) document.getElementById('fname24').value=d.img_24;
+  if(d.img_10) document.getElementById('fname10').value=d.img_10;
+  if(d.img_extra1) document.getElementById('fnameExtra1').value=d.img_extra1;
+  if(d.img_extra2) document.getElementById('fnameExtra2').value=d.img_extra2;
+  if(d.img_severe1) document.getElementById('fnameSevere1').value=d.img_severe1;
+  if(d.img_severe2) document.getElementById('fnameSevere2').value=d.img_severe2;
+  if(d.img_severe3) document.getElementById('fnameSevere3').value=d.img_severe3;
+  if(d.img_severe4) document.getElementById('fnameSevere4').value=d.img_severe4;
+  if(d.severeNarrative) document.getElementById('severeNarrative').value=d.severeNarrative;
+}
+
+function setDefaultDate(){
+  const now=new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('fDate').value=`${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+}
+
+function handleImg(slot,ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{imgs[slot]=e.target.result;showImg(slot,e.target.result);};
+  r.readAsDataURL(f);
+}
+function showImg(slot,src){
+  const p=document.getElementById('prev-'+slot);
+  p.src=src;p.style.display='block';
+  document.getElementById('icon-'+slot).style.display='none';
+  document.getElementById('text-'+slot).style.display='none';
+  document.getElementById('rm-'+slot).style.display='inline';
+  document.getElementById('up-'+slot).classList.add('has');
+}
+function rmImg(slot,e){
+  e.stopPropagation();delete imgs[slot];
+  const p=document.getElementById('prev-'+slot);p.style.display='none';p.src='';
+  document.getElementById('icon-'+slot).style.display='block';
+  document.getElementById('text-'+slot).style.display='block';
+  document.getElementById('rm-'+slot).style.display='none';
+  document.getElementById('up-'+slot).classList.remove('has');
+  document.getElementById('file-'+slot).value='';
+}
+
+function saveForecast(){
+  const narrative=document.getElementById('fNarrative').value.trim();
+  if(!narrative){flash('forecastErr','Please write your forecast narrative.');return;}
+  const d=getData();
+  d.date=document.getElementById('fDate').value.trim();
+  d.narrative=narrative;
+  // Never store images in localStorage - use filenames instead
+  d.img_24=document.getElementById('fname24').value.trim()||d.img_24||'';
+  d.img_10=document.getElementById('fname10').value.trim()||d.img_10||'';
+  d.img_extra1=document.getElementById('fnameExtra1').value.trim()||d.img_extra1||'';
+  d.img_extra2=document.getElementById('fnameExtra2').value.trim()||d.img_extra2||'';
+  d.updated=new Date().toISOString();
+  setData(d);
+  flash('forecastOk','✓ Forecast saved! Go to Publish to send it live.');
+  loadForecastPreview();
+}
+
+function saveSevere(){
+  const d=getData();
+  d.severeActive=document.getElementById('severeToggle').checked;
+  d.severeNarrative=document.getElementById('severeNarrative').value.trim();
+  d.img_severe1=document.getElementById('fnameSevere1').value.trim()||d.img_severe1||'';
+  d.img_severe2=document.getElementById('fnameSevere2').value.trim()||d.img_severe2||'';
+  d.img_severe3=document.getElementById('fnameSevere3').value.trim()||d.img_severe3||'';
+  d.img_severe4=document.getElementById('fnameSevere4').value.trim()||d.img_severe4||'';
+  setData(d);
+  flash('severeOk','✓ Severe weather saved!');
+  loadSevereState();
+}
+
+function clearSection(sec){
+  if(!confirm('Clear this section? This cannot be undone.'))return;
+  const d=getData();
+  if(sec==='forecast'){
+    ['24','10','extra1','extra2'].forEach(s=>{delete imgs[s];rmImg(s,{stopPropagation:()=>{}});delete d['img_'+s];});
+    document.getElementById('fNarrative').value='';
+    delete d.narrative;
+  }
+  if(sec==='severe'){
+    ['severe1','severe2','severe3','severe4'].forEach(s=>{delete imgs[s];rmImg(s,{stopPropagation:()=>{}});delete d['img_'+s];});
+    document.getElementById('severeNarrative').value='';
+    d.severeActive=false;
+    delete d.severeNarrative;
+  }
+  setData(d);
+}
+
+function loadForecastPreview(){
+  const d=getData();
+  const box=document.getElementById('fPreview');
+  if(!d.narrative){box.style.display='none';return;}
+  box.style.display='block';
+  document.getElementById('fPreviewDate').textContent=d.date||'';
+  document.getElementById('fPreviewText').textContent=d.narrative;
+  const thumbs=document.getElementById('fPreviewThumbs');
+  thumbs.innerHTML='';
+  ['img_24','img_10','img_extra1','img_extra2'].forEach(k=>{
+    if(d[k])thumbs.innerHTML+=`<img class="preview-thumb" src="${d[k]}" alt="">`;
+  });
+}
+
+function loadSevereState(){
+  const d=getData();
+  const tog=document.getElementById('severeToggle');
+  const badge=document.getElementById('severeStatusBadge');
+  tog.checked=!!d.severeActive;
+  badge.textContent=d.severeActive?'● ACTIVE':'● INACTIVE';
+  badge.className='alert-status '+(d.severeActive?'on':'off');
+  if(d.severeNarrative)document.getElementById('severeNarrative').value=d.severeNarrative;
+}
+function updateSevereStatus(){loadSevereState();}
+
+function loadAlertState(){
+  const d=getData();
+  const tog=document.getElementById('alertToggle');
+  const box=document.getElementById('alertToggleBox');
+  const badge=document.getElementById('alertStatusBadge');
+  tog.checked=!!d.alertDay;
+  if(d.alertDay){box.classList.add('active-alert');badge.textContent='● ACTIVE';badge.className='alert-status on';}
+  else{box.classList.remove('active-alert');badge.textContent='● INACTIVE';badge.className='alert-status off';}
+  if(d.alertMessage)document.getElementById('alertMsg').value=d.alertMessage;
+  if(d.alertType)document.getElementById('alertType').value=d.alertType;
+}
+function updateAlertStatus(){loadAlertState();}
+
+function saveAlert(){
+  const d=getData();
+  d.alertDay=document.getElementById('alertToggle').checked;
+  d.alertMessage=document.getElementById('alertMsg').value.trim()||'Significant weather possible. Stay prepared and monitor updates.';
+  d.alertType=document.getElementById('alertType').value;
+  setData(d);loadAlertState();
+  flash('alertOk',d.alertDay?'⚡ Alert Day is now ACTIVE!':'✓ Alert Day cancelled.');
+}
+function cancelAlert(){
+  document.getElementById('alertToggle').checked=false;
+  document.getElementById('alertMsg').value='';
+  document.getElementById('alertType').value='';
+  const d=getData();d.alertDay=false;d.alertMessage='';setData(d);loadAlertState();
+  flash('alertOk','✓ Alert Day cancelled.');
+}
+
+function loadGH(){
+  const s=JSON.parse(localStorage.getItem(GHK)||'{}');
+  if(s.user)document.getElementById('ghUser').value=s.user;
+  if(s.repo)document.getElementById('ghRepo').value=s.repo;
+  if(s.tok)document.getElementById('ghTok').value=s.tok;
+}
+function saveGH(){
+  const user=document.getElementById('ghUser').value.trim();
+  const repo=document.getElementById('ghRepo').value.trim();
+  const tok=document.getElementById('ghTok').value.trim();
+  if(!user||!repo||!tok){alert('Please fill in all three fields.');return;}
+  localStorage.setItem(GHK,JSON.stringify({user,repo,tok}));
+  flash('ghOk','✓ Settings saved!');
+}
+async function testGH(){
+  const s=JSON.parse(localStorage.getItem(GHK)||'{}');
+  if(!s.tok){flash('ghTestErr','Please save your settings first.');return;}
+  if(!s.user||!s.repo){flash('ghTestErr','Please fill in all fields and save first.');return;}
+  document.getElementById('ghTestOk').style.display='none';
+  document.getElementById('ghTestErr').textContent='⏳ Testing connection...';
+  document.getElementById('ghTestErr').style.display='block';
+  document.getElementById('ghTestErr').style.color='var(--gold)';
+  try{
+    const r=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}`,{
+      headers:{
+        'Authorization':`Bearer ${s.tok}`,
+        'Accept':'application/vnd.github+json',
+        'X-GitHub-Api-Version':'2022-11-28'
+      }
+    });
+    const data = await r.json();
+    if(r.ok){
+      document.getElementById('ghTestOk').textContent='✓ Connected! Repository: ' + data.full_name;
+      document.getElementById('ghTestOk').style.display='block';
+      document.getElementById('ghTestErr').style.display='none';
+    } else {
+      document.getElementById('ghTestErr').textContent='✗ Error ' + r.status + ': ' + (data.message||'Could not connect');
+      document.getElementById('ghTestErr').style.display='block';
+      document.getElementById('ghTestErr').style.color='#ff6b6b';
+      document.getElementById('ghTestOk').style.display='none';
+    }
+  }catch(e){
+    document.getElementById('ghTestErr').textContent='✗ Network error: ' + e.message + ' — Try opening the browser console (F12) for details.';
+    document.getElementById('ghTestErr').style.display='block';
+    document.getElementById('ghTestErr').style.color='#ff6b6b';
+    document.getElementById('ghTestOk').style.display='none';
+  }
+}
+
+function copyJSON(){
+  const d=getData();
+  navigator.clipboard.writeText(JSON.stringify(d,null,2)).then(()=>{
+    const ok=document.getElementById('cpOk');ok.style.display='inline';setTimeout(()=>ok.style.display='none',3000);
+  });
+}
+
+async function publishToGH(){
+  const s=JSON.parse(localStorage.getItem(GHK)||'{}');
+  if(!s.tok||!s.user||!s.repo){alert('Please set up GitHub Settings first!');goTab('settings');return;}
+  const d=getData();
+  if(!d.narrative){flash('pubErr','Please save a forecast first.');return;}
+  const btn=document.getElementById('pubBtn');
+  btn.textContent='⏳ Publishing...';btn.disabled=true;
+  try{
+    // Publish forecast.json
+    const fContent=btoa(unescape(encodeURIComponent(JSON.stringify(d,null,2))));
+    const fGetR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
+    let fSha=null;if(fGetR.ok){const dd=await fGetR.json();fSha=dd.sha;}
+    const fPutR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{
+      method:'PUT',
+      headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
+      body:JSON.stringify({message:`Forecast: ${d.date||new Date().toLocaleDateString()}`,content:fContent,...(fSha?{sha:fSha}:{})})
+    });
+    if(!fPutR.ok)throw new Error('forecast.json failed');
+
+    // Also publish weather-blog.json
+    const blog=getBlog();
+    if(blog.length>0){
+      const bContent=btoa(unescape(encodeURIComponent(JSON.stringify(blog,null,2))));
+      const bGetR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
+      let bSha=null;if(bGetR.ok){const dd=await bGetR.json();bSha=dd.sha;}
+      await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{
+        method:'PUT',
+        headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
+        body:JSON.stringify({message:`Weather blog update`,content:bContent,...(bSha?{sha:bSha}:{})})
+      });
+    }
+
+    btn.textContent='✅ Published!';
+    flash('pubOk','🎉 Forecast & weather blog are live! firstwarnwx.com updates in ~60 seconds.');
+    setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';btn.disabled=false;},4000);
+  }catch(e){
+    btn.textContent='❌ Failed';btn.disabled=false;
+    flash('pubErr','Publishing failed. Check GitHub Settings.');
+    setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';},4000);
+  }
+}
+
+function boot(){
+  setDefaultDate();setBlogDate();
+  loadForecastPreview();loadAlertState();loadSevereState();loadGH();
+  renderBlogList();
+  const d=getData();
+  if(d.narrative)document.getElementById('fNarrative').value=d.narrative;
+  if(d.date)document.getElementById('fDate').value=d.date;
+  if(d.img_24)document.getElementById('fname24').value=d.img_24;
+  if(d.img_10)document.getElementById('fname10').value=d.img_10;
+  if(d.img_extra1)document.getElementById('fnameExtra1').value=d.img_extra1;
+  if(d.img_extra2)document.getElementById('fnameExtra2').value=d.img_extra2;
+  if(d.img_severe1)document.getElementById('fnameSevere1').value=d.img_severe1;
+  if(d.img_severe2)document.getElementById('fnameSevere2').value=d.img_severe2;
+  if(d.img_severe3)document.getElementById('fnameSevere3').value=d.img_severe3;
+  if(d.img_severe4)document.getElementById('fnameSevere4').value=d.img_severe4;
+  if(d.severeNarrative)document.getElementById('severeNarrative').value=d.severeNarrative;
+}
+
+// ── WEATHER BLOG ──
+const BK='fwWeatherBlog2026';
+function getBlog(){try{return JSON.parse(localStorage.getItem(BK))||[];}catch(e){return[];}}
+function setBlog(p){localStorage.setItem(BK,JSON.stringify(p));}
+
+function setBlogDate(){
+  const now=new Date();
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('blogDate').value=`${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+}
+
+function saveBlogPost(){
+  const title=document.getElementById('blogTitle').value.trim();
+  const content=document.getElementById('blogContent').value.trim();
+  if(!title){flash('blogErr','Please add a title.');return;}
+  if(!content){flash('blogErr','Please write the post.');return;}
+  const posts=getBlog();
+  const eid=document.getElementById('blogEditId').value;
+  const id=eid||(title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now());
+  const post={id,title,
+    category:document.getElementById('blogCat').value,
+    excerpt:document.getElementById('blogExcerpt').value.trim()||title,
+    date:document.getElementById('blogDate').value.trim(),
+    content,published:true
+  };
+  if(eid){const i=posts.findIndex(p=>p.id===eid);if(i>-1)posts[i]=post;else posts.unshift(post);}
+  else posts.unshift(post);
+  setBlog(posts);renderBlogList();
+  flash('blogOk',`✓ "${title}" saved! Click Publish to send live.`);
+  if(!eid)clearBlogForm();
+  document.getElementById('blogEditId').value='';
+}
+
+function editBlogPost(id){
+  const p=getBlog().find(x=>x.id===id);if(!p)return;
+  document.getElementById('blogEditId').value=id;
+  document.getElementById('blogTitle').value=p.title;
+  document.getElementById('blogCat').value=p.category;
+  document.getElementById('blogExcerpt').value=p.excerpt||'';
+  document.getElementById('blogDate').value=p.date||'';
+  document.getElementById('blogContent').value=p.content||'';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteBlogPost(id){
+  const p=getBlog().find(x=>x.id===id);
+  if(!p||!confirm(`Delete "${p.title}"?`))return;
+  setBlog(getBlog().filter(x=>x.id!==id));renderBlogList();
+}
+
+function clearBlogForm(){
+  document.getElementById('blogEditId').value='';
+  document.getElementById('blogTitle').value='';
+  document.getElementById('blogExcerpt').value='';
+  document.getElementById('blogContent').value='';
+  setBlogDate();
+}
+
+function renderBlogList(){
+  const posts=getBlog();
+  const list=document.getElementById('blogList');
+  if(!list)return;
+  if(posts.length===0){list.innerHTML='<p style="color:var(--mid);font-style:italic;font-size:0.85rem">No posts yet.</p>';return;}
+  list.innerHTML=posts.map(p=>`
+    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:3px;padding:0.8rem 1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:1rem">
+      <div style="flex:1">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff">${esc(p.title)}</div>
+        <div style="font-size:0.72rem;color:var(--mid)">${esc(p.category)} · ${esc(p.date||'')}</div>
+      </div>
+      <div style="display:flex;gap:0.4rem">
+        <button class="btn btn-outline btn-sm" onclick="editBlogPost('${p.id}')">Edit</button>
+        <button class="btn btn-sm" style="background:rgba(204,26,26,0.3);color:#ff8080;border:1px solid rgba(204,26,26,0.4)" onclick="deleteBlogPost('${p.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function flash(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',6000);}
+
+if(sessionStorage.getItem(AK)==='1'){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';boot();}
+</script>
+</body>
+</html>
