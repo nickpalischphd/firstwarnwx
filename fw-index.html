@@ -257,6 +257,7 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
     <li><a href="#forecast">Forecast</a></li>
     <li><a href="forecast.html#alerts" class="nav-alert-btn">⚡ Alerts</a></li>
     <li><a href="#window">Dr. Nick's Window</a></li>
+    <li><a href="weather-watchers.html">🌩️ Watchers</a></li>
     <li><a href="#about">About</a></li>
     <li><a href="#pollen">Pollen</a></li>
     <li><a href="#connect">Contact</a></li>
@@ -483,7 +484,48 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
 
 <div class="stripe"></div>
 
-<!-- COVERAGE AREA -->
+<!-- WEATHER WATCHERS EMBED -->
+<section style="background:var(--dark-mid);padding:3rem 2rem" id="watchers">
+  <div class="container">
+    <p class="sec-label">Community Network</p>
+    <h2 class="sec-title">First Warn <span>Weather Watchers</span></h2>
+    <p class="sec-body">Real-time community weather reports from across the First Warn coverage area — submitted by our network of local weather watchers.</p>
+
+    <!-- LIVE STATS -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0" id="wwStats">
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.2rem;text-align:center">
+        <div style="font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--gold)" id="hwReports">0</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid);margin-top:0.3rem">Reports Today</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.2rem;text-align:center">
+        <div style="font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--gold)" id="hwWatchers">0</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid);margin-top:0.3rem">Active Watchers</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.2rem;text-align:center">
+        <div style="font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--gold)">57</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid);margin-top:0.3rem">Counties Covered</div>
+      </div>
+    </div>
+
+    <!-- LATEST REPORTS FEED -->
+    <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:4px;padding:1.2rem;margin-bottom:1.5rem" id="hwFeed">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.4rem">
+        <span style="display:inline-block;width:7px;height:7px;background:var(--red);border-radius:50%;animation:blink 1s infinite"></span>
+        Latest Reports
+      </div>
+      <div id="hwReportsList">
+        <p style="font-size:0.85rem;color:var(--text-mid);font-style:italic;text-align:center;padding:1rem">No reports yet today.</p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+      <a href="weather-watchers.html" class="btn-red">📍 Submit a Weather Report →</a>
+      <a href="weather-watchers.html#apply" class="btn-outline-w">🌩️ Apply to be a Watcher →</a>
+    </div>
+  </div>
+</section>
+
+<div class="stripe"></div>
 <section class="coverage-section" id="coverage">
   <div class="container">
     <p class="sec-label">Coverage Area</p>
@@ -961,14 +1003,43 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
+// ── HOMEPAGE WEATHER WATCHERS FEED ──
+function loadHomepageWatchers(){
+  try{
+    const all=JSON.parse(localStorage.getItem('fwWatcherReports'))||[];
+    const cutoff=Date.now()-(24*60*60*1000);
+    const reports=all.filter(r=>r.timestamp>cutoff);
+    document.getElementById('hwReports').textContent=reports.length;
+    const unique=new Set(reports.map(r=>r.name+r.county));
+    document.getElementById('hwWatchers').textContent=unique.size;
+    const list=document.getElementById('hwReportsList');
+    if(reports.length===0){
+      list.innerHTML='<p style="font-size:0.85rem;color:var(--text-mid);font-style:italic;text-align:center;padding:1rem">No reports yet today. <a href="weather-watchers.html" style="color:var(--gold)">Be the first →</a></p>';
+      return;
+    }
+    list.innerHTML=reports.slice(0,4).map(r=>`
+      <div style="display:flex;align-items:center;gap:1rem;padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <div style="font-size:1.4rem;flex-shrink:0">${r.condition.split(' ')[0]}</div>
+        <div style="flex:1">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#fff">${esc(r.name)} — ${esc(r.county)}</div>
+          <div style="font-size:0.75rem;color:var(--text-mid)">🌡️ ${r.temp}°F · ${esc(r.condition)}</div>
+        </div>
+        <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);flex-shrink:0">${r.time||''}</div>
+      </div>
+    `).join('');
+  }catch(e){}
+}
+
 // ── INIT ──
 document.getElementById('yr').textContent=new Date().getFullYear();
 loadNWSAlerts();
 loadForecast();
 loadWeatherBlog();
+loadHomepageWatchers();
 observeFadeUps();
 window.addEventListener('scroll',observeFadeUps,{passive:true});
 setInterval(loadNWSAlerts,300000);
+setInterval(loadHomepageWatchers,120000);
 </script>
 </body>
 </html>

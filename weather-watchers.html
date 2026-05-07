@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Warn Weather Watchers — Community Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#cc1a1a;--red-dark:#9e0e0e;--red-bright:#e82222;
+  --blue:#1a2a8f;--blue-mid:#1e3aab;--blue-light:#2a4fd4;
+  --gold:#f0b020;--gold-light:#f5c840;
+  --dark:#080c18;--dark-mid:#0e1428;--dark-blue:#0a1030;
+  --text:#e8eaf0;--text-mid:#a8b4cc;--border:rgba(255,255,255,0.12);
+  --green:#2d8a4e;--orange:#e07820;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(8,12,24,0.97);backdrop-filter:blur(12px);border-bottom:2px solid var(--red);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:0.8rem;text-decoration:none}
+.nav-brand img{height:38px;object-fit:contain}
+.nav-brand-text{font-family:'Oswald',sans-serif;font-size:1rem;font-weight:700;color:#fff;letter-spacing:0.05em;line-height:1.2}
+.nav-brand-text span{color:var(--gold);display:block;font-size:0.6rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase}
+.nav-links{display:flex;gap:1.5rem;list-style:none;align-items:center}
+.nav-links a{font-family:'Barlow',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover,.nav-links a.active{color:var(--gold)}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--dark-blue) 0%,var(--blue) 50%,var(--red-dark) 100%);padding:7rem 2rem 3rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'%3E%3Crect x='0' y='0' width='60' height='60'/%3E%3C/g%3E%3C/svg%3E");background-size:60px 60px}
+.hero-inner{position:relative;z-index:1;max-width:800px;margin:0 auto}
+.eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:0.8rem}
+.eyebrow::before,.eyebrow::after{content:'';display:block;width:36px;height:1px;background:var(--gold)}
+.hero h1{font-family:'Oswald',sans-serif;font-size:clamp(2.5rem,6vw,4.5rem);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;line-height:1;margin-bottom:0.5rem}
+.hero h1 span{color:var(--gold)}
+.hero h1 em{color:var(--red-bright);font-style:normal}
+.hero p{font-size:1rem;color:rgba(255,255,255,0.65);line-height:1.8;max-width:640px;margin:0 auto 2rem}
+.hero-stats{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
+.hero-stat{text-align:center}
+.hero-stat-n{font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--gold);display:block}
+.hero-stat-l{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid)}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn-red{background:var(--red);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;padding:0.85rem 2rem;border:none;border-radius:2px;cursor:pointer;text-decoration:none;display:inline-block;transition:all 0.2s}
+.btn-red:hover{background:var(--red-bright);transform:translateY(-2px)}
+.btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.4);font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;padding:0.85rem 2rem;border-radius:2px;cursor:pointer;text-decoration:none;display:inline-block;transition:all 0.2s}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+
+/* STRIPE */
+.stripe{height:4px;background:linear-gradient(90deg,var(--red-dark),var(--red),var(--gold),var(--red),var(--blue))}
+
+/* SECTIONS */
+section{padding:3rem 2rem}
+.container{max-width:1200px;margin:0 auto}
+.sec-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem}
+.sec-label::before{content:'';display:block;width:24px;height:2px;background:var(--red)}
+.sec-title{font-family:'Oswald',sans-serif;font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;margin-bottom:1rem;line-height:1.1}
+.sec-title span{color:var(--gold)}
+.sec-title em{color:var(--red-bright);font-style:normal}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:2rem;overflow-x:auto}
+.tab-btn{background:none;border:none;color:rgba(255,255,255,0.45);font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.85rem 1.5rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s;white-space:nowrap}
+.tab-btn:hover{color:rgba(255,255,255,0.8)}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* MAP SECTION */
+.map-section{background:var(--dark-mid)}
+.map-container{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start}
+.map-wrap{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:4px;overflow:hidden;position:relative}
+.map-wrap svg{width:100%;height:auto;display:block}
+.map-legend{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.2rem}
+.map-legend h4{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+.legend-item{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;font-size:0.8rem;color:var(--text-mid)}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.map-reports{margin-top:1rem}
+.map-reports h4{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem}
+.report-item{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:3px;padding:0.7rem 0.8rem;margin-bottom:0.5rem}
+.report-item-name{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fff}
+.report-item-detail{font-size:0.72rem;color:var(--text-mid);margin-top:0.2rem}
+.report-item-time{font-size:0.65rem;color:rgba(255,255,255,0.3);margin-top:0.2rem}
+
+/* REPORT FORM */
+.report-section{background:var(--dark)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fg{margin-bottom:1rem}
+.fg label{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid);display:block;margin-bottom:0.4rem}
+.fg input,.fg select,.fg textarea{width:100%;padding:0.75rem 1rem;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
+.fg textarea{min-height:80px;resize:vertical}
+.fg input::placeholder,.fg textarea::placeholder{color:rgba(255,255,255,0.2)}
+.fg select option{background:var(--dark)}
+.condition-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;margin-top:0.5rem}
+.condition-btn{background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:4px;padding:0.6rem 0.3rem;text-align:center;cursor:pointer;transition:all 0.2s}
+.condition-btn:hover{border-color:var(--gold)}
+.condition-btn.selected{border-color:var(--gold);background:rgba(240,176,32,0.15)}
+.condition-btn .icon{font-size:1.5rem;display:block;margin-bottom:0.2rem}
+.condition-btn .label{font-family:'Barlow Condensed',sans-serif;font-size:0.55rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-mid)}
+
+/* LEADERBOARD */
+.leaderboard-section{background:var(--dark-mid)}
+.lb-table{width:100%;border-collapse:collapse;margin-top:1rem}
+.lb-table th{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);padding:0.6rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+.lb-table td{padding:0.8rem 1rem;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.85rem;color:var(--text-mid);vertical-align:middle}
+.lb-table tr:hover td{background:rgba(255,255,255,0.03)}
+.lb-rank{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:700;color:var(--text-mid)}
+.lb-rank.gold{color:var(--gold)}
+.lb-rank.silver{color:var(--silver,#c8d4e8)}
+.lb-rank.bronze{color:#cd7f32}
+.lb-name{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#fff}
+.lb-county{font-size:0.75rem;color:var(--text-mid)}
+.lb-count{font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;color:var(--gold)}
+.lb-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px;display:inline-block}
+.lb-badge.elite{background:rgba(240,176,32,0.2);color:var(--gold);border:1px solid rgba(240,176,32,0.4)}
+.lb-badge.active{background:rgba(45,138,78,0.2);color:#5ee080;border:1px solid rgba(45,138,78,0.4)}
+.lb-badge.new{background:rgba(30,74,114,0.3);color:#7ab4ff;border:1px solid rgba(30,74,114,0.5)}
+
+/* APPLICATION */
+.apply-section{background:var(--dark)}
+.apply-inner{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
+.apply-info h2{font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;text-transform:uppercase;color:#fff;margin-bottom:1rem}
+.apply-info h2 span{color:var(--gold)}
+.apply-perks{margin-top:1.5rem;display:flex;flex-direction:column;gap:0.8rem}
+.perk{display:flex;align-items:center;gap:0.8rem;font-size:0.88rem;color:var(--text-mid)}
+.perk-icon{font-size:1.2rem;flex-shrink:0}
+.apply-form-wrap{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:2rem}
+.apply-form-wrap h3{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#fff;margin-bottom:1.2rem}
+
+/* ALERTS */
+.success-msg{background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.35);color:#5ee080;padding:0.85rem 1.2rem;border-radius:2px;font-size:0.85rem;font-weight:600;margin-bottom:1rem;display:none}
+.error-msg{background:rgba(204,26,26,0.15);border:1px solid rgba(204,26,26,0.35);color:#ff8080;padding:0.85rem 1.2rem;border-radius:2px;font-size:0.85rem;font-weight:600;margin-bottom:1rem;display:none}
+
+/* LIVE INDICATOR */
+.live-dot{display:inline-block;width:8px;height:8px;background:var(--red);border-radius:50%;animation:blink 1s infinite;margin-right:0.4rem}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* FOOTER */
+footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:1.5rem 2rem;text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.3);font-family:'Barlow',sans-serif}
+footer a{color:var(--gold);text-decoration:none}
+
+.fade-up{opacity:0;transform:translateY(20px);transition:opacity 0.6s,transform 0.6s}
+.fade-up.visible{opacity:1;transform:none}
+
+@media(max-width:900px){.map-container,.apply-inner{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.condition-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:640px){.nav-links{display:none}.condition-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <img src="fw-logo.png" alt="First Warn Weather">
+    <div class="nav-brand-text">First Warn Weather<span>Weather Watcher Network</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="forecast.html">Forecast</a></li>
+    <li><a href="weather-watchers.html" class="active">Weather Watchers</a></li>
+    <li><a href="index.html#connect">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">Community Observation Network</p>
+    <h1>First Warn <span>Weather</span> <em>Watchers</em></h1>
+    <p>You are our eyes on the ground. Join the First Warn Weather Watcher Network and help build a real-time picture of conditions across Missouri and Southern Illinois.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-n" id="statReports">0</span>
+        <span class="hero-stat-l">Reports Today</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-n" id="statWatchers">0</span>
+        <span class="hero-stat-l">Active Watchers</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-n">57</span>
+        <span class="hero-stat-l">Counties Covered</span>
+      </div>
+    </div>
+    <div class="hero-btns">
+      <a href="#report" class="btn-red">📍 Submit Weather Report</a>
+      <a href="#apply" class="btn-outline">🌩️ Apply to be a Watcher</a>
+    </div>
+  </div>
+</div>
+
+<div class="stripe"></div>
+
+<!-- MAP + LIVE REPORTS -->
+<section class="map-section" id="map">
+  <div class="container">
+    <p class="sec-label"><span class="live-dot"></span>Live Conditions Map</p>
+    <h2 class="sec-title">First Warn <span>Coverage Area</span></h2>
+    <p style="font-size:0.9rem;color:var(--text-mid);margin-bottom:1.5rem">Real-time weather watcher reports plotted across your First Warn coverage area. Reports shown for the last 24 hours.</p>
+
+    <div class="map-container">
+      <!-- SVG COVERAGE MAP -->
+      <div class="map-wrap fade-up">
+        <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" id="coverageMap">
+          <defs>
+            <linearGradient id="mapBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#0a1030"/>
+              <stop offset="100%" style="stop-color:#0e1428"/>
+            </linearGradient>
+          </defs>
+          <!-- Background -->
+          <rect width="800" height="600" fill="url(#mapBg)"/>
+
+          <!-- MISSOURI COUNTIES - simplified representative shapes -->
+          <!-- Northern MO counties -->
+          <g id="mo-counties">
+            <!-- Pike -->
+            <rect x="490" y="120" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Pike" data-state="MO"/>
+            <text x="522" y="152" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">PIKE</text>
+
+            <!-- Lincoln -->
+            <rect x="490" y="175" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Lincoln" data-state="MO"/>
+            <text x="522" y="204" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">LINCOLN</text>
+
+            <!-- Warren -->
+            <rect x="420" y="175" width="70" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Warren" data-state="MO"/>
+            <text x="455" y="204" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">WARREN</text>
+
+            <!-- Montgomery -->
+            <rect x="340" y="175" width="80" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Montgomery" data-state="MO"/>
+            <text x="380" y="204" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">MONTGOMERY</text>
+
+            <!-- Boone -->
+            <rect x="240" y="155" width="100" height="70" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Boone" data-state="MO"/>
+            <text x="290" y="194" font-family="Barlow Condensed" font-size="10" fill="rgba(255,255,255,0.6)" text-anchor="middle">BOONE</text>
+
+            <!-- Callaway/Osage area -->
+            <rect x="340" y="225" width="80" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Osage" data-state="MO"/>
+            <text x="380" y="256" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">OSAGE</text>
+
+            <!-- Maries -->
+            <rect x="270" y="225" width="70" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Maries" data-state="MO"/>
+            <text x="305" y="256" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">MARIES</text>
+
+            <!-- Cole -->
+            <rect x="310" y="280" width="85" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Cole" data-state="MO"/>
+            <text x="352" y="311" font-family="Barlow Condensed" font-size="10" fill="rgba(255,255,255,0.6)" text-anchor="middle">COLE</text>
+
+            <!-- St. Charles -->
+            <rect x="490" y="225" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="St. Charles" data-state="MO"/>
+            <text x="522" y="254" font-family="Barlow Condensed" font-size="8" fill="rgba(255,255,255,0.5)" text-anchor="middle">ST.CHARLES</text>
+
+            <!-- St. Louis -->
+            <rect x="490" y="275" width="65" height="50" rx="2" fill="rgba(30,74,114,0.5)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" class="county-shape" data-county="St. Louis" data-state="MO"/>
+            <text x="522" y="304" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.7)" text-anchor="middle">ST. LOUIS</text>
+
+            <!-- Jefferson -->
+            <rect x="450" y="325" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Jefferson" data-state="MO"/>
+            <text x="482" y="356" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">JEFFERSON</text>
+
+            <!-- Franklin -->
+            <rect x="380" y="280" width="110" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Franklin" data-state="MO"/>
+            <text x="435" y="311" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">FRANKLIN</text>
+
+            <!-- Gasconade -->
+            <rect x="270" y="280" width="110" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Gasconade" data-state="MO"/>
+            <text x="325" y="311" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">GASCONADE</text>
+
+            <!-- Crawford -->
+            <rect x="250" y="335" width="100" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Crawford" data-state="MO"/>
+            <text x="300" y="366" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">CRAWFORD</text>
+
+            <!-- Phelps -->
+            <rect x="200" y="335" width="85" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Phelps" data-state="MO"/>
+            <text x="242" y="366" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">PHELPS</text>
+
+            <!-- Dent -->
+            <rect x="160" y="390" width="90" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Dent" data-state="MO"/>
+            <text x="205" y="421" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">DENT</text>
+
+            <!-- Ste. Genevieve -->
+            <rect x="450" y="380" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Ste. Genevieve" data-state="MO"/>
+            <text x="482" y="408" font-family="Barlow Condensed" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">STE.GEN</text>
+
+            <!-- St. Francois -->
+            <rect x="385" y="380" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="St. Francois" data-state="MO"/>
+            <text x="417" y="408" font-family="Barlow Condensed" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">ST.FRANC</text>
+
+            <!-- Madison -->
+            <rect x="320" y="390" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Madison" data-state="MO"/>
+            <text x="352" y="421" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">MADISON</text>
+
+            <!-- Iron -->
+            <rect x="255" y="390" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Iron" data-state="MO"/>
+            <text x="287" y="421" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">IRON</text>
+
+            <!-- Reynolds -->
+            <rect x="160" y="445" width="90" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Reynolds" data-state="MO"/>
+            <text x="205" y="476" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">REYNOLDS</text>
+
+            <!-- Carter -->
+            <rect x="160" y="500" width="90" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Carter" data-state="MO"/>
+            <text x="205" y="531" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">CARTER</text>
+
+            <!-- Ripley -->
+            <rect x="250" y="500" width="90" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Ripley" data-state="MO"/>
+            <text x="295" y="531" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">RIPLEY</text>
+
+            <!-- Wayne -->
+            <rect x="340" y="445" width="75" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Wayne" data-state="MO"/>
+            <text x="377" y="476" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">WAYNE</text>
+
+            <!-- Butler -->
+            <rect x="340" y="500" width="75" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Butler" data-state="MO"/>
+            <text x="377" y="531" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">BUTLER</text>
+
+            <!-- Stoddard -->
+            <rect x="415" y="445" width="75" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Stoddard" data-state="MO"/>
+            <text x="452" y="476" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">STODDARD</text>
+
+            <!-- Scott -->
+            <rect x="415" y="500" width="75" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Scott" data-state="MO"/>
+            <text x="452" y="531" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">SCOTT</text>
+
+            <!-- Cape Girardeau -->
+            <rect x="490" y="430" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Cape Girardeau" data-state="MO"/>
+            <text x="522" y="460" font-family="Barlow Condensed" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">CAPE GIR.</text>
+
+            <!-- Perry -->
+            <rect x="490" y="380" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Perry" data-state="MO"/>
+            <text x="522" y="408" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">PERRY</text>
+
+            <!-- Mississippi -->
+            <rect x="490" y="485" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Mississippi" data-state="MO"/>
+            <text x="522" y="513" font-family="Barlow Condensed" font-size="8" fill="rgba(255,255,255,0.5)" text-anchor="middle">MISS.</text>
+
+            <!-- New Madrid -->
+            <rect x="490" y="535" width="65" height="45" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="New Madrid" data-state="MO"/>
+            <text x="522" y="561" font-family="Barlow Condensed" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">NEW MAD.</text>
+
+            <!-- Dunklin -->
+            <rect x="415" y="555" width="75" height="45" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Dunklin" data-state="MO"/>
+            <text x="452" y="581" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">DUNKLIN</text>
+
+            <!-- Washington -->
+            <rect x="350" y="335" width="100" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Washington" data-state="MO"/>
+            <text x="400" y="366" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">WASHINGTON</text>
+
+            <!-- Bollinger -->
+            <rect x="350" y="500" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Bollinger" data-state="MO"/>
+            <text x="382" y="531" font-family="Barlow Condensed" font-size="8" fill="rgba(255,255,255,0.5)" text-anchor="middle">BOLLINGER</text>
+          </g>
+
+          <!-- ILLINOIS COUNTIES - right side -->
+          <g id="il-counties">
+            <!-- Madison IL -->
+            <rect x="558" y="225" width="60" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Madison" data-state="IL"/>
+            <text x="588" y="254" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">MADISON</text>
+
+            <!-- St. Clair IL -->
+            <rect x="558" y="275" width="60" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="St. Clair" data-state="IL"/>
+            <text x="588" y="304" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">ST.CLAIR</text>
+
+            <!-- Monroe IL -->
+            <rect x="558" y="325" width="60" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Monroe" data-state="IL"/>
+            <text x="588" y="356" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">MONROE</text>
+
+            <!-- Randolph IL -->
+            <rect x="558" y="380" width="60" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Randolph" data-state="IL"/>
+            <text x="588" y="408" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">RANDOLPH</text>
+
+            <!-- Perry IL -->
+            <rect x="558" y="430" width="60" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Perry" data-state="IL"/>
+            <text x="588" y="460" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">PERRY</text>
+
+            <!-- Jackson IL -->
+            <rect x="558" y="485" width="60" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Jackson" data-state="IL"/>
+            <text x="588" y="515" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">JACKSON</text>
+
+            <!-- Union IL -->
+            <rect x="558" y="540" width="60" height="45" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Union" data-state="IL"/>
+            <text x="588" y="566" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">UNION</text>
+
+            <!-- Alexander IL -->
+            <rect x="620" y="540" width="55" height="45" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Alexander" data-state="IL"/>
+            <text x="647" y="566" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">ALEXANDER</text>
+
+            <!-- Johnson IL -->
+            <rect x="620" y="485" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Johnson" data-state="IL"/>
+            <text x="647" y="515" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">JOHNSON</text>
+
+            <!-- Williamson IL -->
+            <rect x="620" y="430" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Williamson" data-state="IL"/>
+            <text x="647" y="460" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">WILLIAMSON</text>
+
+            <!-- Jefferson IL -->
+            <rect x="620" y="380" width="55" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Jefferson" data-state="IL"/>
+            <text x="647" y="408" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">JEFFERSON</text>
+
+            <!-- Franklin IL -->
+            <rect x="620" y="325" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Franklin" data-state="IL"/>
+            <text x="647" y="356" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">FRANKLIN</text>
+
+            <!-- Washington IL -->
+            <rect x="620" y="275" width="55" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Washington" data-state="IL"/>
+            <text x="647" y="304" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">WASHINGTON</text>
+
+            <!-- Clinton IL -->
+            <rect x="620" y="225" width="55" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Clinton" data-state="IL"/>
+            <text x="647" y="254" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">CLINTON</text>
+
+            <!-- Bond IL -->
+            <rect x="558" y="175" width="60" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Bond" data-state="IL"/>
+            <text x="588" y="204" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">BOND</text>
+
+            <!-- Macoupin IL -->
+            <rect x="558" y="120" width="60" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Macoupin" data-state="IL"/>
+            <text x="588" y="151" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">MACOUPIN</text>
+
+            <!-- Montgomery IL -->
+            <rect x="620" y="120" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Montgomery" data-state="IL"/>
+            <text x="647" y="151" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">MONTGOMERY</text>
+
+            <!-- Jersey IL -->
+            <rect x="490" y="175" width="0" height="0" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Jersey" data-state="IL"/>
+
+            <!-- Calhoun IL -->
+            <rect x="555" y="120" width="0" height="0" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Calhoun" data-state="IL"/>
+
+            <!-- Greene IL -->
+            <rect x="675" y="120" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Greene" data-state="IL"/>
+            <text x="702" y="151" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">GREENE</text>
+
+            <!-- Adams IL -->
+            <rect x="675" y="60" width="55" height="60" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Adams" data-state="IL"/>
+            <text x="702" y="93" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">ADAMS</text>
+
+            <!-- Pike IL -->
+            <rect x="620" y="60" width="55" height="60" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Pike" data-state="IL"/>
+            <text x="647" y="93" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">PIKE</text>
+          </g>
+
+          <!-- STATE LABELS -->
+          <text x="330" y="95" font-family="Oswald" font-size="18" font-weight="700" fill="rgba(42,79,212,0.5)" text-anchor="middle" letter-spacing="3">MISSOURI</text>
+          <text x="630" y="95" font-family="Oswald" font-size="14" font-weight="700" fill="rgba(45,120,45,0.5)" text-anchor="middle" letter-spacing="2">ILLINOIS</text>
+
+          <!-- RIVER LINE (Mississippi) -->
+          <path d="M555 120 C550 200 548 300 545 400 C542 460 540 520 538 580" stroke="rgba(42,79,212,0.4)" stroke-width="3" fill="none" stroke-dasharray="5,3"/>
+
+          <!-- Report markers container -->
+          <g id="reportMarkers"></g>
+        </svg>
+        <div style="position:absolute;bottom:0.8rem;left:0.8rem;display:flex;gap:1rem">
+          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(100,200,255,0.6)">
+            <div style="width:12px;height:12px;background:rgba(30,74,114,0.5);border:1px solid rgba(255,255,255,0.2);border-radius:2px"></div>Missouri
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(100,255,100,0.5)">
+            <div style="width:12px;height:12px;background:rgba(45,100,45,0.35);border:1px solid rgba(100,255,100,0.2);border-radius:2px"></div>Illinois
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE REPORT FEED -->
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.4rem">
+          <span class="live-dot"></span> Live Reports
+        </div>
+        <div id="liveReportsList">
+          <div style="text-align:center;padding:2rem;color:var(--text-mid);font-style:italic;font-size:0.85rem">No reports yet today. Be the first to submit!</div>
+        </div>
+        <div style="margin-top:1rem">
+          <a href="#report" class="btn-red" style="width:100%;text-align:center;display:block;font-size:0.8rem;padding:0.7rem">+ Submit Your Report</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stripe"></div>
+
+<!-- TABS: REPORT / LEADERBOARD / APPLY -->
+<section class="report-section" id="report">
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-report" onclick="switchTab('report')">📍 Submit Report</button>
+      <button class="tab-btn" id="tab-leader" onclick="switchTab('leader')">🏆 Leaderboard</button>
+      <button class="tab-btn" id="tab-apply" onclick="switchTab('apply')">🌩️ Apply to Join</button>
+    </div>
+
+    <!-- SUBMIT REPORT TAB -->
+    <div class="tab-pane active" id="pane-report">
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:3rem;align-items:start">
+        <div>
+          <p class="sec-label">Community Observation</p>
+          <h2 class="sec-title">Submit Your <span>Weather Report</span></h2>
+          <p style="font-size:0.88rem;color:var(--text-mid);line-height:1.8;margin-bottom:2rem">Tell us what you're seeing right now! Your report helps Dr. Nick build a complete picture of conditions across the coverage area.</p>
+
+          <div class="success-msg" id="reportSuccess">✓ Thank you for your report! It will appear on the map shortly.</div>
+          <div class="error-msg" id="reportError">Something went wrong. Please try again.</div>
+
+          <div class="form-grid">
+            <div class="fg"><label>Your First Name *</label><input type="text" id="rName" placeholder="First name only"></div>
+            <div class="fg">
+              <label>Your County *</label>
+              <select id="rCounty">
+                <option value="">Select your county...</option>
+                <optgroup label="Missouri">
+                  <option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option>
+                  <option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option>
+                  <option>Crawford, MO</option><option>Dent, MO</option><option>Dunklin, MO</option>
+                  <option>Franklin, MO</option><option>Gasconade, MO</option><option>Iron, MO</option>
+                  <option>Jefferson, MO</option><option>Lincoln, MO</option><option>Madison, MO</option>
+                  <option>Maries, MO</option><option>Mississippi, MO</option><option>Montgomery, MO</option>
+                  <option>New Madrid, MO</option><option>Osage, MO</option><option>Perry, MO</option>
+                  <option>Phelps, MO</option><option>Pike, MO</option><option>Reynolds, MO</option>
+                  <option>Ripley, MO</option><option>St. Charles, MO</option><option>Ste. Genevieve, MO</option>
+                  <option>St. Francois, MO</option><option>St. Louis, MO</option><option>St. Louis City, MO</option>
+                  <option>Scott, MO</option><option>Stoddard, MO</option><option>Warren, MO</option>
+                  <option>Washington, MO</option><option>Wayne, MO</option>
+                </optgroup>
+                <optgroup label="Illinois">
+                  <option>Adams, IL</option><option>Alexander, IL</option><option>Bond, IL</option>
+                  <option>Calhoun, IL</option><option>Clinton, IL</option><option>Franklin, IL</option>
+                  <option>Greene, IL</option><option>Jackson, IL</option><option>Jefferson, IL</option>
+                  <option>Jersey, IL</option><option>Johnson, IL</option><option>Macoupin, IL</option>
+                  <option>Madison, IL</option><option>Monroe, IL</option><option>Montgomery, IL</option>
+                  <option>Perry, IL</option><option>Pike, IL</option><option>Randolph, IL</option>
+                  <option>St. Clair, IL</option><option>Union, IL</option><option>Washington, IL</option>
+                  <option>Williamson, IL</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="fg"><label>Temperature (°F) *</label><input type="number" id="rTemp" placeholder="e.g. 72" min="-50" max="130"></div>
+            <div class="fg">
+              <label>Wind Speed (mph)</label>
+              <input type="number" id="rWind" placeholder="e.g. 15" min="0" max="200">
+            </div>
+          </div>
+
+          <div class="fg">
+            <label>Current Conditions *</label>
+            <div class="condition-grid" id="conditionGrid">
+              <div class="condition-btn" onclick="selectCondition('☀️ Clear/Sunny',this)"><span class="icon">☀️</span><span class="label">Clear</span></div>
+              <div class="condition-btn" onclick="selectCondition('⛅ Partly Cloudy',this)"><span class="icon">⛅</span><span class="label">Partly Cloudy</span></div>
+              <div class="condition-btn" onclick="selectCondition('☁️ Cloudy',this)"><span class="icon">☁️</span><span class="label">Cloudy</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌧️ Rain',this)"><span class="icon">🌧️</span><span class="label">Rain</span></div>
+              <div class="condition-btn" onclick="selectCondition('⛈️ Storms',this)"><span class="icon">⛈️</span><span class="label">Storms</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌪️ Tornado',this)"><span class="icon">🌪️</span><span class="label">Tornado</span></div>
+              <div class="condition-btn" onclick="selectCondition('❄️ Snow',this)"><span class="icon">❄️</span><span class="label">Snow</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌨️ Sleet/Ice',this)"><span class="icon">🌨️</span><span class="label">Sleet/Ice</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌬️ High Wind',this)"><span class="icon">🌬️</span><span class="label">High Wind</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌊 Flooding',this)"><span class="icon">🌊</span><span class="label">Flooding</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌫️ Fog',this)"><span class="icon">🌫️</span><span class="label">Fog</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌩️ Lightning',this)"><span class="icon">🌩️</span><span class="label">Lightning</span></div>
+            </div>
+            <input type="hidden" id="rCondition">
+          </div>
+
+          <div class="fg">
+            <label>Additional Notes</label>
+            <textarea id="rNotes" placeholder="Anything else to report? Hail size, damage, flooding depth, visibility, etc."></textarea>
+          </div>
+
+          <button class="btn-red" onclick="submitReport()" style="padding:1rem 2.5rem;font-size:0.88rem">📍 Submit Weather Report →</button>
+        </div>
+
+        <!-- WHAT TO REPORT GUIDE -->
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.5rem;position:sticky;top:84px">
+          <h4 style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">📋 What to Report</h4>
+          <div style="display:flex;flex-direction:column;gap:0.8rem">
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6;padding-bottom:0.8rem;border-bottom:1px solid var(--border)">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">🌡️ Temperature</strong>
+              Your outdoor thermometer reading in °F
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6;padding-bottom:0.8rem;border-bottom:1px solid var(--border)">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">🧊 Hail</strong>
+              Size (pea, marble, golf ball, baseball)
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6;padding-bottom:0.8rem;border-bottom:1px solid var(--border)">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">❄️ Snow/Ice</strong>
+              Accumulation in inches on a flat surface
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6;padding-bottom:0.8rem;border-bottom:1px solid var(--border)">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">🌊 Flooding</strong>
+              Depth if safe to measure, road closures
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">💨 Wind Damage</strong>
+              Downed trees, power lines, structural damage
+            </div>
+          </div>
+          <div style="margin-top:1.2rem;background:rgba(204,26,26,0.12);border:1px solid rgba(204,26,26,0.3);border-radius:3px;padding:0.8rem">
+            <p style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);margin-bottom:0.3rem">⚠️ Safety First</p>
+            <p style="font-size:0.78rem;color:var(--text-mid);line-height:1.5">Never put yourself in danger to make a report. Your safety is always the priority!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD TAB -->
+    <div class="tab-pane" id="pane-leader">
+      <p class="sec-label">Most Active Reporters</p>
+      <h2 class="sec-title">Weather Watcher <span>Leaderboard</span></h2>
+      <p style="font-size:0.88rem;color:var(--text-mid);line-height:1.8;margin-bottom:1.5rem">Recognizing our most dedicated community weather watchers. Rankings based on total reports submitted.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:2rem">
+        <div id="lb1" style="background:linear-gradient(135deg,rgba(240,176,32,0.15),rgba(240,176,32,0.05));border:1px solid rgba(240,176,32,0.4);border-radius:4px;padding:1.5rem;text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem">🥇</div>
+          <div id="lb1name" style="font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;color:var(--gold)">—</div>
+          <div id="lb1county" style="font-size:0.72rem;color:var(--text-mid);margin-top:0.2rem"></div>
+          <div id="lb1count" style="font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;color:var(--gold);margin-top:0.5rem">0</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid)">Reports</div>
+        </div>
+        <div id="lb2" style="background:rgba(255,255,255,0.04);border:1px solid rgba(200,212,232,0.3);border-radius:4px;padding:1.5rem;text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem">🥈</div>
+          <div id="lb2name" style="font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;color:#c8d4e8">—</div>
+          <div id="lb2county" style="font-size:0.72rem;color:var(--text-mid);margin-top:0.2rem"></div>
+          <div id="lb2count" style="font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;color:#c8d4e8;margin-top:0.5rem">0</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid)">Reports</div>
+        </div>
+        <div id="lb3" style="background:rgba(255,255,255,0.04);border:1px solid rgba(205,127,50,0.3);border-radius:4px;padding:1.5rem;text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem">🥉</div>
+          <div id="lb3name" style="font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;color:#cd7f32">—</div>
+          <div id="lb3county" style="font-size:0.72rem;color:var(--text-mid);margin-top:0.2rem"></div>
+          <div id="lb3count" style="font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;color:#cd7f32;margin-top:0.5rem">0</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid)">Reports</div>
+        </div>
+      </div>
+
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>County</th>
+            <th>Total Reports</th>
+            <th>Last Report</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody">
+          <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-mid);font-style:italic">No reports yet — be the first to submit!</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- APPLY TAB -->
+    <div class="tab-pane" id="pane-apply" id="apply">
+      <div class="apply-inner">
+        <div class="apply-info fade-up">
+          <p class="sec-label">Join the Network</p>
+          <h2 class="sec-title">Become a First Warn <span>Weather Watcher</span></h2>
+          <p style="font-size:0.95rem;color:var(--text-mid);line-height:1.85;margin-bottom:1.5rem">First Warn Weather Watchers are the backbone of community-based weather observation. As a trained and recognized member of the network, your reports directly support Dr. Nick's forecasting and help keep your community safe.</p>
+          <div class="apply-perks">
+            <div class="perk"><span class="perk-icon">🏅</span><span>Official First Warn Weather Watcher recognition</span></div>
+            <div class="perk"><span class="perk-icon">📱</span><span>Your reports appear on the live coverage map</span></div>
+            <div class="perk"><span class="perk-icon">🏆</span><span>Featured on the community leaderboard</span></div>
+            <div class="perk"><span class="perk-icon">📚</span><span>Weather spotter education resources from Dr. Nick</span></div>
+            <div class="perk"><span class="perk-icon">🌩️</span><span>Direct connection to the First Warn Weather team</span></div>
+            <div class="perk"><span class="perk-icon">🌍</span><span>Help protect your community through accurate reporting</span></div>
+          </div>
+          <div style="margin-top:2rem;background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:1.2rem 1.5rem">
+            <p style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem">Coverage Area Only</p>
+            <p style="font-size:0.82rem;color:var(--text-mid);line-height:1.6">Weather Watchers must be located in one of the 57 Missouri and Illinois counties covered by First Warn Weather. See the map above for the full coverage area.</p>
+          </div>
+        </div>
+        <div class="fade-up" style="transition-delay:0.2s">
+          <div class="apply-form-wrap">
+            <h3>Apply to Join the Network</h3>
+            <div class="success-msg" id="applySuccess">✓ Application received! Dr. Nick will review your application and be in touch within a few days.</div>
+            <div class="error-msg" id="applyError">Something went wrong. Please email Dr. Nick at nickpalischphd@gmail.com</div>
+            <div class="fg"><label>Full Name *</label><input type="text" id="aName" placeholder="First and last name"></div>
+            <div class="fg"><label>Email Address *</label><input type="email" id="aEmail" placeholder="your@email.com"></div>
+            <div class="fg"><label>Phone Number</label><input type="tel" id="aPhone" placeholder="(555) 555-5555"></div>
+            <div class="fg">
+              <label>Your County *</label>
+              <select id="aCounty">
+                <option value="">Select your county...</option>
+                <optgroup label="Missouri">
+                  <option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option>
+                  <option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option>
+                  <option>Crawford, MO</option><option>Dent, MO</option><option>Dunklin, MO</option>
+                  <option>Franklin, MO</option><option>Gasconade, MO</option><option>Iron, MO</option>
+                  <option>Jefferson, MO</option><option>Lincoln, MO</option><option>Madison, MO</option>
+                  <option>Maries, MO</option><option>Mississippi, MO</option><option>Montgomery, MO</option>
+                  <option>New Madrid, MO</option><option>Osage, MO</option><option>Perry, MO</option>
+                  <option>Phelps, MO</option><option>Pike, MO</option><option>Reynolds, MO</option>
+                  <option>Ripley, MO</option><option>St. Charles, MO</option><option>Ste. Genevieve, MO</option>
+                  <option>St. Francois, MO</option><option>St. Louis, MO</option><option>St. Louis City, MO</option>
+                  <option>Scott, MO</option><option>Stoddard, MO</option><option>Warren, MO</option>
+                  <option>Washington, MO</option><option>Wayne, MO</option>
+                </optgroup>
+                <optgroup label="Illinois">
+                  <option>Adams, IL</option><option>Alexander, IL</option><option>Bond, IL</option>
+                  <option>Calhoun, IL</option><option>Clinton, IL</option><option>Franklin, IL</option>
+                  <option>Greene, IL</option><option>Jackson, IL</option><option>Jefferson, IL</option>
+                  <option>Jersey, IL</option><option>Johnson, IL</option><option>Macoupin, IL</option>
+                  <option>Madison, IL</option><option>Monroe, IL</option><option>Montgomery, IL</option>
+                  <option>Perry, IL</option><option>Pike, IL</option><option>Randolph, IL</option>
+                  <option>St. Clair, IL</option><option>Union, IL</option><option>Washington, IL</option>
+                  <option>Williamson, IL</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="fg"><label>City / Town</label><input type="text" id="aCity" placeholder="e.g. Cape Girardeau"></div>
+            <div class="fg">
+              <label>Weather Experience</label>
+              <select id="aExp">
+                <option value="">Select...</option>
+                <option>No formal training — interested in learning</option>
+                <option>SKYWARN Spotter trained</option>
+                <option>Amateur meteorologist / weather enthusiast</option>
+                <option>Professional background in weather/emergency management</option>
+                <option>Other weather training</option>
+              </select>
+            </div>
+            <div class="fg"><label>Why do you want to be a First Warn Weather Watcher?</label><textarea id="aWhy" placeholder="Tell Dr. Nick a little about yourself and why you want to join the network..."></textarea></div>
+            <button class="btn-red" onclick="submitApplication()" style="width:100%;padding:1rem;font-size:0.88rem">Submit Application →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© <span id="yr"></span> First Warn Weather · Nicholas G. Palisch · <a href="index.html">← Back to First Warn Weather</a></p>
+</footer>
+
+<script>
+const FORMSPREE = 'https://formspree.io/f/mkoybrrg';
+const REPORTS_KEY = 'fwWatcherReports';
+const WATCHERS_KEY = 'fwWatchersList';
+
+// ── TAB SWITCHING ──
+function switchTab(name) {
+  ['report','leader','apply'].forEach(n => {
+    document.getElementById('pane-'+n).classList.remove('active');
+    document.getElementById('tab-'+n).classList.remove('active');
+  });
+  document.getElementById('pane-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if (name === 'leader') buildLeaderboard();
+}
+
+// ── CONDITION SELECTION ──
+let selectedCondition = '';
+function selectCondition(condition, el) {
+  selectedCondition = condition;
+  document.getElementById('rCondition').value = condition;
+  document.querySelectorAll('.condition-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ── GET/SET REPORTS ──
+function getReports() {
+  try {
+    const all = JSON.parse(localStorage.getItem(REPORTS_KEY)) || [];
+    const cutoff = Date.now() - (24 * 60 * 60 * 1000);
+    return all.filter(r => r.timestamp > cutoff);
+  } catch(e) { return []; }
+}
+
+function saveReport(report) {
+  try {
+    const all = JSON.parse(localStorage.getItem(REPORTS_KEY)) || [];
+    all.unshift(report);
+    // Keep last 200 reports
+    localStorage.setItem(REPORTS_KEY, JSON.stringify(all.slice(0, 200)));
+  } catch(e) {}
+}
+
+// ── SUBMIT REPORT ──
+async function submitReport() {
+  const name = document.getElementById('rName').value.trim();
+  const county = document.getElementById('rCounty').value;
+  const temp = document.getElementById('rTemp').value;
+  const condition = document.getElementById('rCondition').value;
+
+  if (!name) { alert('Please enter your first name.'); return; }
+  if (!county) { alert('Please select your county.'); return; }
+  if (!temp) { alert('Please enter the temperature.'); return; }
+  if (!condition) { alert('Please select current conditions.'); return; }
+
+  const report = {
+    id: Date.now(),
+    timestamp: Date.now(),
+    name, county, temp: parseInt(temp),
+    condition,
+    wind: document.getElementById('rWind').value || '',
+    notes: document.getElementById('rNotes').value.trim(),
+    time: new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})
+  };
+
+  // Save locally
+  saveReport(report);
+
+  // Send to Formspree
+  try {
+    await fetch(FORMSPREE, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+      body: JSON.stringify({
+        _subject: `Weather Report — ${county} — ${name}`,
+        Name: name, County: county,
+        Temperature: temp + '°F',
+        Conditions: condition,
+        Wind: report.wind ? report.wind + ' mph' : 'Not reported',
+        Notes: report.notes || 'None',
+        Time: report.time
+      })
+    });
+  } catch(e) {}
+
+  // Show success
+  document.getElementById('reportSuccess').style.display = 'block';
+  setTimeout(() => document.getElementById('reportSuccess').style.display = 'none', 6000);
+
+  // Clear form
+  document.getElementById('rName').value = '';
+  document.getElementById('rCounty').value = '';
+  document.getElementById('rTemp').value = '';
+  document.getElementById('rWind').value = '';
+  document.getElementById('rNotes').value = '';
+  document.getElementById('rCondition').value = '';
+  selectedCondition = '';
+  document.querySelectorAll('.condition-btn').forEach(b => b.classList.remove('selected'));
+
+  // Refresh displays
+  renderLiveReports();
+  updateMapMarkers();
+  updateHeroStats();
+}
+
+// ── RENDER LIVE REPORTS ──
+function renderLiveReports() {
+  const reports = getReports();
+  const list = document.getElementById('liveReportsList');
+
+  if (reports.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-mid);font-style:italic;font-size:0.85rem">No reports yet today. Be the first to submit!</div>';
+    return;
+  }
+
+  list.innerHTML = reports.slice(0, 8).map(r => {
+    const ago = getTimeAgo(r.timestamp);
+    return `<div class="report-item">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div class="report-item-name">${esc(r.name)} — ${esc(r.county)}</div>
+        <div style="font-size:1.2rem">${r.condition.split(' ')[0]}</div>
+      </div>
+      <div class="report-item-detail">🌡️ ${r.temp}°F${r.wind?' · 💨 '+r.wind+' mph':''} · ${esc(r.condition)}</div>
+      ${r.notes ? `<div class="report-item-detail" style="margin-top:0.2rem;font-style:italic">"${esc(r.notes)}"</div>` : ''}
+      <div class="report-item-time">${ago}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── UPDATE MAP MARKERS ──
+function updateMapMarkers() {
+  const reports = getReports();
+  const markers = document.getElementById('reportMarkers');
+  if (!markers) return;
+
+  // County center positions on our SVG map (approximate)
+  const countyPositions = {
+    'Bollinger, MO': [382, 528], 'Boone, MO': [290, 192], 'Butler, MO': [377, 528],
+    'Cape Girardeau, MO': [522, 457], 'Carter, MO': [205, 528], 'Cole, MO': [352, 308],
+    'Crawford, MO': [300, 363], 'Dent, MO': [205, 418], 'Dunklin, MO': [452, 575],
+    'Franklin, MO': [435, 308], 'Gasconade, MO': [325, 308], 'Iron, MO': [287, 418],
+    'Jefferson, MO': [482, 353], 'Lincoln, MO': [522, 200], 'Madison, MO': [352, 418],
+    'Maries, MO': [305, 253], 'Mississippi, MO': [522, 510], 'Montgomery, MO': [380, 200],
+    'New Madrid, MO': [522, 558], 'Osage, MO': [380, 253], 'Perry, MO': [522, 405],
+    'Phelps, MO': [242, 363], 'Pike, MO': [522, 148], 'Reynolds, MO': [205, 473],
+    'Ripley, MO': [295, 528], 'St. Charles, MO': [522, 250], 'Ste. Genevieve, MO': [482, 405],
+    'St. Francois, MO': [417, 405], 'St. Louis, MO': [522, 300], 'St. Louis City, MO': [530, 295],
+    'Scott, MO': [452, 528], 'Stoddard, MO': [452, 473], 'Warren, MO': [455, 200],
+    'Washington, MO': [400, 363], 'Wayne, MO': [377, 473],
+    'Adams, IL': [702, 90], 'Alexander, IL': [647, 563], 'Bond, IL': [588, 200],
+    'Calhoun, IL': [570, 175], 'Clinton, IL': [647, 250], 'Franklin, IL': [647, 353],
+    'Greene, IL': [702, 148], 'Jackson, IL': [588, 513], 'Jefferson, IL': [647, 405],
+    'Jersey, IL': [575, 190], 'Johnson, IL': [647, 513], 'Macoupin, IL': [588, 148],
+    'Madison, IL': [588, 250], 'Monroe, IL': [588, 353], 'Montgomery, IL': [647, 148],
+    'Perry, IL': [588, 458], 'Pike, IL': [647, 90], 'Randolph, IL': [588, 405],
+    'St. Clair, IL': [588, 300], 'Union, IL': [588, 563], 'Washington, IL': [647, 300],
+    'Williamson, IL': [647, 458]
+  };
+
+  markers.innerHTML = '';
+
+  // Group by county - show latest per county
+  const byCounty = {};
+  reports.forEach(r => {
+    const key = r.county;
+    if (!byCounty[key] || r.timestamp > byCounty[key].timestamp) byCounty[key] = r;
+  });
+
+  Object.values(byCounty).forEach(r => {
+    const pos = countyPositions[r.county];
+    if (!pos) return;
+    const [x, y] = pos;
+    const condIcon = r.condition.split(' ')[0];
+    const isHot = r.temp >= 90;
+    const isCold = r.temp <= 32;
+    const color = isHot ? '#ff6b35' : isCold ? '#7ab4ff' : '#5ee080';
+
+    markers.innerHTML += `
+      <g class="map-marker" style="cursor:pointer">
+        <circle cx="${x}" cy="${y}" r="14" fill="rgba(8,12,24,0.85)" stroke="${color}" stroke-width="1.5"/>
+        <text x="${x}" y="${y-2}" font-size="10" text-anchor="middle" dominant-baseline="middle">${condIcon}</text>
+        <text x="${x}" y="${y+7}" font-size="7" font-family="Barlow Condensed" font-weight="700" fill="${color}" text-anchor="middle">${r.temp}°</text>
+        <text x="${x}" y="${y+24}" font-size="7" font-family="Barlow Condensed" font-weight="700" fill="rgba(255,255,255,0.7)" text-anchor="middle">${r.name}</text>
+      </g>
+    `;
+  });
+}
+
+// ── LEADERBOARD ──
+function buildLeaderboard() {
+  const reports = getReports();
+
+  // Count by name+county
+  const counts = {};
+  reports.forEach(r => {
+    const key = r.name + '|' + r.county;
+    if (!counts[key]) counts[key] = {name: r.name, county: r.county, count: 0, last: r.time};
+    counts[key].count++;
+    counts[key].last = r.time;
+  });
+
+  const sorted = Object.values(counts).sort((a, b) => b.count - a.count);
+
+  // Top 3 podium
+  ['lb1','lb2','lb3'].forEach((id, i) => {
+    const w = sorted[i];
+    if (w) {
+      document.getElementById(id+'name').textContent = w.name;
+      document.getElementById(id+'county').textContent = w.county;
+      document.getElementById(id+'count').textContent = w.count;
+    }
+  });
+
+  // Full table
+  const tbody = document.getElementById('leaderboardBody');
+  if (sorted.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-mid);font-style:italic">No reports yet — be the first to submit!</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = sorted.map((w, i) => {
+    const rank = i + 1;
+    const badge = rank === 1 ? '<span class="lb-badge elite">⭐ Elite</span>' : w.count >= 10 ? '<span class="lb-badge active">Active</span>' : '<span class="lb-badge new">New</span>';
+    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+    return `<tr>
+      <td><span class="lb-rank ${rankClass}">${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank}</span></td>
+      <td><div class="lb-name">${esc(w.name)}</div></td>
+      <td><div class="lb-county">${esc(w.county)}</div></td>
+      <td><span class="lb-count">${w.count}</span></td>
+      <td style="font-size:0.78rem;color:var(--text-mid)">${w.last}</td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── UPDATE HERO STATS ──
+function updateHeroStats() {
+  const reports = getReports();
+  document.getElementById('statReports').textContent = reports.length;
+  const unique = new Set(reports.map(r => r.name + r.county));
+  document.getElementById('statWatchers').textContent = unique.size;
+}
+
+// ── SUBMIT APPLICATION ──
+async function submitApplication() {
+  const name = document.getElementById('aName').value.trim();
+  const email = document.getElementById('aEmail').value.trim();
+  const county = document.getElementById('aCounty').value;
+  if (!name || !email || !county) { alert('Please fill in your name, email, and county.'); return; }
+
+  try {
+    const res = await fetch(FORMSPREE, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+      body: JSON.stringify({
+        _subject: `Weather Watcher Application — ${county} — ${name}`,
+        Type: 'WEATHER WATCHER APPLICATION',
+        Name: name, Email: email,
+        Phone: document.getElementById('aPhone').value || 'Not provided',
+        County: county,
+        City: document.getElementById('aCity').value || 'Not provided',
+        Experience: document.getElementById('aExp').value || 'Not provided',
+        Why: document.getElementById('aWhy').value || 'Not provided'
+      })
+    });
+
+    if (res.ok) {
+      document.getElementById('applySuccess').style.display = 'block';
+      ['aName','aEmail','aPhone','aCity','aWhy'].forEach(id => document.getElementById(id).value = '');
+      ['aCounty','aExp'].forEach(id => document.getElementById(id).value = '');
+      setTimeout(() => document.getElementById('applySuccess').style.display = 'none', 8000);
+    } else throw new Error();
+  } catch(e) {
+    document.getElementById('applyError').style.display = 'block';
+    setTimeout(() => document.getElementById('applyError').style.display = 'none', 6000);
+  }
+}
+
+// ── UTILS ──
+function getTimeAgo(timestamp) {
+  const mins = Math.floor((Date.now() - timestamp) / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  return `${hrs} hr${hrs > 1 ? 's' : ''} ago`;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function observeFadeUps() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, {threshold:0.08});
+  document.querySelectorAll('.fade-up:not(.visible)').forEach(el => obs.observe(el));
+}
+
+// ── INIT ──
+document.getElementById('yr').textContent = new Date().getFullYear();
+renderLiveReports();
+updateMapMarkers();
+updateHeroStats();
+buildLeaderboard();
+observeFadeUps();
+window.addEventListener('scroll', observeFadeUps, {passive:true});
+
+// Refresh every 2 minutes
+setInterval(() => {
+  renderLiveReports();
+  updateMapMarkers();
+  updateHeroStats();
+}, 120000);
+</script>
+</body>
+</html>
