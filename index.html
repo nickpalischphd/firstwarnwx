@@ -799,17 +799,21 @@ async function loadNWSAlerts(){
       fetch('https://api.weather.gov/alerts/active?area=IL')
     ]);
     const [moData,ilData]=await Promise.all([moRes.json(),ilRes.json()]);
-    const allAlerts=[...(moData.features||[]),...(ilData.features||[])];
 
-    const ourCounties=['Bollinger','Boone','Butler','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','St. Charles','Ste. Genevieve','St. Francois','St. Louis','Scott','Stoddard','Warren','Washington','Wayne','Adams','Alexander','Bond','Calhoun','Clinton','Greene','Jackson','Jersey','Johnson','Macoupin','Monroe','Randolph','St. Clair','Union','Williamson'];
+    const MO=['Bollinger','Boone','Butler','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','St. Charles','Ste. Genevieve','St. Francois','St. Louis','St. Louis City','Scott','Stoddard','Warren','Washington','Wayne'];
+    const IL=['Adams','Alexander','Bond','Calhoun','Clinton','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Monroe','Montgomery','Perry','Pike','Randolph','St. Clair','Union','Washington','Williamson'];
 
-    const coverageAlerts=allAlerts.filter(alert=>{
-      const areaDesc=alert.properties?.areaDesc||'';
-      return ourCounties.some(c=>areaDesc.includes(c));
-    });
+    // Tag each alert with its state and filter to only our counties
+    const moAlerts=(moData.features||[])
+      .filter(a=>MO.some(c=>(a.properties?.areaDesc||'').includes(c+', MO')||(a.properties?.areaDesc||'').includes(c+' County, MO')))
+      .map(a=>({...a,_state:'MO',_list:MO}));
+
+    const ilAlerts=(ilData.features||[])
+      .filter(a=>IL.some(c=>(a.properties?.areaDesc||'').includes(c+', IL')||(a.properties?.areaDesc||'').includes(c+' County, IL')))
+      .map(a=>({...a,_state:'IL',_list:IL}));
 
     const seen=new Set();
-    const unique=coverageAlerts.filter(a=>{
+    const unique=[...moAlerts,...ilAlerts].filter(a=>{
       if(seen.has(a.id))return false;
       seen.add(a.id);return true;
     });
@@ -819,26 +823,33 @@ async function loadNWSAlerts(){
       document.getElementById('nwsAlertsFeed').classList.add('show');
       document.getElementById('nwsAlertsFeed').style.marginTop='0';
 
-      // Build summary of alert types for the red banner
       const alertTypes=[...new Set(unique.map(a=>a.properties?.event||'Alert'))];
-      const summaryText=`${unique.length} Active: ${alertTypes.slice(0,3).join(' · ')}${alertTypes.length>3?' · +more':''}`;
-      document.getElementById('alertSummary').textContent=summaryText;
+      document.getElementById('alertSummary').textContent=`${unique.length} Active: ${alertTypes.slice(0,3).join(' · ')}${alertTypes.length>3?' +more':''}`;
 
-      document.getElementById('alertsList').innerHTML=unique.slice(0,8).map(a=>{
+      document.getElementById('alertsList').innerHTML=unique.slice(0,10).map(a=>{
         const p=a.properties;
         const event=p.event||'Alert';
-        const area=(p.areaDesc||'').split(';').slice(0,4).join(' · ');
+        const state=a._state;
+        const list=a._list;
         const expires=p.expires?new Date(p.expires).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
         const type=event.toLowerCase().includes('warning')?'warning':event.toLowerCase().includes('watch')?'watch':'advisory';
         const icon=event.toLowerCase().includes('tornado')?'🌪️':event.toLowerCase().includes('thunder')||event.toLowerCase().includes('severe')?'⚡':event.toLowerCase().includes('flood')?'🌊':event.toLowerCase().includes('wind')?'🌬️':event.toLowerCase().includes('winter')||event.toLowerCase().includes('snow')||event.toLowerCase().includes('ice')?'❄️':event.toLowerCase().includes('heat')?'🔥':event.toLowerCase().includes('fog')?'🌫️':'⚠️';
+        // Show only matching counties from our list
+        const rawArea=p.areaDesc||'';
+        const matched=list.filter(c=>rawArea.includes(c+', '+state)||rawArea.includes(c+' County, '+state));
+        const areaDisplay=matched.length>0
+          ? matched.slice(0,6).join(', ')+(matched.length>6?` +${matched.length-6} more`:'')+` — ${state==='MO'?'Missouri':'Illinois'}`
+          : state==='MO'?'Missouri':'Illinois';
+        const stateBadge=`<span style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:${state==='MO'?'rgba(30,74,114,0.5)':'rgba(45,138,78,0.4)'};color:#fff;padding:0.15rem 0.5rem;border-radius:2px;margin-left:0.5rem">${state}</span>`;
         return `<div class="alert-item ${type}">
-          <div class="alert-headline">${icon} ${event}</div>
-          <div class="alert-area">${area}</div>
+          <div class="alert-headline">${icon} ${event}${stateBadge}</div>
+          <div class="alert-area">${areaDisplay}</div>
           ${expires?`<div class="alert-expires">Expires: ${expires}</div>`:''}
         </div>`;
       }).join('');
     } else {
-      document.getElementById('alertSummary').textContent='No active warnings or watches for your area';
+      document.getElementById('alertsBanner').classList.remove('show');
+      document.getElementById('nwsAlertsFeed').classList.remove('show');
     }
   }catch(e){console.log('NWS alerts unavailable',e);}
 }
