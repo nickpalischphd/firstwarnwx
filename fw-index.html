@@ -420,33 +420,7 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
   <div class="container">
     <div class="window-inner">
       <div class="window-illustration fade-up">
-        <!-- Window frame illustration -->
-        <div style="background:linear-gradient(180deg,#0d1520,#1a2a3a);border-radius:8px;overflow:hidden;border:4px solid #2a3a4a;box-shadow:0 20px 60px rgba(0,0,0,0.6)">
-          <!-- Window view - animated sky -->
-          <div style="position:relative;height:200px;overflow:hidden;background:linear-gradient(180deg,#1a3a5a 0%,#0d2030 50%,#0a1a0a 100%)">
-            <!-- Window cross frame -->
-            <div style="position:absolute;top:0;bottom:0;left:50%;width:4px;background:#2a3a4a;z-index:2"></div>
-            <div style="position:absolute;left:0;right:0;top:50%;height:4px;background:#2a3a4a;z-index:2"></div>
-            <!-- Animated clouds -->
-            <div id="windowClouds" style="position:absolute;top:20px;left:0;right:0;overflow:hidden">
-              <div style="position:absolute;top:10px;background:rgba(200,220,255,0.12);border-radius:20px;height:14px;width:50px;animation:cloudmove 10s linear infinite"></div>
-              <div style="position:absolute;top:30px;background:rgba(200,220,255,0.08);border-radius:20px;height:10px;width:35px;animation:cloudmove 14s linear infinite;animation-delay:-5s"></div>
-              <div style="position:absolute;top:15px;background:rgba(200,220,255,0.1);border-radius:20px;height:12px;width:45px;animation:cloudmove 12s linear infinite;animation-delay:-8s"></div>
-            </div>
-            <!-- Weather icon in window -->
-            <div style="position:absolute;bottom:15px;right:15px;font-size:2.5rem;z-index:3" id="windowWeatherIcon">⛅</div>
-            <!-- Lightning flash -->
-            <div class="window-lightning" style="position:absolute;top:20px;left:20px;font-size:1.8rem;z-index:3">⚡</div>
-          </div>
-          <!-- Window sill -->
-          <div style="background:linear-gradient(180deg,#2a3a2a,#1a2a1a);height:16px"></div>
-          <!-- Dr. Nick photo -->
-          <div style="background:var(--dark-blue);padding:1.2rem;text-align:center">
-            <img src="dr-nick.jpg" alt="Dr. Nick" style="width:110px;height:130px;object-fit:cover;object-position:top;border-radius:50% 50% 4px 4px;border:3px solid #2a3a4a;display:block;margin:0 auto">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid);margin-top:0.6rem">Dr. Nick · First Warn Weather</div>
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-top:0.2rem">NWS WRN Ambassador</div>
-          </div>
-        </div>
+        <img src="wx-window.png" alt="Weather From Dr. Nick's Window" style="width:100%;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.6);display:block">
       </div>
       <div class="window-content fade-up" style="transition-delay:0.15s">
         <p class="sec-label">Weather Blog</p>
@@ -795,17 +769,21 @@ async function loadNWSAlerts(){
       fetch('https://api.weather.gov/alerts/active?area=IL')
     ]);
     const [moData,ilData]=await Promise.all([moRes.json(),ilRes.json()]);
-    const allAlerts=[...(moData.features||[]),...(ilData.features||[])];
 
-    const ourCounties=['Bollinger','Boone','Butler','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','St. Charles','Ste. Genevieve','St. Francois','St. Louis','Scott','Stoddard','Warren','Washington','Wayne','Adams','Alexander','Bond','Calhoun','Clinton','Greene','Jackson','Jersey','Johnson','Macoupin','Monroe','Randolph','St. Clair','Union','Williamson'];
+    const MO=['Bollinger','Boone','Butler','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','St. Charles','Ste. Genevieve','St. Francois','St. Louis','St. Louis City','Scott','Stoddard','Warren','Washington','Wayne'];
+    const IL=['Adams','Alexander','Bond','Calhoun','Clinton','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Monroe','Montgomery','Perry','Pike','Randolph','St. Clair','Union','Washington','Williamson'];
 
-    const coverageAlerts=allAlerts.filter(alert=>{
-      const areaDesc=alert.properties?.areaDesc||'';
-      return ourCounties.some(c=>areaDesc.includes(c));
-    });
+    // Tag each alert with its state and filter to only our counties
+    const moAlerts=(moData.features||[])
+      .filter(a=>MO.some(c=>(a.properties?.areaDesc||'').includes(c+', MO')||(a.properties?.areaDesc||'').includes(c+' County, MO')))
+      .map(a=>({...a,_state:'MO',_list:MO}));
+
+    const ilAlerts=(ilData.features||[])
+      .filter(a=>IL.some(c=>(a.properties?.areaDesc||'').includes(c+', IL')||(a.properties?.areaDesc||'').includes(c+' County, IL')))
+      .map(a=>({...a,_state:'IL',_list:IL}));
 
     const seen=new Set();
-    const unique=coverageAlerts.filter(a=>{
+    const unique=[...moAlerts,...ilAlerts].filter(a=>{
       if(seen.has(a.id))return false;
       seen.add(a.id);return true;
     });
@@ -815,26 +793,33 @@ async function loadNWSAlerts(){
       document.getElementById('nwsAlertsFeed').classList.add('show');
       document.getElementById('nwsAlertsFeed').style.marginTop='0';
 
-      // Build summary of alert types for the red banner
       const alertTypes=[...new Set(unique.map(a=>a.properties?.event||'Alert'))];
-      const summaryText=`${unique.length} Active: ${alertTypes.slice(0,3).join(' · ')}${alertTypes.length>3?' · +more':''}`;
-      document.getElementById('alertSummary').textContent=summaryText;
+      document.getElementById('alertSummary').textContent=`${unique.length} Active: ${alertTypes.slice(0,3).join(' · ')}${alertTypes.length>3?' +more':''}`;
 
-      document.getElementById('alertsList').innerHTML=unique.slice(0,8).map(a=>{
+      document.getElementById('alertsList').innerHTML=unique.slice(0,10).map(a=>{
         const p=a.properties;
         const event=p.event||'Alert';
-        const area=(p.areaDesc||'').split(';').slice(0,4).join(' · ');
+        const state=a._state;
+        const list=a._list;
         const expires=p.expires?new Date(p.expires).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
         const type=event.toLowerCase().includes('warning')?'warning':event.toLowerCase().includes('watch')?'watch':'advisory';
         const icon=event.toLowerCase().includes('tornado')?'🌪️':event.toLowerCase().includes('thunder')||event.toLowerCase().includes('severe')?'⚡':event.toLowerCase().includes('flood')?'🌊':event.toLowerCase().includes('wind')?'🌬️':event.toLowerCase().includes('winter')||event.toLowerCase().includes('snow')||event.toLowerCase().includes('ice')?'❄️':event.toLowerCase().includes('heat')?'🔥':event.toLowerCase().includes('fog')?'🌫️':'⚠️';
+        // Show only matching counties from our list
+        const rawArea=p.areaDesc||'';
+        const matched=list.filter(c=>rawArea.includes(c+', '+state)||rawArea.includes(c+' County, '+state));
+        const areaDisplay=matched.length>0
+          ? matched.slice(0,6).join(', ')+(matched.length>6?` +${matched.length-6} more`:'')+` — ${state==='MO'?'Missouri':'Illinois'}`
+          : state==='MO'?'Missouri':'Illinois';
+        const stateBadge=`<span style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:${state==='MO'?'rgba(30,74,114,0.5)':'rgba(45,138,78,0.4)'};color:#fff;padding:0.15rem 0.5rem;border-radius:2px;margin-left:0.5rem">${state}</span>`;
         return `<div class="alert-item ${type}">
-          <div class="alert-headline">${icon} ${event}</div>
-          <div class="alert-area">${area}</div>
+          <div class="alert-headline">${icon} ${event}${stateBadge}</div>
+          <div class="alert-area">${areaDisplay}</div>
           ${expires?`<div class="alert-expires">Expires: ${expires}</div>`:''}
         </div>`;
       }).join('');
     } else {
-      document.getElementById('alertSummary').textContent='No active warnings or watches for your area';
+      document.getElementById('alertsBanner').classList.remove('show');
+      document.getElementById('nwsAlertsFeed').classList.remove('show');
     }
   }catch(e){console.log('NWS alerts unavailable',e);}
 }
@@ -884,40 +869,16 @@ function updateWindowWeather(narrative){
   if(!narrative)return;
   const n=narrative.toLowerCase();
   const icon=document.getElementById('windowWeatherIcon');
-  const lightning=document.querySelector('.window-lightning');
-  const clouds=document.getElementById('windowClouds');
-
-  if(n.includes('tornado')){
-    if(icon)icon.textContent='🌪️';
-    if(lightning)lightning.style.display='block';
-    if(clouds)clouds.style.opacity='0.3';
-  } else if(n.includes('storm')||n.includes('thunder')||n.includes('severe')){
-    if(icon)icon.textContent='⛈️';
-    if(lightning)lightning.style.display='block';
-    if(clouds)clouds.style.opacity='0.5';
-  } else if(n.includes('rain')||n.includes('shower')){
-    if(icon)icon.textContent='🌧️';
-    if(lightning)lightning.style.display='none';
-  } else if(n.includes('snow')||n.includes('winter')||n.includes('ice')||n.includes('sleet')){
-    if(icon)icon.textContent='❄️';
-    if(lightning)lightning.style.display='none';
-  } else if(n.includes('sun')||n.includes('clear')||n.includes('sunny')){
-    if(icon)icon.textContent='☀️';
-    if(lightning)lightning.style.display='none';
-    if(clouds)clouds.style.opacity='0.2';
-  } else if(n.includes('cloud')||n.includes('overcast')){
-    if(icon)icon.textContent='☁️';
-    if(lightning)lightning.style.display='none';
-  } else if(n.includes('wind')){
-    if(icon)icon.textContent='🌬️';
-    if(lightning)lightning.style.display='none';
-  } else if(n.includes('fog')||n.includes('mist')){
-    if(icon)icon.textContent='🌫️';
-    if(lightning)lightning.style.display='none';
-  } else {
-    if(icon)icon.textContent='⛅';
-    if(lightning)lightning.style.display='none';
-  }
+  const desc=document.getElementById('windowWeatherDesc');
+  if(n.includes('tornado')){if(icon)icon.textContent='🌪️';if(desc)desc.textContent='Tornado Threat';}
+  else if(n.includes('storm')||n.includes('thunder')||n.includes('severe')){if(icon)icon.textContent='⛈️';if(desc)desc.textContent='Storms Possible';}
+  else if(n.includes('rain')||n.includes('shower')){if(icon)icon.textContent='🌧️';if(desc)desc.textContent='Rain Expected';}
+  else if(n.includes('snow')||n.includes('winter')||n.includes('ice')||n.includes('sleet')){if(icon)icon.textContent='❄️';if(desc)desc.textContent='Winter Weather';}
+  else if(n.includes('sun')||n.includes('clear')||n.includes('sunny')){if(icon)icon.textContent='☀️';if(desc)desc.textContent='Sunny & Clear';}
+  else if(n.includes('cloud')||n.includes('overcast')){if(icon)icon.textContent='☁️';if(desc)desc.textContent='Cloudy Skies';}
+  else if(n.includes('wind')){if(icon)icon.textContent='🌬️';if(desc)desc.textContent='Windy Conditions';}
+  else if(n.includes('fog')||n.includes('mist')){if(icon)icon.textContent='🌫️';if(desc)desc.textContent='Foggy Conditions';}
+  else{if(icon)icon.textContent='⛅';if(desc)desc.textContent='Partly Cloudy';}
 }
 
 // ── CONTACT FORM ──
@@ -988,6 +949,17 @@ function openWindowPost(id){
 }
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── LIVE CLOCK ──
+function updateClock(){
+  const el=document.getElementById('windowTime');
+  if(el){
+    const now=new Date();
+    el.textContent=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})+' CT';
+  }
+}
+setInterval(updateClock,1000);
+updateClock();
 
 // ── INIT ──
 document.getElementById('yr').textContent=new Date().getFullYear();
