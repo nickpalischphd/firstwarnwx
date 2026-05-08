@@ -484,9 +484,22 @@ footer a{color:var(--gold);text-decoration:none}
 </footer>
 
 <script>
+// ── TOKEN SETUP ──
+// Visit weather-watchers.html?setup=YOUR_GITHUB_TOKEN once to configure
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const setup = params.get('setup');
+  if (setup) {
+    localStorage.setItem('fwWatcherToken', setup);
+    // Clean the URL so token isn't visible
+    window.history.replaceState({}, '', '/weather-watchers.html');
+    console.log('✅ Token configured!');
+  }
+})();
+
 const FORMSPREE = 'https://formspree.io/f/mkoybrrg';
 const REPORTS_KEY = 'fwWatcherReports';
-const WATCHERS_KEY = 'fwWatchersList';
+const GH_TOKEN_KEY = 'fwGH2026';
 
 // ── TAB SWITCHING ──
 function switchTab(name) {
@@ -508,22 +521,30 @@ function selectCondition(condition, el) {
   el.classList.add('selected');
 }
 
-// ── GET/SET REPORTS ──
-function getReports() {
+// ── GET REPORTS FROM GITHUB ──
+let _reportsCache = [];
+let _reportsCacheTime = 0;
+
+async function getReports() {
   try {
-    const all = JSON.parse(localStorage.getItem(REPORTS_KEY)) || [];
-    const cutoff = Date.now() - (4 * 60 * 60 * 1000); // 4 hours
-    return all.filter(r => r.approved && r.timestamp > cutoff);
-  } catch(e) { return []; }
+    // Cache for 60 seconds to avoid hammering GitHub
+    if (Date.now() - _reportsCacheTime < 60000 && _reportsCache.length > 0) {
+      return _reportsCache;
+    }
+    const res = await fetch('/reports.json?v=' + Date.now());
+    if (!res.ok) return _reportsCache;
+    const all = await res.json();
+    const cutoff = Date.now() - (4 * 60 * 60 * 1000);
+    _reportsCache = all.filter(r => r.approved && r.timestamp > cutoff);
+    _reportsCacheTime = Date.now();
+    return _reportsCache;
+  } catch(e) {
+    return _reportsCache;
+  }
 }
 
 function saveReport(report) {
-  try {
-    // Save to PENDING queue for manager approval
-    const pending = JSON.parse(localStorage.getItem('fwWatcherPending')) || [];
-    pending.unshift(report);
-    localStorage.setItem('fwWatcherPending', JSON.stringify(pending.slice(0, 100)));
-  } catch(e) {}
+  // Reports now go via email approval flow - no local storage needed
 }
 
 // ── SUBMIT REPORT ──
@@ -548,10 +569,13 @@ async function submitReport() {
     originalTime: reportTime
   };
 
-  // Build one-click approve and deny links
-  // Use encodeURIComponent to handle emojis and special characters
+  // Get GitHub token from watcher-specific storage
+  // Set this once by visiting: weather-watchers.html?setup=YOUR_TOKEN
+  const tok = localStorage.getItem('fwWatcherToken') || '';
+
+  // Build one-click approve link with token
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(report))));
-  const approveLink = `https://firstwarnwx.com/approve-report.html?data=${encodeURIComponent(encoded)}`;
+  const approveLink = `https://firstwarnwx.com/approve-report.html?data=${encodeURIComponent(encoded)}${tok ? '&tok=' + encodeURIComponent(tok) : ''}`;
   const denyLink = `https://firstwarnwx.com/approve-report.html?deny=1`;
 
   // Send via EmailJS with clickable approve button
@@ -595,8 +619,8 @@ async function submitReport() {
 }
 
 // ── RENDER LIVE REPORTS ──
-function renderLiveReports() {
-  const reports = getReports();
+async function renderLiveReports() {
+  const reports = await getReports();
   const list = document.getElementById('liveReportsList');
 
   if (reports.length === 0) {
@@ -619,69 +643,12 @@ function renderLiveReports() {
 }
 
 // ── UPDATE MAP MARKERS ──
-function updateMapMarkers() {
-  const reports = getReports();
-  const markers = document.getElementById('reportMarkers');
-  if (!markers) return;
-
-  // County center positions on our SVG map (approximate)
-  const countyPositions = {
-    'Bollinger, MO': [382, 528], 'Boone, MO': [290, 192], 'Butler, MO': [377, 528],
-    'Cape Girardeau, MO': [522, 457], 'Carter, MO': [205, 528], 'Cole, MO': [352, 308],
-    'Crawford, MO': [300, 363], 'Dent, MO': [205, 418], 'Dunklin, MO': [452, 575],
-    'Franklin, MO': [435, 308], 'Gasconade, MO': [325, 308], 'Iron, MO': [287, 418],
-    'Jefferson, MO': [482, 353], 'Lincoln, MO': [522, 200], 'Madison, MO': [352, 418],
-    'Maries, MO': [305, 253], 'Mississippi, MO': [522, 510], 'Montgomery, MO': [380, 200],
-    'New Madrid, MO': [522, 558], 'Osage, MO': [380, 253], 'Perry, MO': [522, 405],
-    'Phelps, MO': [242, 363], 'Pike, MO': [522, 148], 'Reynolds, MO': [205, 473],
-    'Ripley, MO': [295, 528], 'St. Charles, MO': [522, 250], 'Ste. Genevieve, MO': [482, 405],
-    'St. Francois, MO': [417, 405], 'St. Louis, MO': [522, 300], 'St. Louis City, MO': [530, 295],
-    'Scott, MO': [452, 528], 'Stoddard, MO': [452, 473], 'Warren, MO': [455, 200],
-    'Washington, MO': [400, 363], 'Wayne, MO': [377, 473],
-    'Adams, IL': [702, 90], 'Alexander, IL': [647, 563], 'Bond, IL': [588, 200],
-    'Calhoun, IL': [570, 175], 'Clinton, IL': [647, 250], 'Franklin, IL': [647, 353],
-    'Greene, IL': [702, 148], 'Jackson, IL': [588, 513], 'Jefferson, IL': [647, 405],
-    'Jersey, IL': [575, 190], 'Johnson, IL': [647, 513], 'Macoupin, IL': [588, 148],
-    'Madison, IL': [588, 250], 'Monroe, IL': [588, 353], 'Montgomery, IL': [647, 148],
-    'Perry, IL': [588, 458], 'Pike, IL': [647, 90], 'Randolph, IL': [588, 405],
-    'St. Clair, IL': [588, 300], 'Union, IL': [588, 563], 'Washington, IL': [647, 300],
-    'Williamson, IL': [647, 458]
-  };
-
-  markers.innerHTML = '';
-
-  // Group by county - show latest per county
-  const byCounty = {};
-  reports.forEach(r => {
-    const key = r.county;
-    if (!byCounty[key] || r.timestamp > byCounty[key].timestamp) byCounty[key] = r;
-  });
-
-  Object.values(byCounty).forEach(r => {
-    const pos = countyPositions[r.county];
-    if (!pos) return;
-    const [x, y] = pos;
-    const condIcon = r.condition.split(' ')[0];
-    const isHot = r.temp >= 90;
-    const isCold = r.temp <= 32;
-    const color = isHot ? '#ff6b35' : isCold ? '#7ab4ff' : '#5ee080';
-
-    markers.innerHTML += `
-      <g class="map-marker" style="cursor:pointer">
-        <circle cx="${x}" cy="${y}" r="14" fill="rgba(8,12,24,0.85)" stroke="${color}" stroke-width="1.5"/>
-        <text x="${x}" y="${y-2}" font-size="10" text-anchor="middle" dominant-baseline="middle">${condIcon}</text>
-        <text x="${x}" y="${y+7}" font-size="7" font-family="Barlow Condensed" font-weight="700" fill="${color}" text-anchor="middle">${r.temp}°</text>
-        <text x="${x}" y="${y+24}" font-size="7" font-family="Barlow Condensed" font-weight="700" fill="rgba(255,255,255,0.7)" text-anchor="middle">${r.name}</text>
-      </g>
-    `;
-  });
-}
+async function updateMapMarkers() { await addReportMarkers(); }
 
 // ── LEADERBOARD ──
-function buildLeaderboard() {
-  const reports = getReports();
+async function buildLeaderboard() {
+  const reports = await getReports();
 
-  // Count by name+county
   const counts = {};
   reports.forEach(r => {
     const key = r.name + '|' + r.county;
@@ -692,7 +659,6 @@ function buildLeaderboard() {
 
   const sorted = Object.values(counts).sort((a, b) => b.count - a.count);
 
-  // Top 3 podium
   ['lb1','lb2','lb3'].forEach((id, i) => {
     const w = sorted[i];
     if (w) {
@@ -702,13 +668,11 @@ function buildLeaderboard() {
     }
   });
 
-  // Full table
   const tbody = document.getElementById('leaderboardBody');
   if (sorted.length === 0) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-mid);font-style:italic">No reports yet — be the first to submit!</td></tr>';
     return;
   }
-
   tbody.innerHTML = sorted.map((w, i) => {
     const rank = i + 1;
     const badge = rank === 1 ? '<span class="lb-badge elite">⭐ Elite</span>' : w.count >= 10 ? '<span class="lb-badge active">Active</span>' : '<span class="lb-badge new">New</span>';
@@ -725,8 +689,8 @@ function buildLeaderboard() {
 }
 
 // ── UPDATE HERO STATS ──
-function updateHeroStats() {
-  const reports = getReports();
+async function updateHeroStats() {
+  const reports = await getReports();
   document.getElementById('statReports').textContent = reports.length;
   const unique = new Set(reports.map(r => r.name + r.county));
   document.getElementById('statWatchers').textContent = unique.size;
@@ -841,8 +805,9 @@ async function loadCountyBoundaries() {
     L.geoJSON({type:'FeatureCollection', features: moFeatures}, {
       style: {fillColor:'#1e3aab', fillOpacity:0.5, color:'rgba(100,160,255,0.8)', weight:1.5},
       onEachFeature: (f, layer) => {
+        const name = f.properties.DISPLAY_NAME || f.properties.NAME || '';
         layer.bindTooltip(
-          `<strong>${f.properties.NAME} County</strong><br><span style="font-size:0.75rem">MO</span>`,
+          `<strong>${name} County</strong><br><span style="font-size:0.75rem">MO</span>`,
           {className:'leaflet-tooltip-dark', sticky:true}
         );
       }
@@ -852,8 +817,9 @@ async function loadCountyBoundaries() {
     L.geoJSON({type:'FeatureCollection', features: ilFeatures}, {
       style: {fillColor:'#2d6e2d', fillOpacity:0.5, color:'rgba(100,220,100,0.8)', weight:1.5},
       onEachFeature: (f, layer) => {
+        const name = f.properties.DISPLAY_NAME || f.properties.NAME || '';
         layer.bindTooltip(
-          `<strong>${f.properties.NAME} County</strong><br><span style="font-size:0.75rem">IL</span>`,
+          `<strong>${name} County</strong><br><span style="font-size:0.75rem">IL</span>`,
           {className:'leaflet-tooltip-dark', sticky:true}
         );
       }
@@ -893,9 +859,9 @@ const COUNTY_CENTERS = {
 
 let markerLayer = L.layerGroup().addTo(map);
 
-function addReportMarkers() {
+async function addReportMarkers() {
   markerLayer.clearLayers();
-  const reports = getReports();
+  const reports = await getReports();
   const byCounty = {};
   reports.forEach(r => {
     const key = r.county;
