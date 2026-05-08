@@ -4,130 +4,126 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Approve Weather Report — First Warn Weather</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--red:#cc1a1a;--blue:#1a2a8f;--gold:#f0b020;--dark:#080c18;--dark-mid:#0e1428;--text:#e8eaf0;--mid:#a8b4cc;--border:rgba(255,255,255,0.12)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
-.card{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:2.5rem;max-width:480px;width:100%;text-align:center}
+.card{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:2.5rem;max-width:500px;width:100%;text-align:center}
 .logo{font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:0.3rem}
 .logo span{color:var(--gold)}
-.icon{font-size:4rem;margin:1rem 0}
+.icon{font-size:4rem;margin:1rem 0;display:block}
 h1{font-family:'Oswald',sans-serif;font-size:1.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff;margin-bottom:0.5rem}
 h1 span{color:var(--gold)}
 .report-box{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:4px;padding:1.2rem;margin:1.5rem 0;text-align:left}
 .report-row{display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.88rem}
 .report-row:last-child{border-bottom:none}
-.report-label{color:var(--mid);font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase}
-.report-value{color:#fff;font-weight:600}
+.rl{color:var(--mid);font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase}
+.rv{color:#fff;font-weight:600}
 .btn-approve{display:block;width:100%;background:#2d8a4e;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:1rem;border:none;border-radius:4px;cursor:pointer;transition:background 0.2s;margin-bottom:0.8rem}
 .btn-approve:hover{background:#3aad63}
-.btn-deny{display:block;width:100%;background:transparent;color:var(--mid);font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.7rem;border:1px solid rgba(255,255,255,0.15);border-radius:4px;cursor:pointer;transition:all 0.2s}
+.btn-approve:disabled{opacity:0.5;cursor:not-allowed}
+.btn-deny{display:block;width:100%;background:transparent;color:var(--mid);font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.7rem;border:1px solid rgba(255,255,255,0.15);border-radius:4px;cursor:pointer}
 .btn-deny:hover{border-color:var(--red);color:#ff8080}
-.success{display:none;background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.4);border-radius:4px;padding:1.2rem;margin-top:1rem}
-.success h2{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;color:#5ee080;margin-bottom:0.4rem}
-.success p{font-size:0.85rem;color:var(--mid);line-height:1.6}
-.denied{display:none;background:rgba(204,26,26,0.1);border:1px solid rgba(204,26,26,0.3);border-radius:4px;padding:1.2rem;margin-top:1rem}
-.denied h2{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:700;text-transform:uppercase;color:#ff8080;margin-bottom:0.4rem}
-.error{display:none;background:rgba(204,26,26,0.1);border:1px solid rgba(204,26,26,0.3);border-radius:4px;padding:1.2rem;margin-top:1rem;color:#ff8080;font-size:0.85rem}
-.back-link{display:inline-block;margin-top:1.5rem;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);text-decoration:none}
+.msg{border-radius:4px;padding:1.2rem;margin-top:1rem;display:none}
+.msg-ok{background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.4);color:#5ee080}
+.msg-err{background:rgba(204,26,26,0.15);border:1px solid rgba(204,26,26,0.4);color:#ff8080}
+.msg h2{font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;margin-bottom:0.4rem}
+.msg p{font-size:0.85rem;line-height:1.6}
+a.back{display:inline-block;margin-top:1.5rem;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);text-decoration:none}
 </style>
 </head>
 <body>
 <div class="card">
   <div class="logo">First Warn <span>Weather</span></div>
 
-  <!-- LOADING STATE -->
   <div id="stateLoading">
-    <div class="icon">⏳</div>
+    <span class="icon">⏳</span>
     <h1>Loading <span>Report</span></h1>
-    <p style="color:var(--mid);font-size:0.88rem">Reading report data...</p>
   </div>
 
-  <!-- REVIEW STATE -->
   <div id="stateReview" style="display:none">
-    <div class="icon" id="reportIcon">🌡️</div>
+    <span class="icon" id="rIcon">🌡️</span>
     <h1>Approve <span>Report?</span></h1>
-    <p style="color:var(--mid);font-size:0.85rem;margin-bottom:0">Review the report below before posting to the live map.</p>
+    <p style="color:var(--mid);font-size:0.85rem">Review and approve to post to the live map.</p>
     <div class="report-box" id="reportBox"></div>
-    <button class="btn-approve" onclick="approveReport()">✅ Approve — Post to Live Map</button>
+    <button class="btn-approve" id="approveBtn" onclick="approveReport()">✅ Approve — Post to Live Map</button>
     <button class="btn-deny" onclick="denyReport()">✗ Deny — Do Not Post</button>
+    <div class="msg msg-err" id="errMsg"><h2>Error</h2><p id="errText"></p></div>
   </div>
 
-  <!-- SUCCESS STATE -->
   <div id="stateSuccess" style="display:none">
-    <div class="icon">✅</div>
+    <span class="icon">✅</span>
     <h1>Report <span>Live!</span></h1>
-    <div class="success" style="display:block">
-      <h2>✓ Posted to Map</h2>
-      <p>The weather report is now live on the First Warn Weather Watchers map. It will automatically expire after 4 hours.</p>
-    </div>
-    <a href="weather-watchers.html" class="back-link">→ View Weather Watchers Map</a>
+    <div class="msg msg-ok" style="display:block"><h2>✓ Posted to Map</h2><p>The report is now live on firstwarnwx.com/weather-watchers.html and will expire after 4 hours.</p></div>
+    <a href="weather-watchers.html" class="back">→ View Weather Watchers Map</a>
   </div>
 
-  <!-- DENIED STATE -->
   <div id="stateDenied" style="display:none">
-    <div class="icon">🚫</div>
+    <span class="icon">🚫</span>
     <h1>Report <span>Denied</span></h1>
-    <div class="denied" style="display:block">
-      <h2>Report Not Posted</h2>
-      <p>This report was not added to the map.</p>
-    </div>
-    <a href="forecast-manager.html" class="back-link">→ Back to Manager</a>
+    <div class="msg msg-err" style="display:block"><h2>Not Posted</h2><p>This report was not added to the map.</p></div>
+    <a href="index.html" class="back">→ Back to First Warn Weather</a>
   </div>
 
-  <!-- ERROR STATE -->
   <div id="stateError" style="display:none">
-    <div class="icon">❌</div>
+    <span class="icon">❌</span>
     <h1>Invalid <span>Link</span></h1>
-    <div class="error" style="display:block">No report data found in this link. The link may have expired or been corrupted.</div>
-    <a href="forecast-manager.html" class="back-link">→ Back to Manager</a>
+    <div class="msg msg-err" style="display:block"><h2>Link Error</h2><p>No report data found. The link may have expired or been corrupted.</p></div>
+    <a href="index.html" class="back">→ Back to First Warn Weather</a>
   </div>
-
 </div>
 
 <script>
-const WK = 'fwWatcherReports';
+const REPO_USER = 'nickpalischphd';
+const REPO_NAME = 'firstwarnwx';
+const REPORTS_FILE = 'reports.json';
 const FOUR_HOURS = 4 * 60 * 60 * 1000;
+
 let currentReport = null;
+let githubToken = null;
+
+function showState(s) {
+  ['Loading','Review','Success','Denied','Error'].forEach(n => {
+    document.getElementById('state'+n).style.display = n.toLowerCase()===s?'block':'none';
+  });
+}
 
 function init() {
   try {
     const params = new URLSearchParams(window.location.search);
-    const data = params.get('data');
-    if (!data) { showState('error'); return; }
+    const raw = params.get('data');
+    const tok = params.get('tok');
+    if (!raw) { showState('error'); return; }
 
-    const decoded = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(data)))));
-    if (!decoded || !decoded.name || !decoded.county) { showState('error'); return; }
+    githubToken = tok || null;
+    const report = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(raw)))));
+    if (!report || !report.name || !report.county) { showState('error'); return; }
 
     currentReport = {
-      ...decoded,
+      ...report,
       id: Date.now(),
       timestamp: Date.now(),
-      time: new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}),
+      time: new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
       approved: true
     };
 
-    // Show report details
     const icon = currentReport.condition ? currentReport.condition.split(' ')[0] : '🌡️';
-    document.getElementById('reportIcon').textContent = icon;
+    document.getElementById('rIcon').textContent = icon;
 
     const rows = [
       ['Reporter', currentReport.name],
       ['County', currentReport.county],
       ['Temperature', currentReport.temp + '°F'],
       ['Conditions', currentReport.condition],
-      currentReport.wind ? ['Wind', currentReport.wind + ' mph'] : null,
+      currentReport.wind ? ['Wind', currentReport.wind] : null,
       currentReport.notes ? ['Notes', currentReport.notes] : null,
       ['Submitted', currentReport.originalTime || 'Just now']
     ].filter(Boolean);
 
-    document.getElementById('reportBox').innerHTML = rows.map(([label, value]) => `
-      <div class="report-row">
-        <span class="report-label">${label}</span>
-        <span class="report-value">${esc(String(value))}</span>
-      </div>
-    `).join('');
+    document.getElementById('reportBox').innerHTML = rows.map(([l,v]) =>
+      `<div class="report-row"><span class="rl">${l}</span><span class="rv">${esc(String(v))}</span></div>`
+    ).join('');
 
     showState('review');
   } catch(e) {
@@ -136,30 +132,64 @@ function init() {
   }
 }
 
-function approveReport() {
+async function approveReport() {
   if (!currentReport) return;
+  const btn = document.getElementById('approveBtn');
+  btn.textContent = '⏳ Publishing...';
+  btn.disabled = true;
+
   try {
-    const all = JSON.parse(localStorage.getItem(WK)) || [];
-    all.unshift(currentReport);
-    localStorage.setItem(WK, JSON.stringify(all.slice(0, 200)));
+    if (!githubToken) throw new Error('No GitHub token in link. Use the Watchers tab in your Forecast Manager to add reports manually.');
+
+    // Get current reports.json from GitHub
+    const getRes = await fetch(
+      `https://api.github.com/repos/${REPO_USER}/${REPO_NAME}/contents/${REPORTS_FILE}`,
+      {headers: {'Authorization': `Bearer ${githubToken}`, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'}}
+    );
+
+    let sha = null;
+    let existing = [];
+
+    if (getRes.ok) {
+      const fileData = await getRes.json();
+      sha = fileData.sha;
+      try {
+        existing = JSON.parse(decodeURIComponent(escape(atob(fileData.content.replace(/\n/g,'')))));
+      } catch(e) { existing = []; }
+    }
+
+    // Remove expired reports and add new one
+    const cutoff = Date.now() - FOUR_HOURS;
+    const fresh = existing.filter(r => r.timestamp > cutoff);
+    fresh.unshift(currentReport);
+
+    // Publish updated reports.json
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(fresh, null, 2))));
+    const putRes = await fetch(
+      `https://api.github.com/repos/${REPO_USER}/${REPO_NAME}/contents/${REPORTS_FILE}`,
+      {
+        method: 'PUT',
+        headers: {'Authorization': `Bearer ${githubToken}`, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json'},
+        body: JSON.stringify({message: `Weather report: ${currentReport.name} - ${currentReport.county}`, content, ...(sha ? {sha} : {})})
+      }
+    );
+
+    if (!putRes.ok) {
+      const err = await putRes.json();
+      throw new Error(err.message || 'GitHub publish failed');
+    }
+
     showState('success');
   } catch(e) {
-    alert('Error saving report. Please add it manually in the Forecast Manager.');
+    btn.textContent = '✅ Approve — Post to Live Map';
+    btn.disabled = false;
+    document.getElementById('errText').textContent = e.message;
+    document.getElementById('errMsg').style.display = 'block';
   }
 }
 
-function denyReport() {
-  showState('denied');
-}
-
-function showState(state) {
-  ['loading','review','success','denied','error'].forEach(s => {
-    const el = document.getElementById('state' + s.charAt(0).toUpperCase() + s.slice(1));
-    if (el) el.style.display = s === state ? 'block' : 'none';
-  });
-}
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function denyReport() { showState('denied'); }
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 init();
 </script>
