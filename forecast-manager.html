@@ -30,6 +30,9 @@ body{font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);mi
 .btn-outline:hover{border-color:var(--mid);color:#fff;background:transparent}
 .btn-blue{background:var(--blue-mid);color:#fff}
 .btn-blue:hover{background:var(--blue)}
+.stat-box{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;padding:1.2rem;text-align:center}
+.stat-n{font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--gold);display:block}
+.stat-l{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-top:0.3rem}
 .btn-sm{padding:0.35rem 0.8rem;font-size:0.72rem}
 .back-link{display:block;margin-top:1rem;font-size:0.78rem;color:var(--gold);text-decoration:none}
 #app{display:none;min-height:100vh}
@@ -141,7 +144,10 @@ hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
   <div class="tabs">
     <button class="tab active" id="t-forecast" onclick="goTab('forecast')">⛅ Daily Forecast</button>
     <button class="tab" id="t-severe" onclick="goTab('severe')">⚡ Severe Weather</button>
+    <button class="tab" id="t-blog" onclick="goTab('blog')">🪟 Dr. Nick's Window</button>
     <button class="tab" id="t-alert" onclick="goTab('alert')">🚨 Alert Day</button>
+    <button class="tab" id="t-watchers" onclick="goTab('watchers')">👥 Watchers <span class="badge" id="pendingBadge" style="display:none">0</span></button>
+    <button class="tab" id="t-analytics" onclick="goTab('analytics')">📊 Analytics</button>
     <button class="tab" id="t-publish" onclick="goTab('publish')">🚀 Publish</button>
     <button class="tab" id="t-settings" onclick="goTab('settings')">⚙️ GitHub</button>
   </div>
@@ -286,6 +292,45 @@ Clear. Practical. Easy to understand."></textarea>
     </div>
   </div>
 
+  <!-- WEATHER BLOG PANE -->
+  <div class="pane" id="p-blog">
+    <div class="pane-title">Weather From <span>Dr. Nick's Window</span></div>
+    <div class="pane-sub">Write and publish weather blog posts that appear in the "Dr. Nick's Window" section on your homepage.</div>
+    <div class="ok" id="blogOk"></div>
+    <div class="err" id="blogErr"></div>
+    <input type="hidden" id="blogEditId">
+
+    <div class="fg"><label>Post Title *</label><input type="text" id="blogTitle" placeholder="e.g. Why Today's Cold Front Matters..."></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="fg">
+        <label>Category</label>
+        <select id="blogCat">
+          <option>Weather Observation</option>
+          <option>Storm Analysis</option>
+          <option>Seasonal Weather</option>
+          <option>Weather Education</option>
+          <option>Severe Weather</option>
+          <option>Winter Weather</option>
+          <option>Climate & Patterns</option>
+          <option>Weather from the Window</option>
+        </select>
+      </div>
+      <div class="fg"><label>Date</label><input type="text" id="blogDate" placeholder="May 5, 2026"></div>
+    </div>
+    <div class="fg"><label>Excerpt <span style="font-weight:400;text-transform:none;letter-spacing:0">(one sentence preview)</span></label>
+      <input type="text" id="blogExcerpt" placeholder="A brief sentence about today's weather..."></div>
+    <div class="fg"><label>Full Post *</label>
+      <textarea id="blogContent" style="min-height:240px" placeholder="Write your weather observation, analysis, or education post here...&#10;&#10;Leave a blank line between paragraphs.&#10;&#10;Tell the weather story in your own voice!"></textarea>
+    </div>
+    <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1.5rem">
+      <button class="btn btn-gold" onclick="saveBlogPost()" style="padding:0.85rem 2rem">💾 Save Post</button>
+      <button class="btn btn-outline btn-sm" onclick="clearBlogForm()">Clear</button>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Published Posts</div>
+    <div id="blogList"><p style="color:var(--mid);font-style:italic;font-size:0.85rem">No posts yet.</p></div>
+  </div>
+
   <!-- ALERT DAY PANE -->
   <div class="pane" id="p-alert">
     <div class="pane-title">Alert <span>Day</span></div>
@@ -324,6 +369,106 @@ Clear. Practical. Easy to understand."></textarea>
     <div class="btn-row">
       <button class="btn btn-gold" onclick="saveAlert()" style="padding:0.85rem 2rem">💾 Save Alert Settings</button>
       <button class="btn btn-outline btn-sm" onclick="cancelAlert()">Cancel Alert Day</button>
+    </div>
+  </div>
+
+  <!-- WATCHERS PANE -->
+  <div class="pane" id="p-watchers">
+    <div class="pane-title">Weather Watcher <span>Reports</span></div>
+    <div class="pane-sub">Review and approve incoming weather watcher reports before they appear on the public map.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+      <div class="stat-box"><span class="stat-n" id="wPending">0</span><div class="stat-l">Pending Approval</div></div>
+      <div class="stat-box"><span class="stat-n" id="wApproved">0</span><div class="stat-l">Approved (4hrs)</div></div>
+      <div class="stat-box"><span class="stat-n" id="wTotal">0</span><div class="stat-l">Total Today</div></div>
+    </div>
+
+    <!-- PENDING -->
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.5rem">
+      ⏳ Pending Approval
+    </div>
+    <div id="pendingList">
+      <p style="color:var(--mid);font-style:italic;font-size:0.85rem">No pending reports.</p>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0">
+
+    <!-- APPROVED -->
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">
+      ✅ Approved Reports (Last 4 Hours)
+    </div>
+    <div id="approvedList">
+      <p style="color:var(--mid);font-style:italic;font-size:0.85rem">No approved reports yet.</p>
+    </div>
+  </div>
+
+  <!-- ANALYTICS PANE -->
+  <div class="pane" id="p-analytics">
+    <div class="pane-title">Site <span>Analytics</span></div>
+    <div class="pane-sub">Track visitor activity across firstwarnwx.com. Data updates in real time via Google Analytics.</div>
+
+    <div style="background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:1rem 1.2rem;margin-bottom:1.5rem">
+      <p style="font-size:0.82rem;color:var(--mid);line-height:1.7">
+        💡 <strong style="color:#fff">To enable analytics:</strong> Add your free <strong style="color:var(--gold)">Google Analytics 4</strong> measurement ID below. It takes 2 minutes and gives you real-time visitor data, page views, location, device type, and more — all free.
+      </p>
+    </div>
+
+    <!-- GA SETUP -->
+    <div class="settings-box" style="margin-bottom:1.5rem">
+      <div class="fg">
+        <label>Google Analytics Measurement ID</label>
+        <input type="text" id="gaId" placeholder="e.g. G-XXXXXXXXXX">
+        <p class="hint">Get this free at <a href="https://analytics.google.com" target="_blank" style="color:var(--gold)">analytics.google.com</a> → Create account → Create property → Web stream</p>
+      </div>
+      <button class="btn" onclick="saveGA()">Save & Enable Analytics</button>
+      <div class="ok" id="gaOk" style="margin-top:0.8rem"></div>
+    </div>
+
+    <!-- STATS OVERVIEW -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem" id="analyticsStats">
+      <div class="stat-box">
+        <span class="stat-n" id="aVisitors">—</span>
+        <div class="stat-l">Visitors Today</div>
+      </div>
+      <div class="stat-box">
+        <span class="stat-n" id="aPageviews">—</span>
+        <div class="stat-l">Page Views</div>
+      </div>
+      <div class="stat-box">
+        <span class="stat-n" id="aWatchers">—</span>
+        <div class="stat-l">Watcher Reports</div>
+      </div>
+      <div class="stat-box">
+        <span class="stat-n" id="aCounties">—</span>
+        <div class="stat-l">Counties Reporting</div>
+      </div>
+    </div>
+
+    <!-- QUICK LINKS -->
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Quick Links</div>
+    <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1.5rem">
+      <a id="gaLink" href="https://analytics.google.com" target="_blank" class="btn btn-blue btn-sm">📊 Open Google Analytics →</a>
+      <a href="https://search.google.com/search-console" target="_blank" class="btn btn-outline btn-sm">🔍 Google Search Console →</a>
+    </div>
+
+    <!-- LOCAL STATS -->
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Local Activity (This Browser)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="settings-box">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.5rem">Weather Watcher Reports Today</div>
+        <div id="localReportCount" style="font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--gold)">0</div>
+        <div style="font-size:0.72rem;color:var(--mid);margin-top:0.3rem">From localStorage (last 4 hours)</div>
+      </div>
+      <div class="settings-box">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-bottom:0.5rem">Active Watcher Counties</div>
+        <div id="localCountyCount" style="font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--gold)">0</div>
+        <div style="font-size:0.72rem;color:var(--mid);margin-top:0.3rem">Unique counties reporting</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Recent Watcher Reports</div>
+      <div id="analyticsReportList"></div>
     </div>
   </div>
 
@@ -382,9 +527,6 @@ Clear. Practical. Easy to understand."></textarea>
 
 <script>
 const PWD='FirstWarn2026!',AK='fwForecastAdmin',FK='fwForecast2026',GHK='fwGH2026';
-const SLOTS=['24','10','extra1','extra2','severe1','severe2','severe3','severe4'];
-const imgs={};
-
 function doLogin(){
   if(document.getElementById('pwd').value===PWD){
     sessionStorage.setItem(AK,'1');
@@ -396,15 +538,166 @@ function doLogin(){
 document.getElementById('pwd').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
 function doLogout(){sessionStorage.removeItem(AK);location.reload();}
 
-const TABS=['forecast','severe','alert','publish','settings'];
+const TABS=['forecast','severe','blog','alert','watchers','analytics','publish','settings'];
 function goTab(name){
-  TABS.forEach(n=>{document.getElementById('p-'+n).style.display='none';document.getElementById('t-'+n).classList.remove('active');});
-  document.getElementById('p-'+name).style.display='block';
-  document.getElementById('t-'+name).classList.add('active');
+  TABS.forEach(n=>{
+    const p=document.getElementById('p-'+n);
+    const t=document.getElementById('t-'+n);
+    if(p)p.style.display='none';
+    if(t)t.classList.remove('active');
+  });
+  const pane=document.getElementById('p-'+name);
+  const tab=document.getElementById('t-'+name);
+  if(pane)pane.style.display='block';
+  if(tab)tab.classList.add('active');
   if(name==='forecast')loadForecastPreview();
   if(name==='alert')loadAlertState();
   if(name==='severe')loadSevereState();
+  if(name==='watchers')renderWatchers();
+  if(name==='analytics')renderAnalytics();
 }
+
+// ── WATCHER APPROVAL SYSTEM ──
+const WK='fwWatcherReports';
+const WPK='fwWatcherPending';
+const FOUR_HOURS=4*60*60*1000;
+
+function getPending(){try{return JSON.parse(localStorage.getItem(WPK))||[];}catch(e){return[];}}
+function getApproved(){
+  try{
+    const all=JSON.parse(localStorage.getItem(WK))||[];
+    return all.filter(r=>r.approved&&(Date.now()-r.timestamp)<FOUR_HOURS);
+  }catch(e){return[];}
+}
+
+function approveReport(id){
+  const pending=getPending();
+  const idx=pending.findIndex(r=>r.id===id);
+  if(idx===-1)return;
+  const report={...pending[idx],approved:true,approvedAt:Date.now()};
+  pending.splice(idx,1);
+  localStorage.setItem(WPK,JSON.stringify(pending));
+  // Add to approved reports
+  try{
+    const approved=JSON.parse(localStorage.getItem(WK))||[];
+    approved.unshift(report);
+    localStorage.setItem(WK,JSON.stringify(approved.slice(0,200)));
+  }catch(e){}
+  renderWatchers();
+  updatePendingBadge();
+}
+
+function denyReport(id){
+  const pending=getPending().filter(r=>r.id!==id);
+  localStorage.setItem(WPK,JSON.stringify(pending));
+  renderWatchers();
+  updatePendingBadge();
+}
+
+function updatePendingBadge(){
+  const count=getPending().length;
+  const badge=document.getElementById('pendingBadge');
+  if(badge){
+    badge.textContent=count;
+    badge.style.display=count>0?'inline':'none';
+  }
+}
+
+function renderWatchers(){
+  const pending=getPending();
+  const approved=getApproved();
+  document.getElementById('wPending').textContent=pending.length;
+  document.getElementById('wApproved').textContent=approved.length;
+  document.getElementById('wTotal').textContent=pending.length+approved.length;
+
+  // Render pending
+  const pList=document.getElementById('pendingList');
+  if(pending.length===0){
+    pList.innerHTML='<p style="color:var(--mid);font-style:italic;font-size:0.85rem">No pending reports. New reports will appear here for approval.</p>';
+  } else {
+    pList.innerHTML=pending.map(r=>`
+      <div style="background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:1rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:1rem">
+        <div style="font-size:1.8rem">${r.condition?r.condition.split(' ')[0]:'🌡️'}</div>
+        <div style="flex:1">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#fff">${esc(r.name)} — ${esc(r.county)}</div>
+          <div style="font-size:0.78rem;color:var(--mid);margin-top:0.2rem">🌡️ ${r.temp}°F${r.wind?' · 💨 '+r.wind+' mph':''} · ${esc(r.condition)}</div>
+          ${r.notes?`<div style="font-size:0.75rem;color:var(--mid);font-style:italic;margin-top:0.2rem">"${esc(r.notes)}"</div>`:''}
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);margin-top:0.3rem">${new Date(r.timestamp).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-shrink:0">
+          <button class="btn btn-sm" style="background:rgba(45,138,78,0.3);color:#5ee080;border:1px solid rgba(45,138,78,0.5)" onclick="approveReport(${r.id})">✓ Approve</button>
+          <button class="btn btn-sm" style="background:rgba(204,26,26,0.2);color:#ff8080;border:1px solid rgba(204,26,26,0.4)" onclick="denyReport(${r.id})">✗ Deny</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Render approved
+  const aList=document.getElementById('approvedList');
+  if(approved.length===0){
+    aList.innerHTML='<p style="color:var(--mid);font-style:italic;font-size:0.85rem">No approved reports in the last 4 hours.</p>';
+  } else {
+    aList.innerHTML=approved.map(r=>{
+      const minsAgo=Math.floor((Date.now()-r.timestamp)/60000);
+      const timeAgo=minsAgo<60?minsAgo+'m ago':Math.floor(minsAgo/60)+'h ago';
+      return `
+        <div style="background:rgba(45,138,78,0.08);border:1px solid rgba(45,138,78,0.2);border-radius:4px;padding:0.8rem 1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:1rem">
+          <div style="font-size:1.4rem">${r.condition?r.condition.split(' ')[0]:'🌡️'}</div>
+          <div style="flex:1">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;color:#fff">${esc(r.name)} — ${esc(r.county)}</div>
+            <div style="font-size:0.75rem;color:var(--mid)">🌡️ ${r.temp}°F · ${esc(r.condition)} · ${timeAgo}</div>
+          </div>
+          <button class="btn btn-sm" style="background:rgba(204,26,26,0.2);color:#ff8080;border:1px solid rgba(204,26,26,0.4);flex-shrink:0" onclick="denyReport(${r.id})">Remove</button>
+        </div>`;
+    }).join('');
+  }
+  updatePendingBadge();
+}
+
+// ── ANALYTICS ──
+function saveGA(){
+  const id=document.getElementById('gaId').value.trim();
+  if(!id||!id.startsWith('G-')){flash('gaOk','Please enter a valid Measurement ID starting with G-');return;}
+  localStorage.setItem('fwGAId',id);
+  // Update GA link
+  document.getElementById('gaLink').href=`https://analytics.google.com/analytics/web/#/p${id.replace('G-','')}/reports/overview`;
+  flash('gaOk','✓ Saved! Add this ID to your index.html <head> section to start tracking.');
+  renderAnalytics();
+}
+
+function renderAnalytics(){
+  const gaId=localStorage.getItem('fwGAId');
+  if(gaId)document.getElementById('gaId').value=gaId;
+
+  // Local watcher stats
+  const reports=getApproved();
+  const pending=getPending();
+  document.getElementById('localReportCount').textContent=reports.length+pending.length;
+  const counties=new Set([...reports,...pending].map(r=>r.county));
+  document.getElementById('localCountyCount').textContent=counties.size;
+  document.getElementById('aWatchers').textContent=reports.length+pending.length;
+  document.getElementById('aCounties').textContent=counties.size;
+
+  // Recent reports list
+  const all=[...reports,...pending].sort((a,b)=>b.timestamp-a.timestamp);
+  const rList=document.getElementById('analyticsReportList');
+  if(all.length===0){
+    rList.innerHTML='<p style="color:var(--mid);font-style:italic;font-size:0.85rem">No reports yet.</p>';
+  } else {
+    rList.innerHTML=all.slice(0,10).map(r=>{
+      const status=r.approved?'<span style="color:#5ee080;font-size:0.65rem">✓ Approved</span>':'<span style="color:var(--gold);font-size:0.65rem">⏳ Pending</span>';
+      return `<div style="display:flex;align-items:center;gap:1rem;padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <div style="font-size:1.2rem">${r.condition?r.condition.split(' ')[0]:'🌡️'}</div>
+        <div style="flex:1">
+          <div style="font-size:0.82rem;font-weight:700;color:#fff">${esc(r.name)} — ${esc(r.county)}</div>
+          <div style="font-size:0.72rem;color:var(--mid)">${r.temp}°F · ${esc(r.condition)}</div>
+        </div>
+        <div>${status}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
 
 function getData(){try{return JSON.parse(localStorage.getItem(FK))||{};}catch(e){return{};}}
 function setData(d){localStorage.setItem(FK,JSON.stringify(d));}
@@ -437,29 +730,8 @@ function setDefaultDate(){
   document.getElementById('fDate').value=`${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
 }
 
-function handleImg(slot,ev){
-  const f=ev.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{imgs[slot]=e.target.result;showImg(slot,e.target.result);};
-  r.readAsDataURL(f);
-}
-function showImg(slot,src){
-  const p=document.getElementById('prev-'+slot);
-  p.src=src;p.style.display='block';
-  document.getElementById('icon-'+slot).style.display='none';
-  document.getElementById('text-'+slot).style.display='none';
-  document.getElementById('rm-'+slot).style.display='inline';
-  document.getElementById('up-'+slot).classList.add('has');
-}
-function rmImg(slot,e){
-  e.stopPropagation();delete imgs[slot];
-  const p=document.getElementById('prev-'+slot);p.style.display='none';p.src='';
-  document.getElementById('icon-'+slot).style.display='block';
-  document.getElementById('text-'+slot).style.display='block';
-  document.getElementById('rm-'+slot).style.display='none';
-  document.getElementById('up-'+slot).classList.remove('has');
-  document.getElementById('file-'+slot).value='';
-}
+// Image functions removed - use filename inputs instead
+
 
 function saveForecast(){
   const narrative=document.getElementById('fNarrative').value.trim();
@@ -492,18 +764,22 @@ function saveSevere(){
 }
 
 function clearSection(sec){
-  if(!confirm('Clear this section? This cannot be undone.'))return;
+  if(!confirm('Clear this section?'))return;
   const d=getData();
   if(sec==='forecast'){
-    ['24','10','extra1','extra2'].forEach(s=>{delete imgs[s];rmImg(s,{stopPropagation:()=>{}});delete d['img_'+s];});
     document.getElementById('fNarrative').value='';
-    delete d.narrative;
+    ['fname24','fname10','fnameExtra1','fnameExtra2'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value='';
+    });
+    delete d.narrative;delete d.img_24;delete d.img_10;delete d.img_extra1;delete d.img_extra2;
   }
   if(sec==='severe'){
-    ['severe1','severe2','severe3','severe4'].forEach(s=>{delete imgs[s];rmImg(s,{stopPropagation:()=>{}});delete d['img_'+s];});
     document.getElementById('severeNarrative').value='';
-    d.severeActive=false;
-    delete d.severeNarrative;
+    ['fnameSevere1','fnameSevere2','fnameSevere3','fnameSevere4'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value='';
+    });
+    d.severeActive=false;delete d.severeNarrative;
+    delete d.img_severe1;delete d.img_severe2;delete d.img_severe3;delete d.img_severe4;
   }
   setData(d);
 }
@@ -622,23 +898,144 @@ async function publishToGH(){
   const s=JSON.parse(localStorage.getItem(GHK)||'{}');
   if(!s.tok||!s.user||!s.repo){alert('Please set up GitHub Settings first!');goTab('settings');return;}
   const d=getData();
-  if(!d.narrative){flash('pubErr','Please save a forecast first.');return;}
+  const blog=getBlog();
+  if(!d.narrative && blog.length===0){flash('pubErr','Please save a forecast or write a blog post first.');return;}
   const btn=document.getElementById('pubBtn');
   btn.textContent='⏳ Publishing...';btn.disabled=true;
   try{
-    const content=btoa(unescape(encodeURIComponent(JSON.stringify(d,null,2))));
-    const getR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
-    let sha=null;if(getR.ok){const dd=await getR.json();sha=dd.sha;}
-    const putR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{
+    let published = [];
+    // Publish forecast.json if narrative exists
+    if(d.narrative){
+      const fContent=btoa(unescape(encodeURIComponent(JSON.stringify(d,null,2))));
+      const fGetR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
+      let fSha=null;if(fGetR.ok){const dd=await fGetR.json();fSha=dd.sha;}
+      const fPutR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{
+        method:'PUT',
+        headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
+        body:JSON.stringify({message:`Forecast: ${d.date||new Date().toLocaleDateString()}`,content:fContent,...(fSha?{sha:fSha}:{})})
+      });
+      if(fPutR.ok) published.push('Forecast');
+    }
+
+    // Always publish weather-blog.json
+    const bContent=btoa(unescape(encodeURIComponent(JSON.stringify(blog,null,2))));
+    const bGetR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
+    let bSha=null;if(bGetR.ok){const dd=await bGetR.json();bSha=dd.sha;}
+    const bPutR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{
       method:'PUT',
       headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
-      body:JSON.stringify({message:`Forecast: ${d.date||new Date().toLocaleDateString()}`,content,...(sha?{sha}:{})})
+      body:JSON.stringify({message:`Weather blog update`,content:bContent,...(bSha?{sha:bSha}:{})})
     });
-    if(putR.ok){btn.textContent='✅ Published!';flash('pubOk','🎉 Live at firstwarnwx.com/forecast.html in ~60 seconds!');setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';btn.disabled=false;},4000);}
-    else throw new Error();
-  }catch(e){btn.textContent='❌ Failed';btn.disabled=false;flash('pubErr','Publishing failed. Check GitHub Settings.');setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';},4000);}
+    if(bPutR.ok) published.push('Weather Blog');
+
+    if(published.length>0){
+      btn.textContent='✅ Published!';
+      flash('pubOk',`🎉 Published: ${published.join(' & ')}! Live on firstwarnwx.com in ~60 seconds.`);
+      setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';btn.disabled=false;},4000);
+    } else throw new Error();
+  }catch(e){
+    btn.textContent='❌ Failed';btn.disabled=false;
+    flash('pubErr','Publishing failed. Check your GitHub Settings and try again.');
+    setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';},4000);
+  }
 }
 
+function boot(){
+  setDefaultDate();setBlogDate();
+  loadForecastPreview();loadAlertState();loadSevereState();loadGH();
+  renderBlogList();updatePendingBadge();
+  const d=getData();
+  if(d.narrative)document.getElementById('fNarrative').value=d.narrative;
+  if(d.date)document.getElementById('fDate').value=d.date;
+  if(d.img_24)document.getElementById('fname24').value=d.img_24;
+  if(d.img_10)document.getElementById('fname10').value=d.img_10;
+  if(d.img_extra1)document.getElementById('fnameExtra1').value=d.img_extra1;
+  if(d.img_extra2)document.getElementById('fnameExtra2').value=d.img_extra2;
+  if(d.img_severe1)document.getElementById('fnameSevere1').value=d.img_severe1;
+  if(d.img_severe2)document.getElementById('fnameSevere2').value=d.img_severe2;
+  if(d.img_severe3)document.getElementById('fnameSevere3').value=d.img_severe3;
+  if(d.img_severe4)document.getElementById('fnameSevere4').value=d.img_severe4;
+  if(d.severeNarrative)document.getElementById('severeNarrative').value=d.severeNarrative;
+}
+
+// ── WEATHER BLOG ──
+const BK='fwWeatherBlog2026';
+function getBlog(){try{return JSON.parse(localStorage.getItem(BK))||[];}catch(e){return[];}}
+function setBlog(p){localStorage.setItem(BK,JSON.stringify(p));}
+
+function setBlogDate(){
+  const now=new Date();
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('blogDate').value=`${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+}
+
+function saveBlogPost(){
+  const title=document.getElementById('blogTitle').value.trim();
+  const content=document.getElementById('blogContent').value.trim();
+  if(!title){flash('blogErr','Please add a title.');return;}
+  if(!content){flash('blogErr','Please write the post.');return;}
+  const posts=getBlog();
+  const eid=document.getElementById('blogEditId').value;
+  const id=eid||(title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now());
+  const post={id,title,
+    category:document.getElementById('blogCat').value,
+    excerpt:document.getElementById('blogExcerpt').value.trim()||title,
+    date:document.getElementById('blogDate').value.trim(),
+    content,published:true
+  };
+  if(eid){const i=posts.findIndex(p=>p.id===eid);if(i>-1)posts[i]=post;else posts.unshift(post);}
+  else posts.unshift(post);
+  setBlog(posts);renderBlogList();
+  flash('blogOk',`✓ "${title}" saved! Click Publish to send live.`);
+  if(!eid)clearBlogForm();
+  document.getElementById('blogEditId').value='';
+}
+
+function editBlogPost(id){
+  const p=getBlog().find(x=>x.id===id);if(!p)return;
+  document.getElementById('blogEditId').value=id;
+  document.getElementById('blogTitle').value=p.title;
+  document.getElementById('blogCat').value=p.category;
+  document.getElementById('blogExcerpt').value=p.excerpt||'';
+  document.getElementById('blogDate').value=p.date||'';
+  document.getElementById('blogContent').value=p.content||'';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteBlogPost(id){
+  const p=getBlog().find(x=>x.id===id);
+  if(!p||!confirm(`Delete "${p.title}"?`))return;
+  setBlog(getBlog().filter(x=>x.id!==id));renderBlogList();
+}
+
+function clearBlogForm(){
+  document.getElementById('blogEditId').value='';
+  document.getElementById('blogTitle').value='';
+  document.getElementById('blogExcerpt').value='';
+  document.getElementById('blogContent').value='';
+  setBlogDate();
+}
+
+function renderBlogList(){
+  const posts=getBlog();
+  const list=document.getElementById('blogList');
+  if(!list)return;
+  if(posts.length===0){list.innerHTML='<p style="color:var(--mid);font-style:italic;font-size:0.85rem">No posts yet.</p>';return;}
+  list.innerHTML=posts.map(p=>`
+    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:3px;padding:0.8rem 1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:1rem">
+      <div style="flex:1">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff">${esc(p.title)}</div>
+        <div style="font-size:0.72rem;color:var(--mid)">${esc(p.category)} · ${esc(p.date||'')}</div>
+      </div>
+      <div style="display:flex;gap:0.4rem">
+        <button class="btn btn-outline btn-sm" onclick="editBlogPost('${p.id}')">Edit</button>
+        <button class="btn btn-sm" style="background:rgba(204,26,26,0.3);color:#ff8080;border:1px solid rgba(204,26,26,0.4)" onclick="deleteBlogPost('${p.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function flash(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',6000);}
 
 if(sessionStorage.getItem(AK)==='1'){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';boot();}
