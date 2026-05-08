@@ -97,7 +97,7 @@ function init() {
     const data = params.get('data');
     if (!data) { showState('error'); return; }
 
-    const decoded = JSON.parse(atob(decodeURIComponent(data)));
+    const decoded = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(data)))));
     if (!decoded || !decoded.name || !decoded.county) { showState('error'); return; }
 
     currentReport = {
