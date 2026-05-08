@@ -178,8 +178,8 @@ footer a{color:var(--gold);text-decoration:none}
       </div>
     </div>
     <div class="hero-btns">
-      <a href="#report" class="btn-red">📍 Submit Weather Report</a>
-      <a href="#apply" class="btn-outline">🌩️ Apply to be a Watcher</a>
+      <a href="#report" class="btn-red" onclick="setTimeout(()=>switchTab('report'),100)">📍 Submit Weather Report</a>
+      <a href="#report" class="btn-outline" onclick="setTimeout(()=>switchTab('apply'),100)">🌩️ Apply to be a Watcher</a>
     </div>
   </div>
 </div>
@@ -398,7 +398,7 @@ footer a{color:var(--gold);text-decoration:none}
     </div>
 
     <!-- APPLY TAB -->
-    <div class="tab-pane" id="pane-apply" id="apply">
+    <div class="tab-pane" id="pane-apply">
       <div class="apply-inner">
         <div class="apply-info fade-up">
           <p class="sec-label">Join the Network</p>
@@ -822,59 +822,89 @@ function normalizeName(name) {
 
 async function loadCountyBoundaries() {
   try {
-    const res = await fetch('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json');
-    const geoData = await res.json();
+    // Use Census TIGER/Web API - lightweight and fast
+    // Fetch only MO (state 29) and IL (state 17) counties
+    const [moRes, ilRes] = await Promise.all([
+      fetch('https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/84/query?where=STATE+IN+(%2729%27)&outFields=NAME,STATE,COUNTY&returnGeometry=true&geometryPrecision=4&outSR=4326&f=geojson'),
+      fetch('https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/84/query?where=STATE+IN+(%2717%27)&outFields=NAME,STATE,COUNTY&returnGeometry=true&geometryPrecision=4&outSR=4326&f=geojson')
+    ]);
 
-    const filtered = {
-      type: 'FeatureCollection',
-      features: geoData.features.filter(f => {
-        const fips = f.id || '';
-        const rawName = (f.properties?.NAME || '').toLowerCase().replace(/ county$/,'').trim();
+    const [moData, ilData] = await Promise.all([moRes.json(), ilRes.json()]);
 
-        // St. Louis City is an independent city with FIPS 29510
-        if(fips === '29510') return true;
+    // Filter to only our coverage counties
+    const moFeatures = (moData.features || []).filter(f => {
+      const name = (f.properties?.NAME || '').toLowerCase();
+      return MO_COUNTIES.some(c => name === c.toLowerCase());
+    }).map(f => ({...f, _state: 'MO'}));
 
-        if(fips.startsWith('29')) {
-          return MO_COUNTIES.some(c => {
-            const cn = normalizeName(c);
-            return rawName === cn || rawName === cn.replace('st. ','saint ').replace('ste. ','sainte ');
-          });
-        }
-        if(fips.startsWith('17')) {
-          return IL_COUNTIES.some(c => {
-            const cn = normalizeName(c);
-            return rawName === cn || rawName === cn.replace('st. ','saint ');
-          });
-        }
-        return false;
-      })
-    };
+    const ilFeatures = (ilData.features || []).filter(f => {
+      const name = (f.properties?.NAME || '').toLowerCase();
+      return IL_COUNTIES.some(c => name === c.toLowerCase());
+    }).map(f => ({...f, _state: 'IL'}));
 
-    L.geoJSON(filtered, {
-      style: f => {
-        const fips = f.id || '';
-        const isMO = fips.startsWith('29');
-        return {
-          fillColor: isMO ? '#1e3aab' : '#2d6e2d',
+    const allFeatures = [...moFeatures, ...ilFeatures];
+
+    if (allFeatures.length > 0) {
+      L.geoJSON({type:'FeatureCollection', features: allFeatures}, {
+        style: f => ({
+          fillColor: f._state === 'MO' ? '#1e3aab' : '#2d6e2d',
           fillOpacity: 0.5,
-          color: isMO ? 'rgba(100,160,255,0.6)' : 'rgba(100,220,100,0.5)',
+          color: f._state === 'MO' ? 'rgba(100,160,255,0.7)' : 'rgba(100,220,100,0.6)',
           weight: 1.5
-        };
-      },
-      onEachFeature: (f, layer) => {
-        const name = f.properties?.NAME || '';
-        const fips = f.id || '';
-        const state = fips.startsWith('29') ? 'MO' : 'IL';
-        layer.bindTooltip(`<strong>${name} County</strong><br><span style="font-size:0.75rem">${state}</span>`, {
-          className: 'leaflet-tooltip-dark',
-          sticky: true
-        });
-      }
-    }).addTo(map);
+        }),
+        onEachFeature: (f, layer) => {
+          const state = f._state || (f.properties?.STATE === '29' ? 'MO' : 'IL');
+          layer.bindTooltip(`<strong>${f.properties?.NAME} County</strong><br><span style="font-size:0.75rem">${state}</span>`, {
+            className: 'leaflet-tooltip-dark', sticky: true
+          });
+        }
+      }).addTo(map);
+    }
 
     addReportMarkers();
   } catch(e) {
-    console.log('GeoJSON load failed', e);
+    console.log('Census API failed, trying backup', e);
+    loadCountyBoundariesBackup();
+  }
+}
+
+// Backup: use Census WMS as image overlay if GeoJSON fails
+async function loadCountyBoundariesBackup() {
+  try {
+    const moFIPS = ['29003','29019','29023','29031','29035','29051','29053','29065','29069','29071','29073','29093','29099','29113','29123','29125','29133','29141','29143','29151','29157','29161','29163','29179','29181','29183','29186','29187','29189','29510','29195','29207','29219','29221','29223','29001','29015'];
+    const ilFIPS = ['17001','17003','17005','17013','17027','17055','17061','17077','17081','17083','17087','17117','17119','17133','17135','17145','17149','17157','17163','17181','17189','17199'];
+    const allFIPS = [...moFIPS, ...ilFIPS];
+
+    const results = await Promise.all(
+      allFIPS.map(fips =>
+        fetch(`https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/84/query?where=GEOID+%3D+%27${fips}%27&outFields=NAME,STATE&returnGeometry=true&geometryPrecision=4&outSR=4326&f=geojson`)
+          .then(r => r.json())
+          .then(d => ({fips, features: d.features || []}))
+          .catch(() => ({fips, features: []}))
+      )
+    );
+
+    results.forEach(({fips, features}) => {
+      if (features.length === 0) return;
+      const isMO = fips.startsWith('29');
+      L.geoJSON({type:'FeatureCollection', features}, {
+        style: () => ({
+          fillColor: isMO ? '#1e3aab' : '#2d6e2d',
+          fillOpacity: 0.5,
+          color: isMO ? 'rgba(100,160,255,0.7)' : 'rgba(100,220,100,0.6)',
+          weight: 1.5
+        }),
+        onEachFeature: (f, layer) => {
+          layer.bindTooltip(`<strong>${f.properties?.NAME}</strong><br><span style="font-size:0.75rem">${isMO?'MO':'IL'}</span>`, {
+            className:'leaflet-tooltip-dark', sticky:true
+          });
+        }
+      }).addTo(map);
+    });
+
+    addReportMarkers();
+  } catch(e) {
+    console.log('Backup also failed', e);
     addReportMarkers();
   }
 }
@@ -961,3 +991,5 @@ loadCountyBoundaries();
 </script>
 </body>
 </html>
+
+
