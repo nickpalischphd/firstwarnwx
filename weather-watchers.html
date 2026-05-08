@@ -828,63 +828,43 @@ function normalizeName(name) {
 }
 
 async function loadCountyBoundaries() {
-  // Use Mapbox/CartoDB vector tiles which support county boundaries natively
-  // These work without CORS since they're tile-based not GeoJSON
+  try {
+    // Load from our own repo - no CORS issues!
+    const res = await fetch('/counties.json?v=' + Date.now());
+    if (!res.ok) throw new Error('counties.json not found');
+    const data = await res.json();
 
-  // MO coverage county FIPS codes
-  const MO_FIPS = [
-    '29001','29009','29023','29031','29035','29051','29053','29065','29069',
-    '29071','29073','29093','29099','29113','29123','29125','29133','29141',
-    '29143','29151','29157','29161','29163','29179','29181','29183','29186',
-    '29187','29189','29510','29195','29207','29219','29221','29223','29015','29019'
-  ];
+    const moFeatures = data.features.filter(f => f.properties.STATE === 'MO');
+    const ilFeatures = data.features.filter(f => f.properties.STATE === 'IL');
 
-  // IL coverage county FIPS codes  
-  const IL_FIPS = [
-    '17001','17003','17005','17013','17027','17055','17061','17077','17081',
-    '17083','17087','17117','17119','17133','17135','17145','17149','17157',
-    '17163','17181','17189','17199'
-  ];
-
-  // Fetch each county individually from Census TIGER - small requests, fast
-  const allRequests = [
-    ...MO_FIPS.map(fips => ({fips, state:'MO'})),
-    ...IL_FIPS.map(fips => ({fips, state:'IL'}))
-  ];
-
-  // Batch in groups of 10 to avoid overwhelming the browser
-  const batchSize = 10;
-  for (let i = 0; i < allRequests.length; i += batchSize) {
-    const batch = allRequests.slice(i, i + batchSize);
-    await Promise.all(batch.map(async ({fips, state}) => {
-      try {
-        const r = await fetch(
-          `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/86/query?where=GEOID%3D%27${fips}%27&outFields=NAME&returnGeometry=true&geometryPrecision=3&outSR=4326&f=geojson`,
-          {signal: AbortSignal.timeout(5000)}
+    // Draw MO counties in blue
+    L.geoJSON({type:'FeatureCollection', features: moFeatures}, {
+      style: {fillColor:'#1e3aab', fillOpacity:0.5, color:'rgba(100,160,255,0.8)', weight:1.5},
+      onEachFeature: (f, layer) => {
+        layer.bindTooltip(
+          `<strong>${f.properties.NAME} County</strong><br><span style="font-size:0.75rem">MO</span>`,
+          {className:'leaflet-tooltip-dark', sticky:true}
         );
-        if (!r.ok) return;
-        const data = await r.json();
-        if (!data.features?.length) return;
-        L.geoJSON(data, {
-          style: {
-            fillColor: state === 'MO' ? '#1e3aab' : '#2d6e2d',
-            fillOpacity: 0.5,
-            color: state === 'MO' ? 'rgba(100,160,255,0.8)' : 'rgba(100,220,100,0.8)',
-            weight: 1.5
-          },
-          onEachFeature: (f, layer) => {
-            layer.bindTooltip(
-              `<strong>${f.properties?.NAME} County</strong><br><span style="font-size:0.75rem">${state}</span>`,
-              {className:'leaflet-tooltip-dark', sticky:true}
-            );
-          }
-        }).addTo(map);
-      } catch(e) {/* skip failed county */}
-    }));
-  }
+      }
+    }).addTo(map);
 
-  console.log('✅ County boundaries loaded');
-  addReportMarkers();
+    // Draw IL counties in green
+    L.geoJSON({type:'FeatureCollection', features: ilFeatures}, {
+      style: {fillColor:'#2d6e2d', fillOpacity:0.5, color:'rgba(100,220,100,0.8)', weight:1.5},
+      onEachFeature: (f, layer) => {
+        layer.bindTooltip(
+          `<strong>${f.properties.NAME} County</strong><br><span style="font-size:0.75rem">IL</span>`,
+          {className:'leaflet-tooltip-dark', sticky:true}
+        );
+      }
+    }).addTo(map);
+
+    console.log(`✅ Map loaded: ${moFeatures.length} MO + ${ilFeatures.length} IL counties`);
+    addReportMarkers();
+  } catch(e) {
+    console.log('counties.json failed:', e.message);
+    addReportMarkers();
+  }
 }
 
 // County center coordinates for markers
