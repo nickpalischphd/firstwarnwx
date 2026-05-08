@@ -3,895 +3,994 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>First Warn Forecast Manager</title>
+<title>First Warn Weather Watchers — Community Network</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --red:#cc1a1a;--blue:#1a2a8f;--blue-mid:#1e3aab;--navy:#080c18;
-  --gold:#f0b020;--gold-light:#f5c840;--dark:#080c18;--dark-mid:#0e1428;
-  --text:#e8eaf0;--mid:#a8b4cc;--border:rgba(255,255,255,0.12);
+  --red:#cc1a1a;--red-dark:#9e0e0e;--red-bright:#e82222;
+  --blue:#1a2a8f;--blue-mid:#1e3aab;--blue-light:#2a4fd4;
+  --gold:#f0b020;--gold-light:#f5c840;
+  --dark:#080c18;--dark-mid:#0e1428;--dark-blue:#0a1030;
+  --text:#e8eaf0;--text-mid:#a8b4cc;--border:rgba(255,255,255,0.12);
   --green:#2d8a4e;--orange:#e07820;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);min-height:100vh}
+html{scroll-behavior:smooth}
+body{font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);overflow-x:hidden}
 
-/* LOGIN */
-#login{position:fixed;inset:0;background:linear-gradient(135deg,var(--dark),var(--blue));display:flex;align-items:center;justify-content:center;z-index:999}
-.login-box{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:2.5rem;width:360px;text-align:center;backdrop-filter:blur(10px)}
-.login-box h1{font-family:'Oswald',sans-serif;font-size:1.4rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:0.3rem}
-.login-box h1 span{color:var(--gold)}
-.login-box p{font-size:0.75rem;color:var(--mid);margin-bottom:1.5rem;letter-spacing:0.1em;text-transform:uppercase}
-.login-box input{width:100%;padding:0.8rem;background:rgba(255,255,255,0.08);border:1.5px solid var(--border);border-radius:4px;font-size:1rem;text-align:center;letter-spacing:0.2em;outline:none;color:#fff;margin-bottom:0.8rem}
-.login-box input:focus{border-color:var(--gold)}
-.login-err{color:#ff8080;font-size:0.8rem;margin-bottom:0.8rem;display:none}
-.login-btn{width:100%;background:var(--red);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:0.9rem;border:none;border-radius:4px;cursor:pointer;transition:background 0.2s}
-.login-btn:hover{background:#e82222}
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(8,12,24,0.97);backdrop-filter:blur(12px);border-bottom:2px solid var(--red);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:0.8rem;text-decoration:none}
+.nav-brand img{height:38px;object-fit:contain}
+.nav-brand-text{font-family:'Oswald',sans-serif;font-size:1rem;font-weight:700;color:#fff;letter-spacing:0.05em;line-height:1.2}
+.nav-brand-text span{color:var(--gold);display:block;font-size:0.6rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase}
+.nav-links{display:flex;gap:1.5rem;list-style:none;align-items:center}
+.nav-links a{font-family:'Barlow',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover,.nav-links a.active{color:var(--gold)}
 
-/* APP */
-#app{display:none;min-height:100vh}
-header{background:rgba(8,12,24,0.98);padding:0 2rem;height:58px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--red);position:sticky;top:0;z-index:100}
-header h1{font-family:'Oswald',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff}
-header h1 span{color:var(--gold)}
-.h-right{display:flex;gap:1rem;align-items:center}
-.h-right a{font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);text-decoration:none}
-.h-right a:hover{color:var(--gold)}
-.signout{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);font-family:'Barlow',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.8rem;border-radius:2px;cursor:pointer}
-.signout:hover{color:#fff;border-color:rgba(255,255,255,0.5)}
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--dark-blue) 0%,var(--blue) 50%,var(--red-dark) 100%);padding:7rem 2rem 3rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1'%3E%3Crect x='0' y='0' width='60' height='60'/%3E%3C/g%3E%3C/svg%3E");background-size:60px 60px}
+.hero-inner{position:relative;z-index:1;max-width:800px;margin:0 auto}
+.eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:0.8rem}
+.eyebrow::before,.eyebrow::after{content:'';display:block;width:36px;height:1px;background:var(--gold)}
+.hero h1{font-family:'Oswald',sans-serif;font-size:clamp(2.5rem,6vw,4.5rem);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;line-height:1;margin-bottom:0.5rem}
+.hero h1 span{color:var(--gold)}
+.hero h1 em{color:var(--red-bright);font-style:normal}
+.hero p{font-size:1rem;color:rgba(255,255,255,0.65);line-height:1.8;max-width:640px;margin:0 auto 2rem}
+.hero-stats{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
+.hero-stat{text-align:center}
+.hero-stat-n{font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--gold);display:block}
+.hero-stat-l{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid)}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn-red{background:var(--red);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;padding:0.85rem 2rem;border:none;border-radius:2px;cursor:pointer;text-decoration:none;display:inline-block;transition:all 0.2s}
+.btn-red:hover{background:var(--red-bright);transform:translateY(-2px)}
+.btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.4);font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;padding:0.85rem 2rem;border-radius:2px;cursor:pointer;text-decoration:none;display:inline-block;transition:all 0.2s}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+
+/* STRIPE */
+.stripe{height:4px;background:linear-gradient(90deg,var(--red-dark),var(--red),var(--gold),var(--red),var(--blue))}
+
+/* SECTIONS */
+section{padding:3rem 2rem}
+.container{max-width:1200px;margin:0 auto}
+.sec-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem}
+.sec-label::before{content:'';display:block;width:24px;height:2px;background:var(--red)}
+.sec-title{font-family:'Oswald',sans-serif;font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;margin-bottom:1rem;line-height:1.1}
+.sec-title span{color:var(--gold)}
+.sec-title em{color:var(--red-bright);font-style:normal}
 
 /* TABS */
-.tabs{background:rgba(8,12,24,0.98);border-bottom:1px solid rgba(255,255,255,0.08);padding:0 2rem;display:flex;overflow-x:auto;position:sticky;top:58px;z-index:99}
-.tab{background:none;border:none;color:rgba(255,255,255,0.4);font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.85rem 1.2rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s;white-space:nowrap}
-.tab:hover{color:rgba(255,255,255,0.8)}
-.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
-.badge{background:var(--red);color:#fff;font-size:0.58rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:10px;margin-left:0.3rem;vertical-align:middle}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:2rem;overflow-x:auto}
+.tab-btn{background:none;border:none;color:rgba(255,255,255,0.45);font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.85rem 1.5rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s;white-space:nowrap}
+.tab-btn:hover{color:rgba(255,255,255,0.8)}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
 
-/* PANES */
-.pane{display:none;padding:2rem;max-width:900px;margin:0 auto}
-.pane.active{display:block}
-.pane-title{font-family:'Oswald',sans-serif;font-size:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;margin-bottom:0.3rem}
-.pane-title span{color:var(--gold)}
-.pane-sub{font-size:0.82rem;color:var(--mid);margin-bottom:1.5rem;line-height:1.6}
+/* MAP */
+#weatherMap{height:500px;border-radius:4px;border:1px solid var(--border)}
+.leaflet-container{background:#0a1030!important}
+.leaflet-tile{filter:brightness(0.7) saturate(0.5) hue-rotate(180deg)}
+.map-marker-popup{background:var(--dark-mid);border:1px solid var(--border);border-radius:4px;padding:0.6rem 0.8rem;font-family:'Barlow Condensed',sans-serif;color:var(--text)}
 
-/* FORM ELEMENTS */
-.fg{margin-bottom:1.1rem}
-.fg label{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:0.4rem}
+
+/* REPORT FORM */
+.report-section{background:var(--dark)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fg{margin-bottom:1rem}
+.fg label{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid);display:block;margin-bottom:0.4rem}
 .fg input,.fg select,.fg textarea{width:100%;padding:0.75rem 1rem;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
-.fg textarea{min-height:180px;resize:vertical;line-height:1.8}
+.fg textarea{min-height:80px;resize:vertical}
 .fg input::placeholder,.fg textarea::placeholder{color:rgba(255,255,255,0.2)}
 .fg select option{background:var(--dark)}
-.hint{font-size:0.72rem;color:var(--mid);margin-top:0.3rem}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+.condition-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;margin-top:0.5rem}
+.condition-btn{background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:4px;padding:0.6rem 0.3rem;text-align:center;cursor:pointer;transition:all 0.2s}
+.condition-btn:hover{border-color:var(--gold)}
+.condition-btn.selected{border-color:var(--gold);background:rgba(240,176,32,0.15)}
+.condition-btn .icon{font-size:1.5rem;display:block;margin-bottom:0.2rem}
+.condition-btn .label{font-family:'Barlow Condensed',sans-serif;font-size:0.55rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-mid)}
 
-/* BUTTONS */
-.btn{background:var(--gold);color:var(--dark);font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.75rem 1.8rem;border:none;border-radius:2px;cursor:pointer;transition:all 0.2s}
-.btn:hover{background:var(--gold-light)}
-.btn:disabled{opacity:0.5;cursor:not-allowed}
-.btn-outline{background:transparent;color:var(--mid);border:1px solid var(--border)}
-.btn-outline:hover{border-color:var(--mid);color:#fff;background:transparent}
-.btn-sm{padding:0.35rem 0.8rem;font-size:0.65rem}
-.btn-danger{background:transparent;color:#ff8080;border:1px solid rgba(204,26,26,0.4)}
-.btn-danger:hover{background:rgba(204,26,26,0.15);color:#ff8080}
-.btn-blue{background:var(--blue-mid);color:#fff}
-.btn-blue:hover{background:var(--blue)}
-.btn-green{background:rgba(45,138,78,0.3);color:#5ee080;border:1px solid rgba(45,138,78,0.5)}
-.btn-green:hover{background:rgba(45,138,78,0.5)}
-.btn-row{display:flex;gap:0.8rem;flex-wrap:wrap;align-items:center}
+/* LEADERBOARD */
+.leaderboard-section{background:var(--dark-mid)}
+.lb-table{width:100%;border-collapse:collapse;margin-top:1rem}
+.lb-table th{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);padding:0.6rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+.lb-table td{padding:0.8rem 1rem;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.85rem;color:var(--text-mid);vertical-align:middle}
+.lb-table tr:hover td{background:rgba(255,255,255,0.03)}
+.lb-rank{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:700;color:var(--text-mid)}
+.lb-rank.gold{color:var(--gold)}
+.lb-rank.silver{color:var(--silver,#c8d4e8)}
+.lb-rank.bronze{color:#cd7f32}
+.lb-name{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#fff}
+.lb-county{font-size:0.75rem;color:var(--text-mid)}
+.lb-count{font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;color:var(--gold)}
+.lb-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px;display:inline-block}
+.lb-badge.elite{background:rgba(240,176,32,0.2);color:var(--gold);border:1px solid rgba(240,176,32,0.4)}
+.lb-badge.active{background:rgba(45,138,78,0.2);color:#5ee080;border:1px solid rgba(45,138,78,0.4)}
+.lb-badge.new{background:rgba(30,74,114,0.3);color:#7ab4ff;border:1px solid rgba(30,74,114,0.5)}
+
+/* APPLICATION */
+.apply-section{background:var(--dark)}
+.apply-inner{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
+.apply-info h2{font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;text-transform:uppercase;color:#fff;margin-bottom:1rem}
+.apply-info h2 span{color:var(--gold)}
+.apply-perks{margin-top:1.5rem;display:flex;flex-direction:column;gap:0.8rem}
+.perk{display:flex;align-items:center;gap:0.8rem;font-size:0.88rem;color:var(--text-mid)}
+.perk-icon{font-size:1.2rem;flex-shrink:0}
+.apply-form-wrap{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:2rem}
+.apply-form-wrap h3{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#fff;margin-bottom:1.2rem}
 
 /* ALERTS */
-.ok{background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.35);color:#5ee080;padding:0.75rem 1rem;border-radius:2px;font-size:0.82rem;font-weight:600;margin-bottom:1rem;display:none}
-.err{background:rgba(204,26,26,0.12);border:1px solid rgba(204,26,26,0.35);color:#ff8080;padding:0.75rem 1rem;border-radius:2px;font-size:0.82rem;font-weight:600;margin-bottom:1rem;display:none}
+.success-msg{background:rgba(45,138,78,0.15);border:1px solid rgba(45,138,78,0.35);color:#5ee080;padding:0.85rem 1.2rem;border-radius:2px;font-size:0.85rem;font-weight:600;margin-bottom:1rem;display:none}
+.error-msg{background:rgba(204,26,26,0.15);border:1px solid rgba(204,26,26,0.35);color:#ff8080;padding:0.85rem 1.2rem;border-radius:2px;font-size:0.85rem;font-weight:600;margin-bottom:1rem;display:none}
 
-/* CARDS */
-.section-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.5rem;margin-bottom:1rem}
-.section-label{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
-.section-label::before{content:'';display:block;width:20px;height:2px;background:var(--red)}
+/* LIVE INDICATOR */
+.live-dot{display:inline-block;width:8px;height:8px;background:var(--red);border-radius:50%;animation:blink 1s infinite;margin-right:0.4rem}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
-/* PREVIEW */
-.preview-box{background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:1rem 1.2rem;margin-bottom:1.5rem}
-.preview-box h3{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem}
-.preview-thumb-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.6rem}
-.preview-thumb{height:40px;width:60px;object-fit:cover;border-radius:2px;border:1px solid var(--border)}
+/* FOOTER */
+footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:1.5rem 2rem;text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.3);font-family:'Barlow',sans-serif}
+footer a{color:var(--gold);text-decoration:none}
 
-/* TOGGLE */
-.toggle-row{display:flex;align-items:center;gap:1rem;background:rgba(255,255,255,0.04);padding:0.9rem 1.2rem;border-radius:4px;margin-bottom:1.2rem}
-.tog{position:relative;display:inline-block;width:42px;height:22px;flex-shrink:0}
-.tog input{opacity:0;width:0;height:0}
-.tog-slider{position:absolute;cursor:pointer;inset:0;background:#333;border-radius:22px;transition:0.3s}
-.tog-slider:before{position:absolute;content:'';height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s}
-input:checked+.tog-slider{background:var(--red)}
-input:checked+.tog-slider:before{transform:translateX(20px)}
+.fade-up{opacity:0;transform:translateY(20px);transition:opacity 0.6s,transform 0.6s}
+.fade-up.visible{opacity:1;transform:none}
 
-/* NOTICE */
-.notice{background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:0.8rem 1rem;font-size:0.82rem;color:var(--mid);line-height:1.6;margin-bottom:1.2rem}
-
-/* STATS */
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
-.stat-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
-.stat-box{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;padding:1.2rem;text-align:center}
-.stat-n{font-family:'Oswald',sans-serif;font-size:2rem;font-weight:700;color:var(--gold);display:block}
-.stat-l{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid);margin-top:0.3rem}
-
-/* BLOG LIST */
-.blog-item{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:3px;padding:0.8rem 1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:1rem}
-.blog-item-info{flex:1}
-.blog-item-title{font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff}
-.blog-item-meta{font-size:0.72rem;color:var(--mid);margin-top:0.2rem}
-
-/* WATCHER REPORT CARDS */
-.wr-pending{background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:1rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:1rem}
-.wr-approved{background:rgba(45,138,78,0.08);border:1px solid rgba(45,138,78,0.2);border-radius:4px;padding:0.8rem 1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:1rem}
-.wr-icon{font-size:1.8rem;flex-shrink:0}
-.wr-info{flex:1}
-.wr-name{font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff}
-.wr-detail{font-size:0.75rem;color:var(--mid);margin-top:0.2rem}
-.wr-time{font-size:0.65rem;color:rgba(255,255,255,0.3);margin-top:0.2rem}
-.wr-btns{display:flex;gap:0.4rem;flex-shrink:0}
-
-/* PUBLISH BOX */
-.pub-box{background:linear-gradient(135deg,rgba(8,12,24,0.9),rgba(26,42,143,0.4));border:1px solid rgba(42,79,212,0.3);border-radius:4px;padding:1.5rem 2rem;margin-bottom:1.5rem}
-.pub-box h3{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:600;text-transform:uppercase;color:#fff;margin-bottom:0.5rem}
-.pub-box p{font-size:0.85rem;color:var(--mid);margin-bottom:1.2rem;line-height:1.6}
-
-@media(max-width:640px){.two{grid-template-columns:1fr}.stat-grid,.stat-grid-4{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.map-container,.apply-inner{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.condition-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:640px){.nav-links{display:none}.condition-grid{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login">
-  <div class="login-box">
-    <h1>First Warn <span>Weather</span></h1>
-    <p>Forecast Manager</p>
-    <div style="font-size:2.5rem;margin-bottom:1.2rem">⛅</div>
-    <input type="password" id="pwd" placeholder="••••••••" onkeypress="if(event.key==='Enter')doLogin()">
-    <div class="login-err" id="loginErr">Incorrect password.</div>
-    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <img src="fw-logo.png" alt="First Warn Weather">
+    <div class="nav-brand-text">First Warn Weather<span>Weather Watcher Network</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="forecast.html">Forecast</a></li>
+    <li><a href="weather-watchers.html" class="active">Weather Watchers</a></li>
+    <li><a href="index.html#connect">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">Community Observation Network</p>
+    <h1>First Warn <span>Weather</span> <em>Watchers</em></h1>
+    <p>You are our eyes on the ground. Join the First Warn Weather Watcher Network and help build a real-time picture of conditions across Missouri and Southern Illinois.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-n" id="statReports">0</span>
+        <span class="hero-stat-l">Reports Today</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-n" id="statWatchers">0</span>
+        <span class="hero-stat-l">Active Watchers</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-n">57</span>
+        <span class="hero-stat-l">Counties Covered</span>
+      </div>
+    </div>
+    <div class="hero-btns">
+      <a href="#report" class="btn-red" onclick="setTimeout(()=>switchTab('report'),100)">📍 Submit Weather Report</a>
+      <a href="#report" class="btn-outline" onclick="setTimeout(()=>switchTab('apply'),100)">🌩️ Apply to be a Watcher</a>
+    </div>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app">
-  <header>
-    <h1>First Warn <span>Forecast Manager</span></h1>
-    <div class="h-right">
-      <a href="forecast.html" target="_blank">View Forecast ↗</a>
-      <a href="index.html" target="_blank">View Site ↗</a>
-      <a href="weather-watchers.html" target="_blank">Watchers ↗</a>
-      <button class="signout" onclick="doLogout()">Sign Out</button>
-    </div>
-  </header>
+<div class="stripe"></div>
 
-  <div class="tabs">
-    <button class="tab active" id="t-forecast" onclick="goTab('forecast')">⛅ Daily Forecast</button>
-    <button class="tab" id="t-severe" onclick="goTab('severe')">⚡ Severe Weather</button>
-    <button class="tab" id="t-blog" onclick="goTab('blog')">🪟 Dr. Nick's Window</button>
-    <button class="tab" id="t-alert" onclick="goTab('alert')">🚨 Alert Day</button>
-    <button class="tab" id="t-watchers" onclick="goTab('watchers')">👥 Watchers <span class="badge" id="pendingBadge" style="display:none">0</span></button>
-    <button class="tab" id="t-analytics" onclick="goTab('analytics')">📊 Analytics</button>
-    <button class="tab" id="t-publish" onclick="goTab('publish')">🚀 Publish</button>
-    <button class="tab" id="t-settings" onclick="goTab('settings')">⚙️ GitHub</button>
-  </div>
+<!-- MAP + LIVE REPORTS -->
+<section class="map-section" id="map" style="background:var(--dark-mid);padding:3rem 2rem">
+  <div class="container">
+    <p class="sec-label"><span class="live-dot"></span>Live Conditions Map</p>
+    <h2 class="sec-title">First Warn <span>Coverage Area</span></h2>
+    <p style="font-size:0.9rem;color:var(--text-mid);margin-bottom:1.5rem">Real-time weather watcher reports plotted across your First Warn coverage area. Reports shown for the last 24 hours. Click any marker to see details.</p>
 
-  <!-- ⛅ DAILY FORECAST -->
-  <div class="pane active" id="p-forecast">
-    <div class="pane-title">Daily <span>Forecast</span></div>
-    <div class="pane-sub">Enter your forecast details and graphics. Save then Publish to go live.</div>
-    <div class="ok" id="forecastOk"></div>
-    <div class="err" id="forecastErr"></div>
-
-    <div class="preview-box" id="fPreview" style="display:none">
-      <h3>⛅ Currently Posted — <span id="fPreviewDate"></span></h3>
-      <div id="fPreviewText" style="font-size:0.82rem;color:var(--mid);line-height:1.6;max-height:60px;overflow:hidden"></div>
-      <div class="preview-thumb-row" id="fPreviewThumbs"></div>
-    </div>
-
-    <div class="fg"><label>Forecast Date</label><input type="text" id="fDate" placeholder="e.g. Monday, May 5, 2026"></div>
-
-    <div class="section-label">Forecast Graphics — Upload to GitHub First, Then Enter Filename</div>
-    <div class="notice">💡 Upload your graphics to GitHub first, then enter the filename here (e.g. <code style="color:var(--gold)">forecast-24hr.png</code>)</div>
-    <div class="two">
-      <div class="fg"><label>24-Hour Forecast Graphic</label><input type="text" id="fname24" placeholder="e.g. forecast-24hr.png"></div>
-      <div class="fg"><label>10-Day Forecast Graphic</label><input type="text" id="fname10" placeholder="e.g. forecast-10day.png"></div>
-      <div class="fg"><label>Additional Graphic 1</label><input type="text" id="fnameExtra1" placeholder="e.g. forecast-extra1.png"></div>
-      <div class="fg"><label>Additional Graphic 2</label><input type="text" id="fnameExtra2" placeholder="e.g. forecast-extra2.png"></div>
-    </div>
-
-    <div class="fg"><label>Forecast Narrative *</label>
-      <textarea id="fNarrative" placeholder="Write your forecast narrative here...&#10;&#10;Be clear, confident, and direct. Tell your audience what they need to know."></textarea>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn" onclick="saveForecast()">💾 Save Forecast</button>
-      <button class="btn btn-outline" onclick="clearForecast()">Clear</button>
-      <button class="btn btn-blue btn-sm" onclick="goTab('publish')" style="margin-left:auto">→ Go to Publish</button>
-    </div>
-  </div>
-
-  <!-- ⚡ SEVERE WEATHER -->
-  <div class="pane" id="p-severe">
-    <div class="pane-title">Severe <span>Weather</span></div>
-    <div class="pane-sub">Enter severe weather graphics and discussion. Turn on the toggle to activate severe mode.</div>
-    <div class="ok" id="severeOk"></div>
-    <div class="err" id="severeErr"></div>
-
-    <div class="toggle-row">
-      <label class="tog"><input type="checkbox" id="severeToggle"><span class="tog-slider"></span></label>
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
+      <!-- LEAFLET MAP -->
       <div>
-        <span style="font-size:0.88rem;font-weight:700;color:#fff">Severe Weather Mode</span>
-        <span style="font-size:0.78rem;color:var(--mid);margin-left:0.5rem">(shows warning indicators on site)</span>
+        <div id="weatherMap"></div>
+        <div style="margin-top:0.6rem;display:flex;gap:1.5rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(100,160,255,0.7)">
+            <div style="width:14px;height:10px;background:rgba(30,74,114,0.6);border:1px solid rgba(100,160,255,0.4);border-radius:2px"></div>Missouri Counties
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(100,220,100,0.7)">
+            <div style="width:14px;height:10px;background:rgba(45,100,45,0.5);border:1px solid rgba(100,220,100,0.4);border-radius:2px"></div>Illinois Counties
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold)">
+            <div style="width:14px;height:14px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px">📍</div>Weather Report
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="notice">💡 Upload graphics to GitHub first, then enter filenames below</div>
-    <div class="two">
-      <div class="fg"><label>Severe Threat Map</label><input type="text" id="fnameSevere1" placeholder="e.g. severe-threat.png"></div>
-      <div class="fg"><label>Breakdown Graphic</label><input type="text" id="fnameSevere2" placeholder="e.g. severe-breakdown.png"></div>
-      <div class="fg"><label>Additional Severe Graphic 1</label><input type="text" id="fnameSevere3" placeholder="e.g. severe-extra1.png"></div>
-      <div class="fg"><label>Additional Severe Graphic 2</label><input type="text" id="fnameSevere4" placeholder="e.g. severe-extra2.png"></div>
-    </div>
-
-    <div class="fg"><label>Severe Weather Discussion</label>
-      <textarea id="severeNarrative" placeholder="Describe the severe weather threat, timing, and what people should do..."></textarea>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn" onclick="saveSevere()">💾 Save Severe Weather</button>
-      <button class="btn btn-outline" onclick="clearSevere()">Clear</button>
-    </div>
-  </div>
-
-  <!-- 🪟 DR. NICK'S WINDOW BLOG -->
-  <div class="pane" id="p-blog">
-    <div class="pane-title">Weather From <span>Dr. Nick's Window</span></div>
-    <div class="pane-sub">Write and publish weather blog posts that appear in the Dr. Nick's Window section on your homepage.</div>
-    <div class="ok" id="blogOk"></div>
-    <div class="err" id="blogErr"></div>
-    <input type="hidden" id="blogEditId">
-
-    <div class="fg"><label>Post Title *</label><input type="text" id="blogTitle" placeholder="e.g. Why Today's Cold Front Matters..."></div>
-    <div class="two">
-      <div class="fg">
-        <label>Category</label>
-        <select id="blogCat">
-          <option>Weather Observation</option>
-          <option>Storm Analysis</option>
-          <option>Seasonal Weather</option>
-          <option>Weather Education</option>
-          <option>Severe Weather</option>
-          <option>Winter Weather</option>
-          <option>Climate & Patterns</option>
-          <option>Weather from the Window</option>
-        </select>
-      </div>
-      <div class="fg"><label>Date</label><input type="text" id="blogDate"></div>
-    </div>
-    <div class="fg"><label>Excerpt (one sentence preview)</label><input type="text" id="blogExcerpt" placeholder="A brief sentence about today's weather..."></div>
-    <div class="fg"><label>Full Post *</label>
-      <textarea id="blogContent" placeholder="Write your weather observation here...&#10;&#10;Leave a blank line between paragraphs."></textarea>
-    </div>
-    <div class="btn-row" style="margin-bottom:1.5rem">
-      <button class="btn" onclick="saveBlogPost()">💾 Save Post</button>
-      <button class="btn btn-outline btn-sm" onclick="clearBlogForm()">Clear</button>
-    </div>
-    <hr>
-    <div class="section-label">Published Posts</div>
-    <div id="blogList"><p style="color:var(--mid);font-style:italic;font-size:0.85rem">No posts yet.</p></div>
-  </div>
-
-  <!-- 🚨 ALERT DAY -->
-  <div class="pane" id="p-alert">
-    <div class="pane-title">Alert <span>Day</span></div>
-    <div class="pane-sub">Toggle Alert Day to activate the red flashing banner across your site.</div>
-    <div class="ok" id="alertOk"></div>
-
-    <div class="toggle-row" style="margin-bottom:1.5rem">
-      <label class="tog"><input type="checkbox" id="alertToggle" onchange="saveAlertDay()"><span class="tog-slider"></span></label>
+      <!-- LIVE REPORT FEED -->
       <div>
-        <span style="font-size:0.88rem;font-weight:700;color:#fff" id="alertStatus">Alert Day: OFF</span>
-        <div style="font-size:0.78rem;color:var(--mid);margin-top:0.2rem">Turn on to show red flashing alert banner on your site</div>
-      </div>
-    </div>
-
-    <div class="fg"><label>Alert Day Message</label>
-      <input type="text" id="alertMessage" placeholder="e.g. Severe weather possible this afternoon — stay weather aware!">
-    </div>
-
-    <div class="fg"><label>Alert Day Graphic (filename)</label>
-      <input type="text" id="fnameAlertday" placeholder="e.g. fw-alertday.png">
-    </div>
-
-    <button class="btn" onclick="saveAlertDay()">💾 Save Alert Day</button>
-  </div>
-
-  <!-- 👥 WEATHER WATCHERS -->
-  <div class="pane" id="p-watchers">
-    <div class="pane-title">Weather Watcher <span>Reports</span></div>
-    <div class="pane-sub">When you receive a weather report email, enter it here to post it to the live map. Reports drop off after 4 hours.</div>
-
-    <div class="stat-grid">
-      <div class="stat-box"><span class="stat-n" id="wApproved">0</span><div class="stat-l">Live on Map</div></div>
-      <div class="stat-box"><span class="stat-n" id="wCounties">0</span><div class="stat-l">Counties Reporting</div></div>
-      <div class="stat-box"><span class="stat-n">4 hrs</span><div class="stat-l">Report Window</div></div>
-    </div>
-
-    <!-- MANUAL ENTRY FORM -->
-    <div class="section-card">
-      <div class="section-label">➕ Add Report from Email</div>
-      <p style="font-size:0.82rem;color:var(--mid);line-height:1.7;margin-bottom:1.2rem">When you receive a weather watcher report email, enter the details below and click Post to add it to the live map.</p>
-      <div class="ok" id="wrOk"></div>
-      <div class="two">
-        <div class="fg"><label>Reporter First Name *</label><input type="text" id="wrName" placeholder="e.g. John"></div>
-        <div class="fg">
-          <label>County *</label>
-          <select id="wrCounty">
-            <option value="">Select county...</option>
-            <optgroup label="Missouri">
-              <option>Audrain, MO</option><option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option><option>Callaway, MO</option><option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option><option>Crawford, MO</option><option>Dent, MO</option><option>Dunklin, MO</option><option>Franklin, MO</option><option>Gasconade, MO</option><option>Iron, MO</option><option>Jefferson, MO</option><option>Lincoln, MO</option><option>Madison, MO</option><option>Maries, MO</option><option>Mississippi, MO</option><option>Montgomery, MO</option><option>New Madrid, MO</option><option>Osage, MO</option><option>Perry, MO</option><option>Phelps, MO</option><option>Pike, MO</option><option>Reynolds, MO</option><option>Ripley, MO</option><option>St. Charles, MO</option><option>Ste. Genevieve, MO</option><option>St. Francois, MO</option><option>St. Louis, MO</option><option>St. Louis City, MO</option><option>Scott, MO</option><option>Stoddard, MO</option><option>Warren, MO</option><option>Washington, MO</option><option>Wayne, MO</option>
-            </optgroup>
-            <optgroup label="Illinois">
-              <option>Adams, IL</option><option>Alexander, IL</option><option>Bond, IL</option><option>Calhoun, IL</option><option>Clinton, IL</option><option>Franklin, IL</option><option>Greene, IL</option><option>Jackson, IL</option><option>Jefferson, IL</option><option>Jersey, IL</option><option>Johnson, IL</option><option>Macoupin, IL</option><option>Madison, IL</option><option>Monroe, IL</option><option>Montgomery, IL</option><option>Perry, IL</option><option>Pike, IL</option><option>Randolph, IL</option><option>St. Clair, IL</option><option>Union, IL</option><option>Washington, IL</option><option>Williamson, IL</option>
-            </optgroup>
-          </select>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.4rem">
+          <span class="live-dot"></span> Live Reports
         </div>
-        <div class="fg"><label>Temperature (°F) *</label><input type="number" id="wrTemp" placeholder="72" min="-50" max="130"></div>
-        <div class="fg">
-          <label>Conditions *</label>
-          <select id="wrCondition">
-            <option>☀️ Clear/Sunny</option><option>⛅ Partly Cloudy</option><option>☁️ Cloudy</option>
-            <option>🌧️ Rain</option><option>⛈️ Storms</option><option>🌪️ Tornado</option>
-            <option>❄️ Snow</option><option>🌨️ Sleet/Ice</option><option>🌬️ High Wind</option>
-            <option>🌊 Flooding</option><option>🌫️ Fog</option><option>🌩️ Lightning</option>
-          </select>
+        <div id="liveReportsList">
+          <div style="text-align:center;padding:2rem;color:var(--text-mid);font-style:italic;font-size:0.85rem">No reports yet today. Be the first to submit!</div>
         </div>
-        <div class="fg"><label>Wind Speed (mph)</label><input type="number" id="wrWind" placeholder="15" min="0" max="200"></div>
-        <div class="fg"><label>Notes</label><input type="text" id="wrNotes" placeholder="e.g. 1 inch hail, downed trees..."></div>
-      </div>
-      <button class="btn btn-green" onclick="addManualReport()" style="padding:0.85rem 2rem">✅ Post to Live Map →</button>
-    </div>
-
-    <!-- LIVE REPORTS -->
-    <div class="section-label" style="margin-top:1.5rem">📍 Currently Live on Map (Last 4 Hours)</div>
-    <div id="approvedList">
-      <p style="color:var(--mid);font-style:italic;font-size:0.85rem">No reports currently live.</p>
-    </div>
-
-    <div style="margin-top:1.2rem">
-      <button class="btn btn-danger btn-sm" onclick="clearAllReports()">🗑️ Clear All Reports</button>
-    </div>
-  </div>
-
-  <!-- 📊 ANALYTICS -->
-  <div class="pane" id="p-analytics">
-    <div class="pane-title">Site <span>Analytics</span></div>
-    <div class="pane-sub">Track visitor activity and weather watcher report data.</div>
-
-    <div class="notice">💡 <strong style="color:#fff">Google Analytics is active</strong> on your site with ID <strong style="color:var(--gold)">G-WPRQY4TVQ0</strong>. Visit Google Analytics to see full visitor data including page views, locations, devices, and more.</div>
-
-    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
-      <a href="https://analytics.google.com" target="_blank" class="btn btn-blue" style="text-decoration:none">📊 Open Google Analytics →</a>
-      <a href="https://search.google.com/search-console" target="_blank" class="btn btn-outline" style="text-decoration:none">🔍 Google Search Console →</a>
-    </div>
-
-    <div class="section-label">Weather Watcher Activity (Last 4 Hours)</div>
-    <div class="stat-grid-4">
-      <div class="stat-box"><span class="stat-n" id="aReports">0</span><div class="stat-l">Live Reports</div></div>
-      <div class="stat-box"><span class="stat-n" id="aCounties">0</span><div class="stat-l">Counties Active</div></div>
-      <div class="stat-box"><span class="stat-n" id="aWatchers">0</span><div class="stat-l">Unique Watchers</div></div>
-      <div class="stat-box"><span class="stat-n" id="aAvgTemp">—</span><div class="stat-l">Avg Temp °F</div></div>
-    </div>
-
-    <div class="section-label">Recent Reports</div>
-    <div id="analyticsReportList">
-      <p style="color:var(--mid);font-style:italic;font-size:0.85rem">No reports yet.</p>
-    </div>
-  </div>
-
-  <!-- 🚀 PUBLISH -->
-  <div class="pane" id="p-publish">
-    <div class="pane-title">Publish to <span>Your Site</span></div>
-    <div class="pane-sub">One click sends your forecast and weather blog live to firstwarnwx.com</div>
-    <div class="ok" id="pubOk"></div>
-    <div class="err" id="pubErr"></div>
-
-    <div class="pub-box">
-      <h3>🚀 Ready to Go Live?</h3>
-      <p>Click below to publish your forecast and weather blog. Your site updates within 60 seconds.</p>
-      <button class="btn" id="pubBtn" onclick="publishToGH()" style="padding:0.9rem 2.5rem;font-size:0.88rem">Publish to firstwarnwx.com →</button>
-    </div>
-
-    <div class="section-card">
-      <div class="btn-row">
-        <button class="btn btn-outline btn-sm" onclick="goTab('settings')">⚙️ GitHub Settings</button>
-        <button class="btn btn-outline btn-sm" onclick="copyJSON()">📋 Copy forecast.json</button>
-        <span id="cpOk" style="font-size:0.78rem;color:#5ee080;display:none">✓ Copied!</span>
+        <div style="margin-top:1rem">
+          <a href="#report" class="btn-red" style="width:100%;text-align:center;display:block;font-size:0.8rem;padding:0.7rem">+ Submit Your Report</a>
+        </div>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- ⚙️ GITHUB SETTINGS -->
-  <div class="pane" id="p-settings">
-    <div class="pane-title">GitHub <span>Settings</span></div>
-    <div class="pane-sub">Enter once — then publishing is one click forever.</div>
-    <div class="ok" id="ghOk"></div>
+<div class="stripe"></div>
 
-    <div class="section-card">
-      <div class="notice">🔒 Your token is stored only in your browser and never shared.</div>
-      <div class="fg"><label>GitHub Username</label><input type="text" id="ghUser" placeholder="e.g. nickpalischphd"></div>
-      <div class="fg"><label>Repository Name</label><input type="text" id="ghRepo" placeholder="e.g. firstwarnwx"></div>
-      <div class="fg"><label>Personal Access Token</label>
-        <input type="password" id="ghTok" placeholder="ghp_••••••••••••••••">
-        <p class="hint">Token must have <strong>repo</strong> scope. Never share your token.</p>
-      </div>
-      <div class="btn-row">
-        <button class="btn" onclick="saveGH()">Save Settings</button>
-        <button class="btn btn-blue btn-sm" onclick="testGH()">Test Connection</button>
-      </div>
-      <div class="ok" id="ghTestOk" style="margin-top:1rem"></div>
-      <div class="err" id="ghTestErr" style="margin-top:1rem"></div>
+
+<div class="stripe"></div>
+
+<!-- TABS: REPORT / LEADERBOARD / APPLY -->
+<section class="report-section" id="report">
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-report" onclick="switchTab('report')">📍 Submit Report</button>
+      <button class="tab-btn" id="tab-leader" onclick="switchTab('leader')">🏆 Leaderboard</button>
+      <button class="tab-btn" id="tab-apply" onclick="switchTab('apply')">🌩️ Apply to Join</button>
     </div>
-  </div>
 
-</div><!-- end app -->
+    <!-- SUBMIT REPORT TAB -->
+    <div class="tab-pane active" id="pane-report">
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:3rem;align-items:start">
+        <div>
+          <p class="sec-label">Community Observation</p>
+          <h2 class="sec-title">Submit Your <span>Weather Report</span></h2>
+          <p style="font-size:0.88rem;color:var(--text-mid);line-height:1.8;margin-bottom:2rem">Tell us what you're seeing right now! Your report helps Dr. Nick build a complete picture of conditions across the coverage area.</p>
+
+          <div class="success-msg" id="reportSuccess">✓ Thank you for your report! It will appear on the map once approved by Dr. Nick — usually within a few minutes.</div>
+          <div class="error-msg" id="reportError">Something went wrong. Please try again.</div>
+
+          <div class="form-grid">
+            <div class="fg"><label>Your First Name *</label><input type="text" id="rName" placeholder="First name only"></div>
+            <div class="fg">
+              <label>Your County *</label>
+              <select id="rCounty">
+                <option value="">Select your county...</option>
+                <optgroup label="Missouri">
+                  <option>Audrain, MO</option><option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option>
+                  <option>Callaway, MO</option><option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option>
+                  <option>Crawford, MO</option><option>Dent, MO</option><option>Dunklin, MO</option>
+                  <option>Franklin, MO</option><option>Gasconade, MO</option><option>Iron, MO</option>
+                  <option>Jefferson, MO</option><option>Lincoln, MO</option><option>Madison, MO</option>
+                  <option>Maries, MO</option><option>Mississippi, MO</option><option>Montgomery, MO</option>
+                  <option>New Madrid, MO</option><option>Osage, MO</option><option>Perry, MO</option>
+                  <option>Phelps, MO</option><option>Pike, MO</option><option>Reynolds, MO</option>
+                  <option>Ripley, MO</option><option>St. Charles, MO</option><option>Ste. Genevieve, MO</option>
+                  <option>St. Francois, MO</option><option>St. Louis, MO</option><option>St. Louis City, MO</option>
+                  <option>Scott, MO</option><option>Stoddard, MO</option><option>Warren, MO</option>
+                  <option>Washington, MO</option><option>Wayne, MO</option>
+                </optgroup>
+                <optgroup label="Illinois">
+                  <option>Adams, IL</option><option>Alexander, IL</option><option>Bond, IL</option>
+                  <option>Calhoun, IL</option><option>Clinton, IL</option><option>Franklin, IL</option>
+                  <option>Greene, IL</option><option>Jackson, IL</option><option>Jefferson, IL</option>
+                  <option>Jersey, IL</option><option>Johnson, IL</option><option>Macoupin, IL</option>
+                  <option>Madison, IL</option><option>Monroe, IL</option><option>Montgomery, IL</option>
+                  <option>Perry, IL</option><option>Pike, IL</option><option>Randolph, IL</option>
+                  <option>St. Clair, IL</option><option>Union, IL</option><option>Washington, IL</option>
+                  <option>Williamson, IL</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="fg"><label>Temperature (°F) *</label><input type="number" id="rTemp" placeholder="e.g. 72" min="-50" max="130"></div>
+            <div class="fg">
+              <label>Wind Speed (mph)</label>
+              <input type="number" id="rWind" placeholder="e.g. 15" min="0" max="200">
+            </div>
+          </div>
+
+          <div class="fg">
+            <label>Current Conditions *</label>
+            <div class="condition-grid" id="conditionGrid">
+              <div class="condition-btn" onclick="selectCondition('☀️ Clear/Sunny',this)"><span class="icon">☀️</span><span class="label">Clear</span></div>
+              <div class="condition-btn" onclick="selectCondition('⛅ Partly Cloudy',this)"><span class="icon">⛅</span><span class="label">Partly Cloudy</span></div>
+              <div class="condition-btn" onclick="selectCondition('☁️ Cloudy',this)"><span class="icon">☁️</span><span class="label">Cloudy</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌧️ Rain',this)"><span class="icon">🌧️</span><span class="label">Rain</span></div>
+              <div class="condition-btn" onclick="selectCondition('⛈️ Storms',this)"><span class="icon">⛈️</span><span class="label">Storms</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌪️ Tornado',this)"><span class="icon">🌪️</span><span class="label">Tornado</span></div>
+              <div class="condition-btn" onclick="selectCondition('❄️ Snow',this)"><span class="icon">❄️</span><span class="label">Snow</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌨️ Sleet/Ice',this)"><span class="icon">🌨️</span><span class="label">Sleet/Ice</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌬️ High Wind',this)"><span class="icon">🌬️</span><span class="label">High Wind</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌊 Flooding',this)"><span class="icon">🌊</span><span class="label">Flooding</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌫️ Fog',this)"><span class="icon">🌫️</span><span class="label">Fog</span></div>
+              <div class="condition-btn" onclick="selectCondition('🌩️ Lightning',this)"><span class="icon">🌩️</span><span class="label">Lightning</span></div>
+            </div>
+            <input type="hidden" id="rCondition">
+          </div>
+
+          <div class="fg">
+            <label>Additional Notes</label>
+            <textarea id="rNotes" placeholder="Anything else to report? Hail size, damage, flooding depth, visibility, etc."></textarea>
+          </div>
+
+          <button class="btn-red" onclick="submitReport()" style="padding:1rem 2.5rem;font-size:0.88rem">📍 Submit Weather Report →</button>
+        </div>
+
+        <!-- WHAT TO REPORT GUIDE -->
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.5rem;position:sticky;top:84px">
+          <h4 style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">📋 What to Report</h4>
+          <div style="display:flex;flex-direction:column;gap:0.8rem">
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6;padding-bottom:0.8rem;border-bottom:1px solid var(--border)">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">🌡️ Temperature</strong>
+              Your outdoor thermometer reading in °F
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6;padding-bottom:0.8rem;border-bottom:1px solid var(--border)">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">🧊 Hail</strong>
+              Size (pea, marble, golf ball, baseball)
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6;padding-bottom:0.8rem;border-bottom:1px solid var(--border)">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">❄️ Snow/Ice</strong>
+              Accumulation in inches on a flat surface
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6;padding-bottom:0.8rem;border-bottom:1px solid var(--border)">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">🌊 Flooding</strong>
+              Depth if safe to measure, road closures
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-mid);line-height:1.6">
+              <strong style="color:#fff;display:block;margin-bottom:0.2rem">💨 Wind Damage</strong>
+              Downed trees, power lines, structural damage
+            </div>
+          </div>
+          <div style="margin-top:1.2rem;background:rgba(204,26,26,0.12);border:1px solid rgba(204,26,26,0.3);border-radius:3px;padding:0.8rem">
+            <p style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);margin-bottom:0.3rem">⚠️ Safety First</p>
+            <p style="font-size:0.78rem;color:var(--text-mid);line-height:1.5">Never put yourself in danger to make a report. Your safety is always the priority!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD TAB -->
+    <div class="tab-pane" id="pane-leader">
+      <p class="sec-label">Most Active Reporters</p>
+      <h2 class="sec-title">Weather Watcher <span>Leaderboard</span></h2>
+      <p style="font-size:0.88rem;color:var(--text-mid);line-height:1.8;margin-bottom:1.5rem">Recognizing our most dedicated community weather watchers. Rankings based on total reports submitted.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:2rem">
+        <div id="lb1" style="background:linear-gradient(135deg,rgba(240,176,32,0.15),rgba(240,176,32,0.05));border:1px solid rgba(240,176,32,0.4);border-radius:4px;padding:1.5rem;text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem">🥇</div>
+          <div id="lb1name" style="font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;color:var(--gold)">—</div>
+          <div id="lb1county" style="font-size:0.72rem;color:var(--text-mid);margin-top:0.2rem"></div>
+          <div id="lb1count" style="font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;color:var(--gold);margin-top:0.5rem">0</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid)">Reports</div>
+        </div>
+        <div id="lb2" style="background:rgba(255,255,255,0.04);border:1px solid rgba(200,212,232,0.3);border-radius:4px;padding:1.5rem;text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem">🥈</div>
+          <div id="lb2name" style="font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;color:#c8d4e8">—</div>
+          <div id="lb2county" style="font-size:0.72rem;color:var(--text-mid);margin-top:0.2rem"></div>
+          <div id="lb2count" style="font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;color:#c8d4e8;margin-top:0.5rem">0</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid)">Reports</div>
+        </div>
+        <div id="lb3" style="background:rgba(255,255,255,0.04);border:1px solid rgba(205,127,50,0.3);border-radius:4px;padding:1.5rem;text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem">🥉</div>
+          <div id="lb3name" style="font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;color:#cd7f32">—</div>
+          <div id="lb3county" style="font-size:0.72rem;color:var(--text-mid);margin-top:0.2rem"></div>
+          <div id="lb3count" style="font-family:'Oswald',sans-serif;font-size:1.8rem;font-weight:700;color:#cd7f32;margin-top:0.5rem">0</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid)">Reports</div>
+        </div>
+      </div>
+
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>County</th>
+            <th>Total Reports</th>
+            <th>Last Report</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody">
+          <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-mid);font-style:italic">No reports yet — be the first to submit!</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- APPLY TAB -->
+    <div class="tab-pane" id="pane-apply">
+      <div class="apply-inner">
+        <div class="apply-info fade-up">
+          <p class="sec-label">Join the Network</p>
+          <h2 class="sec-title">Become a First Warn <span>Weather Watcher</span></h2>
+          <p style="font-size:0.95rem;color:var(--text-mid);line-height:1.85;margin-bottom:1.5rem">First Warn Weather Watchers are the backbone of community-based weather observation. As a trained and recognized member of the network, your reports directly support Dr. Nick's forecasting and help keep your community safe.</p>
+          <div class="apply-perks">
+            <div class="perk"><span class="perk-icon">🏅</span><span>Official First Warn Weather Watcher recognition</span></div>
+            <div class="perk"><span class="perk-icon">📱</span><span>Your reports appear on the live coverage map</span></div>
+            <div class="perk"><span class="perk-icon">🏆</span><span>Featured on the community leaderboard</span></div>
+            <div class="perk"><span class="perk-icon">📚</span><span>Weather spotter education resources from Dr. Nick</span></div>
+            <div class="perk"><span class="perk-icon">🌩️</span><span>Direct connection to the First Warn Weather team</span></div>
+            <div class="perk"><span class="perk-icon">🌍</span><span>Help protect your community through accurate reporting</span></div>
+          </div>
+          <div style="margin-top:2rem;background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:1.2rem 1.5rem">
+            <p style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem">Coverage Area Only</p>
+            <p style="font-size:0.82rem;color:var(--text-mid);line-height:1.6">Weather Watchers must be located in one of the 57 Missouri and Illinois counties covered by First Warn Weather. See the map above for the full coverage area.</p>
+          </div>
+        </div>
+        <div class="fade-up" style="transition-delay:0.2s">
+          <div class="apply-form-wrap">
+            <h3>Apply to Join the Network</h3>
+            <div class="success-msg" id="applySuccess">✓ Application received! Dr. Nick will review your application and be in touch within a few days.</div>
+            <div class="error-msg" id="applyError">Something went wrong. Please email Dr. Nick at nickpalischphd@gmail.com</div>
+            <div class="fg"><label>Full Name *</label><input type="text" id="aName" placeholder="First and last name"></div>
+            <div class="fg"><label>Email Address *</label><input type="email" id="aEmail" placeholder="your@email.com"></div>
+            <div class="fg"><label>Phone Number</label><input type="tel" id="aPhone" placeholder="(555) 555-5555"></div>
+            <div class="fg">
+              <label>Your County *</label>
+              <select id="aCounty">
+                <option value="">Select your county...</option>
+                <optgroup label="Missouri">
+                  <option>Audrain, MO</option><option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option>
+                  <option>Callaway, MO</option><option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option>
+                  <option>Crawford, MO</option><option>Dent, MO</option><option>Dunklin, MO</option>
+                  <option>Franklin, MO</option><option>Gasconade, MO</option><option>Iron, MO</option>
+                  <option>Jefferson, MO</option><option>Lincoln, MO</option><option>Madison, MO</option>
+                  <option>Maries, MO</option><option>Mississippi, MO</option><option>Montgomery, MO</option>
+                  <option>New Madrid, MO</option><option>Osage, MO</option><option>Perry, MO</option>
+                  <option>Phelps, MO</option><option>Pike, MO</option><option>Reynolds, MO</option>
+                  <option>Ripley, MO</option><option>St. Charles, MO</option><option>Ste. Genevieve, MO</option>
+                  <option>St. Francois, MO</option><option>St. Louis, MO</option><option>St. Louis City, MO</option>
+                  <option>Scott, MO</option><option>Stoddard, MO</option><option>Warren, MO</option>
+                  <option>Washington, MO</option><option>Wayne, MO</option>
+                </optgroup>
+                <optgroup label="Illinois">
+                  <option>Adams, IL</option><option>Alexander, IL</option><option>Bond, IL</option>
+                  <option>Calhoun, IL</option><option>Clinton, IL</option><option>Franklin, IL</option>
+                  <option>Greene, IL</option><option>Jackson, IL</option><option>Jefferson, IL</option>
+                  <option>Jersey, IL</option><option>Johnson, IL</option><option>Macoupin, IL</option>
+                  <option>Madison, IL</option><option>Monroe, IL</option><option>Montgomery, IL</option>
+                  <option>Perry, IL</option><option>Pike, IL</option><option>Randolph, IL</option>
+                  <option>St. Clair, IL</option><option>Union, IL</option><option>Washington, IL</option>
+                  <option>Williamson, IL</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="fg"><label>City / Town</label><input type="text" id="aCity" placeholder="e.g. Cape Girardeau"></div>
+            <div class="fg">
+              <label>Weather Experience</label>
+              <select id="aExp">
+                <option value="">Select...</option>
+                <option>No formal training — interested in learning</option>
+                <option>SKYWARN Spotter trained</option>
+                <option>Amateur meteorologist / weather enthusiast</option>
+                <option>Professional background in weather/emergency management</option>
+                <option>Other weather training</option>
+              </select>
+            </div>
+            <div class="fg"><label>Why do you want to be a First Warn Weather Watcher?</label><textarea id="aWhy" placeholder="Tell Dr. Nick a little about yourself and why you want to join the network..."></textarea></div>
+            <button class="btn-red" onclick="submitApplication()" style="width:100%;padding:1rem;font-size:0.88rem">Submit Application →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© <span id="yr"></span> First Warn Weather · Nicholas G. Palisch · <a href="index.html">← Back to First Warn Weather</a></p>
+</footer>
 
 <script>
-const PWD='FirstWarn2026!';
-const AK='fwAdmin2026';
-const FK='fwForecastData2026';
-const GHK='fwGH2026';
-const BK='fwWeatherBlog2026';
-const WK='fwWatcherReports';
-const FOUR_HOURS=4*60*60*1000;
-const TABS=['forecast','severe','blog','alert','watchers','analytics','publish','settings'];
+const FORMSPREE = 'https://formspree.io/f/mkoybrrg';
+const REPORTS_KEY = 'fwWatcherReports';
+const WATCHERS_KEY = 'fwWatchersList';
 
-// ── AUTH ──
-function doLogin(){
-  if(document.getElementById('pwd').value===PWD){
-    sessionStorage.setItem(AK,'1');
-    document.getElementById('login').style.display='none';
-    document.getElementById('app').style.display='block';
-    boot();
-  } else {
-    document.getElementById('loginErr').style.display='block';
-    document.getElementById('pwd').value='';
-  }
-}
-function doLogout(){sessionStorage.removeItem(AK);location.reload();}
-
-// ── TABS ──
-function goTab(name){
-  TABS.forEach(n=>{
-    const p=document.getElementById('p-'+n);
-    const t=document.getElementById('t-'+n);
-    if(p)p.style.display='none';
-    if(t)t.classList.remove('active');
+// ── TAB SWITCHING ──
+function switchTab(name) {
+  ['report','leader','apply'].forEach(n => {
+    document.getElementById('pane-'+n).classList.remove('active');
+    document.getElementById('tab-'+n).classList.remove('active');
   });
-  const p=document.getElementById('p-'+name);
-  const t=document.getElementById('t-'+name);
-  if(p)p.style.display='block';
-  if(t)t.classList.add('active');
-  if(name==='forecast')loadForecastPreview();
-  if(name==='alert')loadAlertState();
-  if(name==='severe')loadSevereState();
-  if(name==='watchers')renderWatchers();
-  if(name==='analytics')renderAnalytics();
+  document.getElementById('pane-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if (name === 'leader') buildLeaderboard();
 }
 
-// ── DATA ──
-function getData(){try{return JSON.parse(localStorage.getItem(FK))||{};}catch(e){return{};}}
-function setData(d){localStorage.setItem(FK,JSON.stringify(d));}
-
-// ── FORECAST ──
-function setDefaultDate(){
-  const now=new Date();
-  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('fDate').value=`${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+// ── CONDITION SELECTION ──
+let selectedCondition = '';
+function selectCondition(condition, el) {
+  selectedCondition = condition;
+  document.getElementById('rCondition').value = condition;
+  document.querySelectorAll('.condition-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
-function saveForecast(){
-  const narrative=document.getElementById('fNarrative').value.trim();
-  if(!narrative){flash('forecastErr','Please write your forecast narrative.');return;}
-  const d=getData();
-  d.date=document.getElementById('fDate').value.trim();
-  d.narrative=narrative;
-  d.img_24=document.getElementById('fname24').value.trim()||d.img_24||'';
-  d.img_10=document.getElementById('fname10').value.trim()||d.img_10||'';
-  d.img_extra1=document.getElementById('fnameExtra1').value.trim()||d.img_extra1||'';
-  d.img_extra2=document.getElementById('fnameExtra2').value.trim()||d.img_extra2||'';
-  d.updated=new Date().toISOString();
-  setData(d);
-  flash('forecastOk','✓ Forecast saved! Go to Publish tab to send live.');
-  loadForecastPreview();
+// ── GET/SET REPORTS ──
+function getReports() {
+  try {
+    const all = JSON.parse(localStorage.getItem(REPORTS_KEY)) || [];
+    const cutoff = Date.now() - (4 * 60 * 60 * 1000); // 4 hours
+    return all.filter(r => r.approved && r.timestamp > cutoff);
+  } catch(e) { return []; }
 }
 
-function clearForecast(){
-  const d=getData();
-  document.getElementById('fNarrative').value='';
-  document.getElementById('fname24').value='';
-  document.getElementById('fname10').value='';
-  document.getElementById('fnameExtra1').value='';
-  document.getElementById('fnameExtra2').value='';
-  delete d.narrative;delete d.img_24;delete d.img_10;delete d.img_extra1;delete d.img_extra2;
-  setData(d);setDefaultDate();
+function saveReport(report) {
+  try {
+    // Save to PENDING queue for manager approval
+    const pending = JSON.parse(localStorage.getItem('fwWatcherPending')) || [];
+    pending.unshift(report);
+    localStorage.setItem('fwWatcherPending', JSON.stringify(pending.slice(0, 100)));
+  } catch(e) {}
 }
 
-function loadForecastPreview(){
-  const d=getData();
-  const box=document.getElementById('fPreview');
-  if(d.narrative){
-    box.style.display='block';
-    document.getElementById('fPreviewDate').textContent=d.date||'';
-    document.getElementById('fPreviewText').textContent=d.narrative;
-    const thumbs=document.getElementById('fPreviewThumbs');
-    thumbs.innerHTML='';
-    [d.img_24,d.img_10,d.img_extra1,d.img_extra2].filter(Boolean).forEach(src=>{
-      const img=document.createElement('img');
-      img.src=src;img.className='preview-thumb';
-      thumbs.appendChild(img);
+// ── SUBMIT REPORT ──
+async function submitReport() {
+  const name = document.getElementById('rName').value.trim();
+  const county = document.getElementById('rCounty').value;
+  const temp = document.getElementById('rTemp').value;
+  const condition = document.getElementById('rCondition').value;
+
+  if (!name) { alert('Please enter your first name.'); return; }
+  if (!county) { alert('Please select your county.'); return; }
+  if (!temp) { alert('Please enter the temperature.'); return; }
+  if (!condition) { alert('Please select current conditions.'); return; }
+
+  const reportTime = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+
+  const report = {
+    name, county, temp: parseInt(temp), condition,
+    wind: document.getElementById('rWind').value || '',
+    notes: document.getElementById('rNotes').value.trim(),
+    originalTime: reportTime
+  };
+
+  // Build one-click approve link
+  const encoded = encodeURIComponent(btoa(JSON.stringify(report)));
+  const approveLink = `https://firstwarnwx.com/approve-report.html?data=${encoded}`;
+
+  // Send to Formspree with approve link
+  try {
+    await fetch(FORMSPREE, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+      body: JSON.stringify({
+        _subject: `⚡ Weather Report — ${county} — ${name} — ${temp}°F`,
+        Name: name,
+        County: county,
+        Temperature: temp + '°F',
+        Conditions: condition,
+        Wind: report.wind ? report.wind + ' mph' : 'Not reported',
+        Notes: report.notes || 'None',
+        Time: reportTime,
+        '✅ ONE-CLICK APPROVE': approveLink,
+        _message: `New weather report from ${name} in ${county}!\n\nTemp: ${temp}°F\nConditions: ${condition}\nWind: ${report.wind || 'Not reported'}\nNotes: ${report.notes || 'None'}\n\n✅ APPROVE THIS REPORT (click to post to live map):\n${approveLink}`
+      })
     });
-    if(d.narrative)document.getElementById('fNarrative').value=d.narrative;
-    if(d.date)document.getElementById('fDate').value=d.date;
-    if(d.img_24)document.getElementById('fname24').value=d.img_24;
-    if(d.img_10)document.getElementById('fname10').value=d.img_10;
-    if(d.img_extra1)document.getElementById('fnameExtra1').value=d.img_extra1;
-    if(d.img_extra2)document.getElementById('fnameExtra2').value=d.img_extra2;
-  } else { box.style.display='none'; }
+  } catch(e) {}
+
+  // Show success
+  document.getElementById('reportSuccess').style.display = 'block';
+  setTimeout(() => document.getElementById('reportSuccess').style.display = 'none', 6000);
+
+  // Clear form
+  document.getElementById('rName').value = '';
+  document.getElementById('rCounty').value = '';
+  document.getElementById('rTemp').value = '';
+  document.getElementById('rWind').value = '';
+  document.getElementById('rNotes').value = '';
+  document.getElementById('rCondition').value = '';
+  selectedCondition = '';
+  document.querySelectorAll('.condition-btn').forEach(b => b.classList.remove('selected'));
+
+  // Refresh displays
+  renderLiveReports();
+  updateMapMarkers();
+  updateHeroStats();
 }
 
-// ── SEVERE ──
-function loadSevereState(){
-  const d=getData();
-  document.getElementById('severeToggle').checked=d.severeActive||false;
-  if(d.severeNarrative)document.getElementById('severeNarrative').value=d.severeNarrative;
-  if(d.img_severe1)document.getElementById('fnameSevere1').value=d.img_severe1;
-  if(d.img_severe2)document.getElementById('fnameSevere2').value=d.img_severe2;
-  if(d.img_severe3)document.getElementById('fnameSevere3').value=d.img_severe3;
-  if(d.img_severe4)document.getElementById('fnameSevere4').value=d.img_severe4;
-}
+// ── RENDER LIVE REPORTS ──
+function renderLiveReports() {
+  const reports = getReports();
+  const list = document.getElementById('liveReportsList');
 
-function saveSevere(){
-  const d=getData();
-  d.severeActive=document.getElementById('severeToggle').checked;
-  d.severeNarrative=document.getElementById('severeNarrative').value.trim();
-  d.img_severe1=document.getElementById('fnameSevere1').value.trim();
-  d.img_severe2=document.getElementById('fnameSevere2').value.trim();
-  d.img_severe3=document.getElementById('fnameSevere3').value.trim();
-  d.img_severe4=document.getElementById('fnameSevere4').value.trim();
-  setData(d);flash('severeOk','✓ Severe weather saved!');
-}
-
-function clearSevere(){
-  const d=getData();
-  document.getElementById('severeNarrative').value='';
-  ['fnameSevere1','fnameSevere2','fnameSevere3','fnameSevere4'].forEach(id=>document.getElementById(id).value='');
-  d.severeActive=false;delete d.severeNarrative;
-  setData(d);loadSevereState();
-}
-
-// ── ALERT DAY ──
-function loadAlertState(){
-  const d=getData();
-  document.getElementById('alertToggle').checked=d.alertDay||false;
-  document.getElementById('alertStatus').textContent=d.alertDay?'Alert Day: ON ⚡':'Alert Day: OFF';
-  if(d.alertMessage)document.getElementById('alertMessage').value=d.alertMessage;
-  if(d.fnameAlertday)document.getElementById('fnameAlertday').value=d.fnameAlertday;
-}
-
-function saveAlertDay(){
-  const d=getData();
-  d.alertDay=document.getElementById('alertToggle').checked;
-  d.alertMessage=document.getElementById('alertMessage').value.trim();
-  d.fnameAlertday=document.getElementById('fnameAlertday').value.trim();
-  setData(d);
-  document.getElementById('alertStatus').textContent=d.alertDay?'Alert Day: ON ⚡':'Alert Day: OFF';
-  flash('alertOk',d.alertDay?'⚡ Alert Day is ON — banner showing on site!':'✓ Alert Day turned off.');
-}
-
-// ── WEATHER BLOG ──
-function getBlog(){try{return JSON.parse(localStorage.getItem(BK))||[];}catch(e){return[];}}
-function setBlog(p){localStorage.setItem(BK,JSON.stringify(p));}
-
-function setBlogDate(){
-  const now=new Date();
-  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('blogDate').value=`${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
-}
-
-function saveBlogPost(){
-  const title=document.getElementById('blogTitle').value.trim();
-  const content=document.getElementById('blogContent').value.trim();
-  if(!title){flash('blogErr','Please add a title.');return;}
-  if(!content){flash('blogErr','Please write the post.');return;}
-  const posts=getBlog();
-  const eid=document.getElementById('blogEditId').value;
-  const id=eid||(title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now());
-  const post={id,title,
-    category:document.getElementById('blogCat').value,
-    excerpt:document.getElementById('blogExcerpt').value.trim()||title,
-    date:document.getElementById('blogDate').value.trim(),
-    content,published:true
-  };
-  if(eid){const i=posts.findIndex(p=>p.id===eid);if(i>-1)posts[i]=post;else posts.unshift(post);}
-  else posts.unshift(post);
-  setBlog(posts);renderBlogList();
-  flash('blogOk',`✓ "${title}" saved! Click Publish to send live.`);
-  if(!eid)clearBlogForm();
-  document.getElementById('blogEditId').value='';
-}
-
-function editBlogPost(id){
-  const p=getBlog().find(x=>x.id===id);if(!p)return;
-  document.getElementById('blogEditId').value=id;
-  document.getElementById('blogTitle').value=p.title;
-  document.getElementById('blogCat').value=p.category;
-  document.getElementById('blogExcerpt').value=p.excerpt||'';
-  document.getElementById('blogDate').value=p.date||'';
-  document.getElementById('blogContent').value=p.content||'';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function deleteBlogPost(id){
-  const p=getBlog().find(x=>x.id===id);
-  if(!p||!confirm(`Delete "${p.title}"?`))return;
-  setBlog(getBlog().filter(x=>x.id!==id));renderBlogList();
-}
-
-function clearBlogForm(){
-  document.getElementById('blogEditId').value='';
-  document.getElementById('blogTitle').value='';
-  document.getElementById('blogExcerpt').value='';
-  document.getElementById('blogContent').value='';
-  setBlogDate();
-}
-
-function renderBlogList(){
-  const posts=getBlog();
-  const list=document.getElementById('blogList');
-  if(!list)return;
-  if(posts.length===0){list.innerHTML='<p style="color:var(--mid);font-style:italic;font-size:0.85rem">No posts yet.</p>';return;}
-  list.innerHTML=posts.map(p=>`
-    <div class="blog-item">
-      <div class="blog-item-info">
-        <div class="blog-item-title">${esc(p.title)}</div>
-        <div class="blog-item-meta">${esc(p.category)} · ${esc(p.date||'')}</div>
-      </div>
-      <div style="display:flex;gap:0.4rem">
-        <button class="btn btn-outline btn-sm" onclick="editBlogPost('${p.id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteBlogPost('${p.id}')">Delete</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-// ── WEATHER WATCHERS ──
-function getApprovedReports(){
-  try{
-    const all=JSON.parse(localStorage.getItem(WK))||[];
-    return all.filter(r=>r.approved&&(Date.now()-r.timestamp)<FOUR_HOURS);
-  }catch(e){return[];}
-}
-
-function addManualReport(){
-  const name=document.getElementById('wrName').value.trim();
-  const county=document.getElementById('wrCounty').value;
-  const temp=document.getElementById('wrTemp').value;
-  const condition=document.getElementById('wrCondition').value;
-  if(!name){flash('wrOk','Please enter the reporter\'s first name.');return;}
-  if(!county){flash('wrOk','Please select a county.');return;}
-  if(!temp){flash('wrOk','Please enter the temperature.');return;}
-  const report={
-    id:Date.now(),timestamp:Date.now(),
-    name,county,temp:parseInt(temp),condition,
-    wind:document.getElementById('wrWind').value||'',
-    notes:document.getElementById('wrNotes').value||'',
-    time:new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
-    approved:true
-  };
-  try{
-    const all=JSON.parse(localStorage.getItem(WK))||[];
-    all.unshift(report);
-    localStorage.setItem(WK,JSON.stringify(all.slice(0,200)));
-  }catch(e){}
-  flash('wrOk',`✓ ${name} from ${county} posted to live map!`);
-  document.getElementById('wrName').value='';
-  document.getElementById('wrCounty').value='';
-  document.getElementById('wrTemp').value='';
-  document.getElementById('wrWind').value='';
-  document.getElementById('wrNotes').value='';
-  renderWatchers();
-}
-
-function removeReport(id){
-  if(!confirm('Remove this report from the map?'))return;
-  try{
-    const all=JSON.parse(localStorage.getItem(WK))||[];
-    localStorage.setItem(WK,JSON.stringify(all.filter(r=>r.id!==id)));
-  }catch(e){}
-  renderWatchers();
-}
-
-function clearAllReports(){
-  if(!confirm('Clear ALL reports from the map? This cannot be undone.'))return;
-  localStorage.removeItem(WK);
-  renderWatchers();
-}
-
-function renderWatchers(){
-  const reports=getApprovedReports();
-  const counties=new Set(reports.map(r=>r.county));
-  document.getElementById('wApproved').textContent=reports.length;
-  document.getElementById('wCounties').textContent=counties.size;
-  updatePendingBadge();
-
-  const list=document.getElementById('approvedList');
-  if(reports.length===0){
-    list.innerHTML='<p style="color:var(--mid);font-style:italic;font-size:0.85rem">No reports currently live on the map.</p>';
+  if (reports.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-mid);font-style:italic;font-size:0.85rem">No reports yet today. Be the first to submit!</div>';
     return;
   }
-  list.innerHTML=reports.map(r=>{
-    const mins=Math.floor((Date.now()-r.timestamp)/60000);
-    const timeAgo=mins<60?mins+'m ago':Math.floor(mins/60)+'h ago';
-    return `<div class="wr-approved">
-      <div class="wr-icon">${r.condition?r.condition.split(' ')[0]:'🌡️'}</div>
-      <div class="wr-info">
-        <div class="wr-name">${esc(r.name)} — ${esc(r.county)}</div>
-        <div class="wr-detail">🌡️ ${r.temp}°F${r.wind?' · 💨 '+r.wind+' mph':''} · ${esc(r.condition)}</div>
-        ${r.notes?`<div class="wr-detail" style="font-style:italic">"${esc(r.notes)}"</div>`:''}
-        <div class="wr-time">Posted ${timeAgo} · Expires in ${Math.max(0,240-Math.floor((Date.now()-r.timestamp)/60000))}m</div>
+
+  list.innerHTML = reports.slice(0, 8).map(r => {
+    const ago = getTimeAgo(r.timestamp);
+    return `<div class="report-item">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div class="report-item-name">${esc(r.name)} — ${esc(r.county)}</div>
+        <div style="font-size:1.2rem">${r.condition.split(' ')[0]}</div>
       </div>
-      <div class="wr-btns">
-        <button class="btn btn-danger btn-sm" onclick="removeReport(${r.id})">Remove</button>
-      </div>
+      <div class="report-item-detail">🌡️ ${r.temp}°F${r.wind?' · 💨 '+r.wind+' mph':''} · ${esc(r.condition)}</div>
+      ${r.notes ? `<div class="report-item-detail" style="margin-top:0.2rem;font-style:italic">"${esc(r.notes)}"</div>` : ''}
+      <div class="report-item-time">${ago}</div>
     </div>`;
   }).join('');
 }
 
-function updatePendingBadge(){
-  const badge=document.getElementById('pendingBadge');
-  if(badge)badge.style.display='none';
-}
+// ── UPDATE MAP MARKERS ──
+function updateMapMarkers() {
+  const reports = getReports();
+  const markers = document.getElementById('reportMarkers');
+  if (!markers) return;
 
-// ── ANALYTICS ──
-function renderAnalytics(){
-  const reports=getApprovedReports();
-  const counties=new Set(reports.map(r=>r.county));
-  const watchers=new Set(reports.map(r=>r.name+r.county));
-  const avgTemp=reports.length>0?Math.round(reports.reduce((s,r)=>s+r.temp,0)/reports.length):'—';
-  document.getElementById('aReports').textContent=reports.length;
-  document.getElementById('aCounties').textContent=counties.size;
-  document.getElementById('aWatchers').textContent=watchers.size;
-  document.getElementById('aAvgTemp').textContent=reports.length>0?avgTemp+'°':'—';
+  // County center positions on our SVG map (approximate)
+  const countyPositions = {
+    'Bollinger, MO': [382, 528], 'Boone, MO': [290, 192], 'Butler, MO': [377, 528],
+    'Cape Girardeau, MO': [522, 457], 'Carter, MO': [205, 528], 'Cole, MO': [352, 308],
+    'Crawford, MO': [300, 363], 'Dent, MO': [205, 418], 'Dunklin, MO': [452, 575],
+    'Franklin, MO': [435, 308], 'Gasconade, MO': [325, 308], 'Iron, MO': [287, 418],
+    'Jefferson, MO': [482, 353], 'Lincoln, MO': [522, 200], 'Madison, MO': [352, 418],
+    'Maries, MO': [305, 253], 'Mississippi, MO': [522, 510], 'Montgomery, MO': [380, 200],
+    'New Madrid, MO': [522, 558], 'Osage, MO': [380, 253], 'Perry, MO': [522, 405],
+    'Phelps, MO': [242, 363], 'Pike, MO': [522, 148], 'Reynolds, MO': [205, 473],
+    'Ripley, MO': [295, 528], 'St. Charles, MO': [522, 250], 'Ste. Genevieve, MO': [482, 405],
+    'St. Francois, MO': [417, 405], 'St. Louis, MO': [522, 300], 'St. Louis City, MO': [530, 295],
+    'Scott, MO': [452, 528], 'Stoddard, MO': [452, 473], 'Warren, MO': [455, 200],
+    'Washington, MO': [400, 363], 'Wayne, MO': [377, 473],
+    'Adams, IL': [702, 90], 'Alexander, IL': [647, 563], 'Bond, IL': [588, 200],
+    'Calhoun, IL': [570, 175], 'Clinton, IL': [647, 250], 'Franklin, IL': [647, 353],
+    'Greene, IL': [702, 148], 'Jackson, IL': [588, 513], 'Jefferson, IL': [647, 405],
+    'Jersey, IL': [575, 190], 'Johnson, IL': [647, 513], 'Macoupin, IL': [588, 148],
+    'Madison, IL': [588, 250], 'Monroe, IL': [588, 353], 'Montgomery, IL': [647, 148],
+    'Perry, IL': [588, 458], 'Pike, IL': [647, 90], 'Randolph, IL': [588, 405],
+    'St. Clair, IL': [588, 300], 'Union, IL': [588, 563], 'Washington, IL': [647, 300],
+    'Williamson, IL': [647, 458]
+  };
 
-  const list=document.getElementById('analyticsReportList');
-  if(reports.length===0){
-    list.innerHTML='<p style="color:var(--mid);font-style:italic;font-size:0.85rem">No reports yet.</p>';
-    return;
-  }
-  list.innerHTML=reports.map(r=>`
-    <div style="display:flex;align-items:center;gap:1rem;padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.06)">
-      <div style="font-size:1.2rem">${r.condition?r.condition.split(' ')[0]:'🌡️'}</div>
-      <div style="flex:1">
-        <div style="font-size:0.82rem;font-weight:700;color:#fff">${esc(r.name)} — ${esc(r.county)}</div>
-        <div style="font-size:0.72rem;color:var(--mid)">${r.temp}°F · ${esc(r.condition)} · ${r.time||''}</div>
-      </div>
-      <span style="font-size:0.65rem;color:#5ee080">✓ Live</span>
-    </div>
-  `).join('');
-}
+  markers.innerHTML = '';
 
-// ── GITHUB ──
-function loadGH(){
-  const s=JSON.parse(localStorage.getItem(GHK)||'{}');
-  if(s.user)document.getElementById('ghUser').value=s.user;
-  if(s.repo)document.getElementById('ghRepo').value=s.repo;
-  if(s.tok)document.getElementById('ghTok').value=s.tok;
-}
+  // Group by county - show latest per county
+  const byCounty = {};
+  reports.forEach(r => {
+    const key = r.county;
+    if (!byCounty[key] || r.timestamp > byCounty[key].timestamp) byCounty[key] = r;
+  });
 
-function saveGH(){
-  const user=document.getElementById('ghUser').value.trim();
-  const repo=document.getElementById('ghRepo').value.trim();
-  const tok=document.getElementById('ghTok').value.trim();
-  if(!user||!repo||!tok){alert('Please fill in all three fields.');return;}
-  localStorage.setItem(GHK,JSON.stringify({user,repo,tok}));
-  flash('ghOk','✓ Settings saved!');
-}
+  Object.values(byCounty).forEach(r => {
+    const pos = countyPositions[r.county];
+    if (!pos) return;
+    const [x, y] = pos;
+    const condIcon = r.condition.split(' ')[0];
+    const isHot = r.temp >= 90;
+    const isCold = r.temp <= 32;
+    const color = isHot ? '#ff6b35' : isCold ? '#7ab4ff' : '#5ee080';
 
-async function testGH(){
-  const s=JSON.parse(localStorage.getItem(GHK)||'{}');
-  if(!s.tok){flash('ghTestErr','Please save your settings first.');return;}
-  document.getElementById('ghTestErr').style.color='var(--gold)';
-  document.getElementById('ghTestErr').textContent='⏳ Testing...';
-  document.getElementById('ghTestErr').style.display='block';
-  try{
-    const r=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}`,{
-      headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
-    });
-    const data=await r.json();
-    if(r.ok){
-      document.getElementById('ghTestOk').textContent='✓ Connected! Repo: '+data.full_name;
-      document.getElementById('ghTestOk').style.display='block';
-      document.getElementById('ghTestErr').style.display='none';
-    } else throw new Error(data.message||r.status);
-  }catch(e){
-    document.getElementById('ghTestErr').textContent='✗ Error: '+e.message;
-    document.getElementById('ghTestErr').style.display='block';
-    document.getElementById('ghTestErr').style.color='#ff8080';
-    document.getElementById('ghTestOk').style.display='none';
-  }
-}
-
-async function publishToGH(){
-  const s=JSON.parse(localStorage.getItem(GHK)||'{}');
-  if(!s.tok||!s.user||!s.repo){alert('Please set up GitHub Settings first!');goTab('settings');return;}
-  const d=getData();
-  const blog=getBlog();
-  if(!d.narrative&&blog.length===0){flash('pubErr','Please save a forecast or write a blog post first.');return;}
-  const btn=document.getElementById('pubBtn');
-  btn.textContent='⏳ Publishing...';btn.disabled=true;
-  try{
-    let published=[];
-    if(d.narrative){
-      const content=btoa(unescape(encodeURIComponent(JSON.stringify(d,null,2))));
-      const getR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
-      let sha=null;if(getR.ok){const dd=await getR.json();sha=dd.sha;}
-      const putR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/forecast.json`,{
-        method:'PUT',
-        headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
-        body:JSON.stringify({message:`Forecast: ${d.date||new Date().toLocaleDateString()}`,content,...(sha?{sha}:{})})
-      });
-      if(putR.ok)published.push('Forecast');
-    }
-    const bContent=btoa(unescape(encodeURIComponent(JSON.stringify(blog,null,2))));
-    const bGetR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
-    let bSha=null;if(bGetR.ok){const dd=await bGetR.json();bSha=dd.sha;}
-    const bPutR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/weather-blog.json`,{
-      method:'PUT',
-      headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
-      body:JSON.stringify({message:'Weather blog update',content:bContent,...(bSha?{sha:bSha}:{})})
-    });
-    if(bPutR.ok)published.push('Weather Blog');
-    if(published.length>0){
-      btn.textContent='✅ Published!';
-      flash('pubOk',`🎉 Published: ${published.join(' & ')}! Live on firstwarnwx.com in ~60 seconds.`);
-      setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';btn.disabled=false;},4000);
-    } else throw new Error();
-  }catch(e){
-    btn.textContent='❌ Failed';btn.disabled=false;
-    flash('pubErr','Publishing failed. Check GitHub Settings.');
-    setTimeout(()=>{btn.textContent='Publish to firstwarnwx.com →';},4000);
-  }
-}
-
-function copyJSON(){
-  const d=getData();
-  navigator.clipboard.writeText(JSON.stringify(d,null,2)).then(()=>{
-    const ok=document.getElementById('cpOk');ok.style.display='inline';
-    setTimeout(()=>ok.style.display='none',3000);
+    markers.innerHTML += `
+      <g class="map-marker" style="cursor:pointer">
+        <circle cx="${x}" cy="${y}" r="14" fill="rgba(8,12,24,0.85)" stroke="${color}" stroke-width="1.5"/>
+        <text x="${x}" y="${y-2}" font-size="10" text-anchor="middle" dominant-baseline="middle">${condIcon}</text>
+        <text x="${x}" y="${y+7}" font-size="7" font-family="Barlow Condensed" font-weight="700" fill="${color}" text-anchor="middle">${r.temp}°</text>
+        <text x="${x}" y="${y+24}" font-size="7" font-family="Barlow Condensed" font-weight="700" fill="rgba(255,255,255,0.7)" text-anchor="middle">${r.name}</text>
+      </g>
+    `;
   });
 }
 
+// ── LEADERBOARD ──
+function buildLeaderboard() {
+  const reports = getReports();
+
+  // Count by name+county
+  const counts = {};
+  reports.forEach(r => {
+    const key = r.name + '|' + r.county;
+    if (!counts[key]) counts[key] = {name: r.name, county: r.county, count: 0, last: r.time};
+    counts[key].count++;
+    counts[key].last = r.time;
+  });
+
+  const sorted = Object.values(counts).sort((a, b) => b.count - a.count);
+
+  // Top 3 podium
+  ['lb1','lb2','lb3'].forEach((id, i) => {
+    const w = sorted[i];
+    if (w) {
+      document.getElementById(id+'name').textContent = w.name;
+      document.getElementById(id+'county').textContent = w.county;
+      document.getElementById(id+'count').textContent = w.count;
+    }
+  });
+
+  // Full table
+  const tbody = document.getElementById('leaderboardBody');
+  if (sorted.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-mid);font-style:italic">No reports yet — be the first to submit!</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = sorted.map((w, i) => {
+    const rank = i + 1;
+    const badge = rank === 1 ? '<span class="lb-badge elite">⭐ Elite</span>' : w.count >= 10 ? '<span class="lb-badge active">Active</span>' : '<span class="lb-badge new">New</span>';
+    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+    return `<tr>
+      <td><span class="lb-rank ${rankClass}">${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank}</span></td>
+      <td><div class="lb-name">${esc(w.name)}</div></td>
+      <td><div class="lb-county">${esc(w.county)}</div></td>
+      <td><span class="lb-count">${w.count}</span></td>
+      <td style="font-size:0.78rem;color:var(--text-mid)">${w.last}</td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── UPDATE HERO STATS ──
+function updateHeroStats() {
+  const reports = getReports();
+  document.getElementById('statReports').textContent = reports.length;
+  const unique = new Set(reports.map(r => r.name + r.county));
+  document.getElementById('statWatchers').textContent = unique.size;
+}
+
+// ── SUBMIT APPLICATION ──
+async function submitApplication() {
+  const name = document.getElementById('aName').value.trim();
+  const email = document.getElementById('aEmail').value.trim();
+  const county = document.getElementById('aCounty').value;
+  if (!name || !email || !county) { alert('Please fill in your name, email, and county.'); return; }
+
+  try {
+    const res = await fetch(FORMSPREE, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+      body: JSON.stringify({
+        _subject: `Weather Watcher Application — ${county} — ${name}`,
+        Type: 'WEATHER WATCHER APPLICATION',
+        Name: name, Email: email,
+        Phone: document.getElementById('aPhone').value || 'Not provided',
+        County: county,
+        City: document.getElementById('aCity').value || 'Not provided',
+        Experience: document.getElementById('aExp').value || 'Not provided',
+        Why: document.getElementById('aWhy').value || 'Not provided'
+      })
+    });
+
+    if (res.ok) {
+      document.getElementById('applySuccess').style.display = 'block';
+      ['aName','aEmail','aPhone','aCity','aWhy'].forEach(id => document.getElementById(id).value = '');
+      ['aCounty','aExp'].forEach(id => document.getElementById(id).value = '');
+      setTimeout(() => document.getElementById('applySuccess').style.display = 'none', 8000);
+    } else throw new Error();
+  } catch(e) {
+    document.getElementById('applyError').style.display = 'block';
+    setTimeout(() => document.getElementById('applyError').style.display = 'none', 6000);
+  }
+}
+
 // ── UTILS ──
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function flash(id,msg){
-  const el=document.getElementById(id);if(!el)return;
-  el.textContent=msg;el.style.display='block';
-  setTimeout(()=>el.style.display='none',6000);
+function getTimeAgo(timestamp) {
+  const mins = Math.floor((Date.now() - timestamp) / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  return `${hrs} hr${hrs > 1 ? 's' : ''} ago`;
 }
 
-// ── BOOT ──
-function boot(){
-  setDefaultDate();setBlogDate();
-  loadForecastPreview();loadAlertState();loadSevereState();loadGH();
-  renderBlogList();updatePendingBadge();
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function observeFadeUps() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, {threshold:0.08});
+  document.querySelectorAll('.fade-up:not(.visible)').forEach(el => obs.observe(el));
 }
 
-if(sessionStorage.getItem(AK)==='1'){
-  document.getElementById('login').style.display='none';
-  document.getElementById('app').style.display='block';
-  boot();
+// ── INIT ──
+document.getElementById('yr').textContent = new Date().getFullYear();
+renderLiveReports();
+updateHeroStats();
+buildLeaderboard();
+observeFadeUps();
+window.addEventListener('scroll', observeFadeUps, {passive:true});
+setInterval(() => { renderLiveReports(); updateHeroStats(); }, 120000);
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── LEAFLET MAP ──
+const map = L.map('weatherMap', {
+  center: [37.5, -91.5],
+  zoom: 7,
+  zoomControl: true,
+  scrollWheelZoom: false
+});
+
+// Dark tile layer
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+// Missouri coverage counties
+const MO_COUNTIES = ['Audrain','Bollinger','Boone','Butler','Callaway','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','Saint Charles','Sainte Genevieve','Saint Francois','Saint Louis','Scott','Stoddard','Warren','Washington','Wayne'];
+
+// Illinois coverage counties
+const IL_COUNTIES = ['Adams','Alexander','Bond','Calhoun','Clinton','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Monroe','Montgomery','Perry','Pike','Randolph','Saint Clair','Union','Washington','Williamson'];
+
+// Helper to normalize county names for matching
+function normalizeName(name) {
+  return name.toLowerCase()
+    .replace(/^saint /,'st. ')
+    .replace(/^sainte /,'ste. ')
+    .replace(/ county$/,'')
+    .trim();
 }
+
+async function loadCountyBoundaries() {
+  try {
+    // Use Census TIGER/Web API - lightweight and fast
+    // Fetch only MO (state 29) and IL (state 17) counties
+    const [moRes, ilRes] = await Promise.all([
+      fetch('https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/84/query?where=STATE+IN+(%2729%27)&outFields=NAME,STATE,COUNTY&returnGeometry=true&geometryPrecision=4&outSR=4326&f=geojson'),
+      fetch('https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/84/query?where=STATE+IN+(%2717%27)&outFields=NAME,STATE,COUNTY&returnGeometry=true&geometryPrecision=4&outSR=4326&f=geojson')
+    ]);
+
+    const [moData, ilData] = await Promise.all([moRes.json(), ilRes.json()]);
+
+    // Filter to only our coverage counties
+    const moFeatures = (moData.features || []).filter(f => {
+      const name = (f.properties?.NAME || '').toLowerCase();
+      return MO_COUNTIES.some(c => name === c.toLowerCase());
+    }).map(f => ({...f, _state: 'MO'}));
+
+    const ilFeatures = (ilData.features || []).filter(f => {
+      const name = (f.properties?.NAME || '').toLowerCase();
+      return IL_COUNTIES.some(c => name === c.toLowerCase());
+    }).map(f => ({...f, _state: 'IL'}));
+
+    const allFeatures = [...moFeatures, ...ilFeatures];
+
+    if (allFeatures.length > 0) {
+      L.geoJSON({type:'FeatureCollection', features: allFeatures}, {
+        style: f => ({
+          fillColor: f._state === 'MO' ? '#1e3aab' : '#2d6e2d',
+          fillOpacity: 0.5,
+          color: f._state === 'MO' ? 'rgba(100,160,255,0.7)' : 'rgba(100,220,100,0.6)',
+          weight: 1.5
+        }),
+        onEachFeature: (f, layer) => {
+          const state = f._state || (f.properties?.STATE === '29' ? 'MO' : 'IL');
+          layer.bindTooltip(`<strong>${f.properties?.NAME} County</strong><br><span style="font-size:0.75rem">${state}</span>`, {
+            className: 'leaflet-tooltip-dark', sticky: true
+          });
+        }
+      }).addTo(map);
+    }
+
+    addReportMarkers();
+  } catch(e) {
+    console.log('Census API failed, trying backup', e);
+    loadCountyBoundariesBackup();
+  }
+}
+
+// Backup: use Census WMS as image overlay if GeoJSON fails
+async function loadCountyBoundariesBackup() {
+  try {
+    const moFIPS = ['29003','29019','29023','29031','29035','29051','29053','29065','29069','29071','29073','29093','29099','29113','29123','29125','29133','29141','29143','29151','29157','29161','29163','29179','29181','29183','29186','29187','29189','29510','29195','29207','29219','29221','29223','29001','29015'];
+    const ilFIPS = ['17001','17003','17005','17013','17027','17055','17061','17077','17081','17083','17087','17117','17119','17133','17135','17145','17149','17157','17163','17181','17189','17199'];
+    const allFIPS = [...moFIPS, ...ilFIPS];
+
+    const results = await Promise.all(
+      allFIPS.map(fips =>
+        fetch(`https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/84/query?where=GEOID+%3D+%27${fips}%27&outFields=NAME,STATE&returnGeometry=true&geometryPrecision=4&outSR=4326&f=geojson`)
+          .then(r => r.json())
+          .then(d => ({fips, features: d.features || []}))
+          .catch(() => ({fips, features: []}))
+      )
+    );
+
+    results.forEach(({fips, features}) => {
+      if (features.length === 0) return;
+      const isMO = fips.startsWith('29');
+      L.geoJSON({type:'FeatureCollection', features}, {
+        style: () => ({
+          fillColor: isMO ? '#1e3aab' : '#2d6e2d',
+          fillOpacity: 0.5,
+          color: isMO ? 'rgba(100,160,255,0.7)' : 'rgba(100,220,100,0.6)',
+          weight: 1.5
+        }),
+        onEachFeature: (f, layer) => {
+          layer.bindTooltip(`<strong>${f.properties?.NAME}</strong><br><span style="font-size:0.75rem">${isMO?'MO':'IL'}</span>`, {
+            className:'leaflet-tooltip-dark', sticky:true
+          });
+        }
+      }).addTo(map);
+    });
+
+    addReportMarkers();
+  } catch(e) {
+    console.log('Backup also failed', e);
+    addReportMarkers();
+  }
+}
+
+// County center coordinates for markers
+const COUNTY_CENTERS = {
+  'Audrain, MO':[39.01,-91.85],'Bollinger, MO':[37.35,-89.94],'Boone, MO':[38.96,-92.32],'Butler, MO':[36.72,-90.40],
+  'Callaway, MO':[38.85,-91.91],'Cape Girardeau, MO':[37.38,-89.72],'Carter, MO':[36.95,-91.09],'Cole, MO':[38.57,-92.28],
+  'Crawford, MO':[37.99,-91.31],'Dent, MO':[37.60,-91.49],'Dunklin, MO':[36.12,-90.01],
+  'Franklin, MO':[38.40,-91.07],'Gasconade, MO':[38.49,-91.54],'Iron, MO':[37.51,-90.67],
+  'Jefferson, MO':[38.24,-90.54],'Lincoln, MO':[39.07,-90.95],'Madison, MO':[37.47,-90.30],
+  'Maries, MO':[38.14,-91.91],'Mississippi, MO':[36.83,-89.30],'Montgomery, MO':[38.95,-91.49],
+  'New Madrid, MO':[36.60,-89.59],'Osage, MO':[38.46,-91.86],'Perry, MO':[37.72,-89.85],
+  'Phelps, MO':[37.86,-91.77],'Pike, MO':[39.34,-90.92],'Reynolds, MO':[37.36,-91.24],
+  'Ripley, MO':[36.65,-90.88],'St. Charles, MO':[38.80,-90.60],'Ste. Genevieve, MO':[37.90,-90.17],
+  'St. Francois, MO':[37.78,-90.46],'St. Louis, MO':[38.64,-90.44],'St. Louis City, MO':[38.63,-90.24],
+  'Scott, MO':[37.05,-89.55],'Stoddard, MO':[36.84,-89.97],'Warren, MO':[38.77,-91.16],
+  'Washington, MO':[37.97,-90.87],'Wayne, MO':[37.11,-90.47],
+  'Adams, IL':[40.01,-91.19],'Alexander, IL':[37.12,-89.33],'Bond, IL':[38.88,-89.43],
+  'Calhoun, IL':[39.17,-90.66],'Clinton, IL':[38.60,-89.42],'Franklin, IL':[37.99,-88.92],
+  'Greene, IL':[39.36,-90.38],'Jackson, IL':[37.78,-89.36],'Jefferson, IL':[38.30,-88.92],
+  'Jersey, IL':[39.09,-90.35],'Johnson, IL':[37.45,-88.88],'Macoupin, IL':[39.26,-89.93],
+  'Madison, IL':[38.83,-89.92],'Monroe, IL':[38.27,-90.17],'Montgomery, IL':[39.24,-89.48],
+  'Perry, IL':[38.09,-89.36],'Pike, IL':[39.62,-90.91],'Randolph, IL':[37.96,-89.83],
+  'St. Clair, IL':[38.47,-90.01],'Union, IL':[37.47,-89.24],'Washington, IL':[38.35,-89.41],
+  'Williamson, IL':[37.73,-88.92]
+};
+
+let markerLayer = L.layerGroup().addTo(map);
+
+function addReportMarkers() {
+  markerLayer.clearLayers();
+  const reports = getReports();
+  const byCounty = {};
+  reports.forEach(r => {
+    const key = r.county;
+    if (!byCounty[key] || r.timestamp > byCounty[key].timestamp) byCounty[key] = r;
+  });
+
+  Object.values(byCounty).forEach(r => {
+    const coords = COUNTY_CENTERS[r.county];
+    if (!coords) return;
+    const condIcon = r.condition.split(' ')[0];
+    const isHot = r.temp >= 90;
+    const isCold = r.temp <= 32;
+    const color = isHot ? '#ff6b35' : isCold ? '#7ab4ff' : '#5ee080';
+
+    const icon = L.divIcon({
+      html: `<div style="background:rgba(8,12,24,0.9);border:2px solid ${color};border-radius:50%;width:42px;height:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;">
+        <span style="font-size:14px;line-height:1">${condIcon}</span>
+        <span style="font-size:9px;font-weight:700;color:${color};line-height:1">${r.temp}°</span>
+      </div>
+      <div style="background:rgba(8,12,24,0.85);color:#fff;font-family:'Barlow Condensed';font-size:9px;font-weight:700;text-align:center;padding:1px 4px;border-radius:2px;margin-top:1px;white-space:nowrap">${r.name}</div>`,
+      className: '',
+      iconSize: [42, 56],
+      iconAnchor: [21, 28]
+    });
+
+    const ago = getTimeAgo(r.timestamp);
+    L.marker(coords, {icon})
+      .addTo(markerLayer)
+      .bindPopup(`
+        <div style="font-family:'Barlow Condensed',sans-serif;min-width:160px">
+          <div style="font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem">${r.name}</div>
+          <div style="font-size:0.8rem;color:#888;margin-bottom:0.5rem">${r.county}</div>
+          <div style="font-size:1.1rem">${condIcon} ${r.condition}</div>
+          <div style="font-size:0.9rem;margin-top:0.3rem">🌡️ ${r.temp}°F${r.wind ? ' · 💨 ' + r.wind + ' mph' : ''}</div>
+          ${r.notes ? `<div style="font-size:0.8rem;font-style:italic;margin-top:0.4rem;color:#888">"${r.notes}"</div>` : ''}
+          <div style="font-size:0.75rem;color:#666;margin-top:0.4rem">${ago}</div>
+        </div>
+      `);
+  });
+}
+
+// Override updateMapMarkers to use Leaflet
+function updateMapMarkers() { addReportMarkers(); }
+
+// Add dark tooltip style
+const style = document.createElement('style');
+style.textContent = `.leaflet-tooltip-dark{background:rgba(8,12,24,0.9)!important;border:1px solid rgba(255,255,255,0.15)!important;color:#fff!important;font-family:'Barlow Condensed',sans-serif!important;font-size:0.78rem!important;font-weight:700!important;letter-spacing:0.06em!important;text-transform:uppercase!important;padding:0.4rem 0.7rem!important;border-radius:3px!important;} .leaflet-popup-content-wrapper{background:rgba(14,20,40,0.97)!important;border:1px solid rgba(255,255,255,0.15)!important;color:#fff!important;border-radius:4px!important;box-shadow:0 4px 20px rgba(0,0,0,0.5)!important} .leaflet-popup-tip{background:rgba(14,20,40,0.97)!important}`;
+document.head.appendChild(style);
+
+loadCountyBoundaries();
 </script>
 </body>
 </html>
