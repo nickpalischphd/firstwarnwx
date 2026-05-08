@@ -535,7 +535,7 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
       <div class="county-box">
         <h4>🏛️ Missouri Counties</h4>
         <div class="county-list">
-          Bollinger · Boone · Butler · Cape Girardeau · Carter · Cole · Crawford · Dent · Dunklin · Franklin · Gasconade · Iron · Jefferson · Lincoln · Madison · Maries · Mississippi · Montgomery · New Madrid · Osage · Perry · Phelps · Pike · Reynolds · Ripley · St. Charles · Ste. Genevieve · St. Francois · St. Louis · St. Louis City · Scott · Stoddard · Warren · Washington · Wayne
+          Audrain · Bollinger · Boone · Butler · Callaway · Cape Girardeau · Carter · Cole · Crawford · Dent · Dunklin · Franklin · Gasconade · Iron · Jefferson · Lincoln · Madison · Maries · Mississippi · Montgomery · New Madrid · Osage · Perry · Phelps · Pike · Reynolds · Ripley · St. Charles · Ste. Genevieve · St. Francois · St. Louis · St. Louis City · Scott · Stoddard · Warren · Washington · Wayne
         </div>
       </div>
       <div class="county-box">
@@ -812,7 +812,7 @@ async function loadNWSAlerts(){
     ]);
     const [moData,ilData]=await Promise.all([moRes.json(),ilRes.json()]);
 
-    const MO=['Bollinger','Boone','Butler','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','St. Charles','Ste. Genevieve','St. Francois','St. Louis','St. Louis City','Scott','Stoddard','Warren','Washington','Wayne'];
+    const MO=['Audrain','Bollinger','Boone','Butler','Callaway','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','St. Charles','Ste. Genevieve','St. Francois','St. Louis','St. Louis City','Scott','Stoddard','Warren','Washington','Wayne'];
     const IL=['Adams','Alexander','Bond','Calhoun','Clinton','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Monroe','Montgomery','Perry','Pike','Randolph','St. Clair','Union','Washington','Williamson'];
 
     // Tag each alert with its state and filter to only our counties
