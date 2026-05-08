@@ -557,7 +557,7 @@ async function submitReport() {
   // Send via EmailJS with clickable approve button
   try {
     emailjs.init({publicKey: 'WbHueorlCgjwOb7VF'});
-    const result = await emailjs.send('service_808xndk', 'template_b0bslmg', {
+    const result = await emailjs.send('service_808xndk', 'template_b0bslmq', {
       name: name,
       county: county,
       temp: temp + '°F',
@@ -568,24 +568,10 @@ async function submitReport() {
       approve_link: approveLink,
       deny_link: denyLink
     });
-    console.log('EmailJS success:', result);
+    console.log('✅ EmailJS SUCCESS:', result.status, result.text);
   } catch(e) {
-    console.log('EmailJS error:', e);
-    // Fallback to Formspree so report still gets sent
-    try {
-      await fetch('https://formspree.io/f/mkoybrrg', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json', 'Accept':'application/json'},
-        body: JSON.stringify({
-          _subject: `⚡ Weather Report — ${county} — ${name} — ${temp}°F`,
-          Name: name, County: county,
-          Temperature: temp+'°F', Conditions: finalCondition,
-          Wind: report.wind||'Not reported', Notes: report.notes||'None',
-          Time: reportTime,
-          Approve_Link: approveLink
-        })
-      });
-    } catch(e2) { console.log('Fallback also failed:', e2); }
+    console.error('❌ EmailJS FAILED:', JSON.stringify(e));
+    alert('EmailJS Error: ' + JSON.stringify(e));
   }
 
   // Show success
