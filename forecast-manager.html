@@ -387,6 +387,38 @@ Clear. Practical. Easy to understand."></textarea>
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.5rem">
       ⏳ Pending Approval
     </div>
+    <div style="background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:4px;padding:1rem 1.2rem;margin-bottom:1.5rem">
+  <p style="font-size:0.82rem;color:var(--mid);line-height:1.7">
+    💡 When you receive a weather report email, enter it below to post it to the live map.
+  </p>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+  <div class="fg"><label>Reporter First Name</label><input type="text" id="wrName" placeholder="e.g. John"></div>
+  <div class="fg"><label>County</label>
+    <select id="wrCounty">
+      <option value="">Select county...</option>
+      <optgroup label="Missouri">
+        <option>Audrain, MO</option><option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option><option>Callaway, MO</option><option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option><option>Crawford, MO</option><option>Dent, MO</option><option>Dunklin, MO</option><option>Franklin, MO</option><option>Gasconade, MO</option><option>Iron, MO</option><option>Jefferson, MO</option><option>Lincoln, MO</option><option>Madison, MO</option><option>Maries, MO</option><option>Mississippi, MO</option><option>Montgomery, MO</option><option>New Madrid, MO</option><option>Osage, MO</option><option>Perry, MO</option><option>Phelps, MO</option><option>Pike, MO</option><option>Reynolds, MO</option><option>Ripley, MO</option><option>St. Charles, MO</option><option>Ste. Genevieve, MO</option><option>St. Francois, MO</option><option>St. Louis, MO</option><option>St. Louis City, MO</option><option>Scott, MO</option><option>Stoddard, MO</option><option>Warren, MO</option><option>Washington, MO</option><option>Wayne, MO</option>
+      </optgroup>
+      <optgroup label="Illinois">
+        <option>Adams, IL</option><option>Alexander, IL</option><option>Bond, IL</option><option>Calhoun, IL</option><option>Clinton, IL</option><option>Franklin, IL</option><option>Greene, IL</option><option>Jackson, IL</option><option>Jefferson, IL</option><option>Jersey, IL</option><option>Johnson, IL</option><option>Macoupin, IL</option><option>Madison, IL</option><option>Monroe, IL</option><option>Montgomery, IL</option><option>Perry, IL</option><option>Pike, IL</option><option>Randolph, IL</option><option>St. Clair, IL</option><option>Union, IL</option><option>Washington, IL</option><option>Williamson, IL</option>
+      </optgroup>
+    </select>
+  </div>
+  <div class="fg"><label>Temperature (°F)</label><input type="number" id="wrTemp" placeholder="72"></div>
+  <div class="fg"><label>Conditions</label>
+    <select id="wrCondition">
+      <option>☀️ Clear/Sunny</option><option>⛅ Partly Cloudy</option><option>☁️ Cloudy</option>
+      <option>🌧️ Rain</option><option>⛈️ Storms</option><option>🌪️ Tornado</option>
+      <option>❄️ Snow</option><option>🌨️ Sleet/Ice</option><option>🌬️ High Wind</option>
+      <option>🌊 Flooding</option><option>🌫️ Fog</option><option>🌩️ Lightning</option>
+    </select>
+  </div>
+  <div class="fg"><label>Wind Speed (mph)</label><input type="number" id="wrWind" placeholder="15"></div>
+  <div class="fg"><label>Notes</label><input type="text" id="wrNotes" placeholder="Optional notes..."></div>
+</div>
+<div class="ok" id="wrOk"></div>
+<button class="btn" onclick="addManualReport()">✅ Post to Live Map</button>
     <div id="pendingList">
       <p style="color:var(--mid);font-style:italic;font-size:0.85rem">No pending reports.</p>
     </div>
