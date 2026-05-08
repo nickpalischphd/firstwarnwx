@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "name": "Test",
+    "county": "St. Charles, MO",
+    "temp": 70,
+    "condition": "☁️ Cloudy",
+    "wind": "5",
+    "notes": "",
+    "originalTime": "4:49 PM",
+    "id": 1778276990808,
+    "timestamp": 1778276990808,
+    "time": "4:49 PM",
+    "approved": true
+  }
+]
