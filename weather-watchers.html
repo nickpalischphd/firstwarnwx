@@ -6,7 +6,6 @@
 <title>First Warn Weather Watchers — Community Network</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>emailjs.init('WbHueorlCgjwOb7VF');</script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -550,13 +549,15 @@ async function submitReport() {
   };
 
   // Build one-click approve and deny links
-  const encoded = encodeURIComponent(btoa(JSON.stringify(report)));
-  const approveLink = `https://firstwarnwx.com/approve-report.html?data=${encoded}`;
+  // Use encodeURIComponent to handle emojis and special characters
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(report))));
+  const approveLink = `https://firstwarnwx.com/approve-report.html?data=${encodeURIComponent(encoded)}`;
   const denyLink = `https://firstwarnwx.com/approve-report.html?deny=1`;
 
   // Send via EmailJS with clickable approve button
   try {
-    await emailjs.send('service_808xndk', 'template_b0bslmg', {
+    emailjs.init({publicKey: 'WbHueorlCgjwOb7VF'});
+    const result = await emailjs.send('service_808xndk', 'template_b0bslmg', {
       name: name,
       county: county,
       temp: temp + '°F',
@@ -566,9 +567,25 @@ async function submitReport() {
       time: reportTime,
       approve_link: approveLink,
       deny_link: denyLink
-    }, 'WbHueorlCgjwOb7VF');
+    });
+    console.log('EmailJS success:', result);
   } catch(e) {
     console.log('EmailJS error:', e);
+    // Fallback to Formspree so report still gets sent
+    try {
+      await fetch('https://formspree.io/f/mkoybrrg', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+        body: JSON.stringify({
+          _subject: `⚡ Weather Report — ${county} — ${name} — ${temp}°F`,
+          Name: name, County: county,
+          Temperature: temp+'°F', Conditions: finalCondition,
+          Wind: report.wind||'Not reported', Notes: report.notes||'None',
+          Time: reportTime,
+          Approve_Link: approveLink
+        })
+      });
+    } catch(e2) { console.log('Fallback also failed:', e2); }
   }
 
   // Show success
