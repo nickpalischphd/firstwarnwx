@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>First Warn Weather Watchers — Community Network</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -68,21 +69,12 @@ section{padding:3rem 2rem}
 .tab-pane{display:none}
 .tab-pane.active{display:block}
 
-/* MAP SECTION */
-.map-section{background:var(--dark-mid)}
-.map-container{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start}
-.map-wrap{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:4px;overflow:hidden;position:relative}
-.map-wrap svg{width:100%;height:auto;display:block}
-.map-legend{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:4px;padding:1.2rem}
-.map-legend h4{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
-.legend-item{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;font-size:0.8rem;color:var(--text-mid)}
-.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
-.map-reports{margin-top:1rem}
-.map-reports h4{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem}
-.report-item{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:3px;padding:0.7rem 0.8rem;margin-bottom:0.5rem}
-.report-item-name{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fff}
-.report-item-detail{font-size:0.72rem;color:var(--text-mid);margin-top:0.2rem}
-.report-item-time{font-size:0.65rem;color:rgba(255,255,255,0.3);margin-top:0.2rem}
+/* MAP */
+#weatherMap{height:500px;border-radius:4px;border:1px solid var(--border)}
+.leaflet-container{background:#0a1030!important}
+.leaflet-tile{filter:brightness(0.7) saturate(0.5) hue-rotate(180deg)}
+.map-marker-popup{background:var(--dark-mid);border:1px solid var(--border);border-radius:4px;padding:0.6rem 0.8rem;font-family:'Barlow Condensed',sans-serif;color:var(--text)}
+
 
 /* REPORT FORM */
 .report-section{background:var(--dark)}
@@ -195,270 +187,25 @@ footer a{color:var(--gold);text-decoration:none}
 <div class="stripe"></div>
 
 <!-- MAP + LIVE REPORTS -->
-<section class="map-section" id="map">
+<section class="map-section" id="map" style="background:var(--dark-mid);padding:3rem 2rem">
   <div class="container">
     <p class="sec-label"><span class="live-dot"></span>Live Conditions Map</p>
     <h2 class="sec-title">First Warn <span>Coverage Area</span></h2>
-    <p style="font-size:0.9rem;color:var(--text-mid);margin-bottom:1.5rem">Real-time weather watcher reports plotted across your First Warn coverage area. Reports shown for the last 24 hours.</p>
+    <p style="font-size:0.9rem;color:var(--text-mid);margin-bottom:1.5rem">Real-time weather watcher reports plotted across your First Warn coverage area. Reports shown for the last 24 hours. Click any marker to see details.</p>
 
-    <div class="map-container">
-      <!-- SVG COVERAGE MAP -->
-      <div class="map-wrap fade-up">
-        <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" id="coverageMap">
-          <defs>
-            <linearGradient id="mapBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#0a1030"/>
-              <stop offset="100%" style="stop-color:#0e1428"/>
-            </linearGradient>
-          </defs>
-          <!-- Background -->
-          <rect width="800" height="600" fill="url(#mapBg)"/>
-
-          <!-- MISSOURI COUNTIES - simplified representative shapes -->
-          <!-- Northern MO counties -->
-          <g id="mo-counties">
-            <!-- Pike -->
-            <rect x="490" y="120" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Pike" data-state="MO"/>
-            <text x="522" y="152" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">PIKE</text>
-
-            <!-- Lincoln -->
-            <rect x="490" y="175" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Lincoln" data-state="MO"/>
-            <text x="522" y="204" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">LINCOLN</text>
-
-            <!-- Warren -->
-            <rect x="420" y="175" width="70" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Warren" data-state="MO"/>
-            <text x="455" y="204" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">WARREN</text>
-
-            <!-- Montgomery -->
-            <rect x="340" y="175" width="80" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Montgomery" data-state="MO"/>
-            <text x="380" y="204" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">MONTGOMERY</text>
-
-            <!-- Boone -->
-            <rect x="240" y="155" width="100" height="70" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Boone" data-state="MO"/>
-            <text x="290" y="194" font-family="Barlow Condensed" font-size="10" fill="rgba(255,255,255,0.6)" text-anchor="middle">BOONE</text>
-
-            <!-- Callaway/Osage area -->
-            <rect x="340" y="225" width="80" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Osage" data-state="MO"/>
-            <text x="380" y="256" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">OSAGE</text>
-
-            <!-- Maries -->
-            <rect x="270" y="225" width="70" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Maries" data-state="MO"/>
-            <text x="305" y="256" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">MARIES</text>
-
-            <!-- Cole -->
-            <rect x="310" y="280" width="85" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Cole" data-state="MO"/>
-            <text x="352" y="311" font-family="Barlow Condensed" font-size="10" fill="rgba(255,255,255,0.6)" text-anchor="middle">COLE</text>
-
-            <!-- St. Charles -->
-            <rect x="490" y="225" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="St. Charles" data-state="MO"/>
-            <text x="522" y="254" font-family="Barlow Condensed" font-size="8" fill="rgba(255,255,255,0.5)" text-anchor="middle">ST.CHARLES</text>
-
-            <!-- St. Louis -->
-            <rect x="490" y="275" width="65" height="50" rx="2" fill="rgba(30,74,114,0.5)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" class="county-shape" data-county="St. Louis" data-state="MO"/>
-            <text x="522" y="304" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.7)" text-anchor="middle">ST. LOUIS</text>
-
-            <!-- Jefferson -->
-            <rect x="450" y="325" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Jefferson" data-state="MO"/>
-            <text x="482" y="356" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">JEFFERSON</text>
-
-            <!-- Franklin -->
-            <rect x="380" y="280" width="110" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Franklin" data-state="MO"/>
-            <text x="435" y="311" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">FRANKLIN</text>
-
-            <!-- Gasconade -->
-            <rect x="270" y="280" width="110" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Gasconade" data-state="MO"/>
-            <text x="325" y="311" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">GASCONADE</text>
-
-            <!-- Crawford -->
-            <rect x="250" y="335" width="100" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Crawford" data-state="MO"/>
-            <text x="300" y="366" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">CRAWFORD</text>
-
-            <!-- Phelps -->
-            <rect x="200" y="335" width="85" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Phelps" data-state="MO"/>
-            <text x="242" y="366" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">PHELPS</text>
-
-            <!-- Dent -->
-            <rect x="160" y="390" width="90" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Dent" data-state="MO"/>
-            <text x="205" y="421" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">DENT</text>
-
-            <!-- Ste. Genevieve -->
-            <rect x="450" y="380" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Ste. Genevieve" data-state="MO"/>
-            <text x="482" y="408" font-family="Barlow Condensed" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">STE.GEN</text>
-
-            <!-- St. Francois -->
-            <rect x="385" y="380" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="St. Francois" data-state="MO"/>
-            <text x="417" y="408" font-family="Barlow Condensed" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">ST.FRANC</text>
-
-            <!-- Madison -->
-            <rect x="320" y="390" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Madison" data-state="MO"/>
-            <text x="352" y="421" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">MADISON</text>
-
-            <!-- Iron -->
-            <rect x="255" y="390" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Iron" data-state="MO"/>
-            <text x="287" y="421" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">IRON</text>
-
-            <!-- Reynolds -->
-            <rect x="160" y="445" width="90" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Reynolds" data-state="MO"/>
-            <text x="205" y="476" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">REYNOLDS</text>
-
-            <!-- Carter -->
-            <rect x="160" y="500" width="90" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Carter" data-state="MO"/>
-            <text x="205" y="531" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">CARTER</text>
-
-            <!-- Ripley -->
-            <rect x="250" y="500" width="90" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Ripley" data-state="MO"/>
-            <text x="295" y="531" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">RIPLEY</text>
-
-            <!-- Wayne -->
-            <rect x="340" y="445" width="75" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Wayne" data-state="MO"/>
-            <text x="377" y="476" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">WAYNE</text>
-
-            <!-- Butler -->
-            <rect x="340" y="500" width="75" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Butler" data-state="MO"/>
-            <text x="377" y="531" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">BUTLER</text>
-
-            <!-- Stoddard -->
-            <rect x="415" y="445" width="75" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Stoddard" data-state="MO"/>
-            <text x="452" y="476" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">STODDARD</text>
-
-            <!-- Scott -->
-            <rect x="415" y="500" width="75" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Scott" data-state="MO"/>
-            <text x="452" y="531" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">SCOTT</text>
-
-            <!-- Cape Girardeau -->
-            <rect x="490" y="430" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Cape Girardeau" data-state="MO"/>
-            <text x="522" y="460" font-family="Barlow Condensed" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">CAPE GIR.</text>
-
-            <!-- Perry -->
-            <rect x="490" y="380" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Perry" data-state="MO"/>
-            <text x="522" y="408" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">PERRY</text>
-
-            <!-- Mississippi -->
-            <rect x="490" y="485" width="65" height="50" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Mississippi" data-state="MO"/>
-            <text x="522" y="513" font-family="Barlow Condensed" font-size="8" fill="rgba(255,255,255,0.5)" text-anchor="middle">MISS.</text>
-
-            <!-- New Madrid -->
-            <rect x="490" y="535" width="65" height="45" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="New Madrid" data-state="MO"/>
-            <text x="522" y="561" font-family="Barlow Condensed" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">NEW MAD.</text>
-
-            <!-- Dunklin -->
-            <rect x="415" y="555" width="75" height="45" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Dunklin" data-state="MO"/>
-            <text x="452" y="581" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">DUNKLIN</text>
-
-            <!-- Washington -->
-            <rect x="350" y="335" width="100" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Washington" data-state="MO"/>
-            <text x="400" y="366" font-family="Barlow Condensed" font-size="9" fill="rgba(255,255,255,0.5)" text-anchor="middle">WASHINGTON</text>
-
-            <!-- Bollinger -->
-            <rect x="350" y="500" width="65" height="55" rx="2" fill="rgba(30,74,114,0.4)" stroke="rgba(255,255,255,0.2)" stroke-width="1" class="county-shape" data-county="Bollinger" data-state="MO"/>
-            <text x="382" y="531" font-family="Barlow Condensed" font-size="8" fill="rgba(255,255,255,0.5)" text-anchor="middle">BOLLINGER</text>
-          </g>
-
-          <!-- ILLINOIS COUNTIES - right side -->
-          <g id="il-counties">
-            <!-- Madison IL -->
-            <rect x="558" y="225" width="60" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Madison" data-state="IL"/>
-            <text x="588" y="254" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">MADISON</text>
-
-            <!-- St. Clair IL -->
-            <rect x="558" y="275" width="60" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="St. Clair" data-state="IL"/>
-            <text x="588" y="304" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">ST.CLAIR</text>
-
-            <!-- Monroe IL -->
-            <rect x="558" y="325" width="60" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Monroe" data-state="IL"/>
-            <text x="588" y="356" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">MONROE</text>
-
-            <!-- Randolph IL -->
-            <rect x="558" y="380" width="60" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Randolph" data-state="IL"/>
-            <text x="588" y="408" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">RANDOLPH</text>
-
-            <!-- Perry IL -->
-            <rect x="558" y="430" width="60" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Perry" data-state="IL"/>
-            <text x="588" y="460" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">PERRY</text>
-
-            <!-- Jackson IL -->
-            <rect x="558" y="485" width="60" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Jackson" data-state="IL"/>
-            <text x="588" y="515" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">JACKSON</text>
-
-            <!-- Union IL -->
-            <rect x="558" y="540" width="60" height="45" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Union" data-state="IL"/>
-            <text x="588" y="566" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">UNION</text>
-
-            <!-- Alexander IL -->
-            <rect x="620" y="540" width="55" height="45" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Alexander" data-state="IL"/>
-            <text x="647" y="566" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">ALEXANDER</text>
-
-            <!-- Johnson IL -->
-            <rect x="620" y="485" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Johnson" data-state="IL"/>
-            <text x="647" y="515" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">JOHNSON</text>
-
-            <!-- Williamson IL -->
-            <rect x="620" y="430" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Williamson" data-state="IL"/>
-            <text x="647" y="460" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">WILLIAMSON</text>
-
-            <!-- Jefferson IL -->
-            <rect x="620" y="380" width="55" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Jefferson" data-state="IL"/>
-            <text x="647" y="408" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">JEFFERSON</text>
-
-            <!-- Franklin IL -->
-            <rect x="620" y="325" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Franklin" data-state="IL"/>
-            <text x="647" y="356" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">FRANKLIN</text>
-
-            <!-- Washington IL -->
-            <rect x="620" y="275" width="55" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Washington" data-state="IL"/>
-            <text x="647" y="304" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">WASHINGTON</text>
-
-            <!-- Clinton IL -->
-            <rect x="620" y="225" width="55" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Clinton" data-state="IL"/>
-            <text x="647" y="254" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">CLINTON</text>
-
-            <!-- Bond IL -->
-            <rect x="558" y="175" width="60" height="50" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Bond" data-state="IL"/>
-            <text x="588" y="204" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">BOND</text>
-
-            <!-- Macoupin IL -->
-            <rect x="558" y="120" width="60" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Macoupin" data-state="IL"/>
-            <text x="588" y="151" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">MACOUPIN</text>
-
-            <!-- Montgomery IL -->
-            <rect x="620" y="120" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Montgomery" data-state="IL"/>
-            <text x="647" y="151" font-family="Barlow Condensed" font-size="7" fill="rgba(150,255,150,0.5)" text-anchor="middle">MONTGOMERY</text>
-
-            <!-- Jersey IL -->
-            <rect x="490" y="175" width="0" height="0" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Jersey" data-state="IL"/>
-
-            <!-- Calhoun IL -->
-            <rect x="555" y="120" width="0" height="0" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Calhoun" data-state="IL"/>
-
-            <!-- Greene IL -->
-            <rect x="675" y="120" width="55" height="55" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Greene" data-state="IL"/>
-            <text x="702" y="151" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">GREENE</text>
-
-            <!-- Adams IL -->
-            <rect x="675" y="60" width="55" height="60" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Adams" data-state="IL"/>
-            <text x="702" y="93" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">ADAMS</text>
-
-            <!-- Pike IL -->
-            <rect x="620" y="60" width="55" height="60" rx="2" fill="rgba(45,100,45,0.35)" stroke="rgba(100,255,100,0.2)" stroke-width="1" class="county-shape" data-county="Pike" data-state="IL"/>
-            <text x="647" y="93" font-family="Barlow Condensed" font-size="8" fill="rgba(150,255,150,0.5)" text-anchor="middle">PIKE</text>
-          </g>
-
-          <!-- STATE LABELS -->
-          <text x="330" y="95" font-family="Oswald" font-size="18" font-weight="700" fill="rgba(42,79,212,0.5)" text-anchor="middle" letter-spacing="3">MISSOURI</text>
-          <text x="630" y="95" font-family="Oswald" font-size="14" font-weight="700" fill="rgba(45,120,45,0.5)" text-anchor="middle" letter-spacing="2">ILLINOIS</text>
-
-          <!-- RIVER LINE (Mississippi) -->
-          <path d="M555 120 C550 200 548 300 545 400 C542 460 540 520 538 580" stroke="rgba(42,79,212,0.4)" stroke-width="3" fill="none" stroke-dasharray="5,3"/>
-
-          <!-- Report markers container -->
-          <g id="reportMarkers"></g>
-        </svg>
-        <div style="position:absolute;bottom:0.8rem;left:0.8rem;display:flex;gap:1rem">
-          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(100,200,255,0.6)">
-            <div style="width:12px;height:12px;background:rgba(30,74,114,0.5);border:1px solid rgba(255,255,255,0.2);border-radius:2px"></div>Missouri
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
+      <!-- LEAFLET MAP -->
+      <div>
+        <div id="weatherMap"></div>
+        <div style="margin-top:0.6rem;display:flex;gap:1.5rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(100,160,255,0.7)">
+            <div style="width:14px;height:10px;background:rgba(30,74,114,0.6);border:1px solid rgba(100,160,255,0.4);border-radius:2px"></div>Missouri Counties
           </div>
-          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(100,255,100,0.5)">
-            <div style="width:12px;height:12px;background:rgba(45,100,45,0.35);border:1px solid rgba(100,255,100,0.2);border-radius:2px"></div>Illinois
+          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(100,220,100,0.7)">
+            <div style="width:14px;height:10px;background:rgba(45,100,45,0.5);border:1px solid rgba(100,220,100,0.4);border-radius:2px"></div>Illinois Counties
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold)">
+            <div style="width:14px;height:14px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px">📍</div>Weather Report
           </div>
         </div>
       </div>
@@ -478,6 +225,9 @@ footer a{color:var(--gold);text-decoration:none}
     </div>
   </div>
 </section>
+
+<div class="stripe"></div>
+
 
 <div class="stripe"></div>
 
@@ -508,8 +258,8 @@ footer a{color:var(--gold);text-decoration:none}
               <select id="rCounty">
                 <option value="">Select your county...</option>
                 <optgroup label="Missouri">
-                  <option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option>
-                  <option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option>
+                  <option>Audrain, MO</option><option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option>
+                  <option>Callaway, MO</option><option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option>
                   <option>Crawford, MO</option><option>Dent, MO</option><option>Dunklin, MO</option>
                   <option>Franklin, MO</option><option>Gasconade, MO</option><option>Iron, MO</option>
                   <option>Jefferson, MO</option><option>Lincoln, MO</option><option>Madison, MO</option>
@@ -680,8 +430,8 @@ footer a{color:var(--gold);text-decoration:none}
               <select id="aCounty">
                 <option value="">Select your county...</option>
                 <optgroup label="Missouri">
-                  <option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option>
-                  <option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option>
+                  <option>Audrain, MO</option><option>Bollinger, MO</option><option>Boone, MO</option><option>Butler, MO</option>
+                  <option>Callaway, MO</option><option>Cape Girardeau, MO</option><option>Carter, MO</option><option>Cole, MO</option>
                   <option>Crawford, MO</option><option>Dent, MO</option><option>Dunklin, MO</option>
                   <option>Franklin, MO</option><option>Gasconade, MO</option><option>Iron, MO</option>
                   <option>Jefferson, MO</option><option>Lincoln, MO</option><option>Madison, MO</option>
@@ -1031,18 +781,183 @@ function observeFadeUps() {
 // ── INIT ──
 document.getElementById('yr').textContent = new Date().getFullYear();
 renderLiveReports();
-updateMapMarkers();
 updateHeroStats();
 buildLeaderboard();
 observeFadeUps();
 window.addEventListener('scroll', observeFadeUps, {passive:true});
+setInterval(() => { renderLiveReports(); updateHeroStats(); }, 120000);
+</script>
 
-// Refresh every 2 minutes
-setInterval(() => {
-  renderLiveReports();
-  updateMapMarkers();
-  updateHeroStats();
-}, 120000);
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── LEAFLET MAP ──
+const map = L.map('weatherMap', {
+  center: [37.5, -91.5],
+  zoom: 7,
+  zoomControl: true,
+  scrollWheelZoom: false
+});
+
+// Dark tile layer
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+// Missouri coverage counties
+const MO_COUNTIES = ['Audrain','Bollinger','Boone','Butler','Callaway','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','Saint Charles','Sainte Genevieve','Saint Francois','Saint Louis','Scott','Stoddard','Warren','Washington','Wayne'];
+
+// Illinois coverage counties
+const IL_COUNTIES = ['Adams','Alexander','Bond','Calhoun','Clinton','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Monroe','Montgomery','Perry','Pike','Randolph','Saint Clair','Union','Washington','Williamson'];
+
+// Helper to normalize county names for matching
+function normalizeName(name) {
+  return name.toLowerCase()
+    .replace(/^saint /,'st. ')
+    .replace(/^sainte /,'ste. ')
+    .replace(/ county$/,'')
+    .trim();
+}
+
+async function loadCountyBoundaries() {
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json');
+    const geoData = await res.json();
+
+    const filtered = {
+      type: 'FeatureCollection',
+      features: geoData.features.filter(f => {
+        const fips = f.id || '';
+        const rawName = (f.properties?.NAME || '').toLowerCase().replace(/ county$/,'').trim();
+
+        // St. Louis City is an independent city with FIPS 29510
+        if(fips === '29510') return true;
+
+        if(fips.startsWith('29')) {
+          return MO_COUNTIES.some(c => {
+            const cn = normalizeName(c);
+            return rawName === cn || rawName === cn.replace('st. ','saint ').replace('ste. ','sainte ');
+          });
+        }
+        if(fips.startsWith('17')) {
+          return IL_COUNTIES.some(c => {
+            const cn = normalizeName(c);
+            return rawName === cn || rawName === cn.replace('st. ','saint ');
+          });
+        }
+        return false;
+      })
+    };
+
+    L.geoJSON(filtered, {
+      style: f => {
+        const fips = f.id || '';
+        const isMO = fips.startsWith('29');
+        return {
+          fillColor: isMO ? '#1e3aab' : '#2d6e2d',
+          fillOpacity: 0.5,
+          color: isMO ? 'rgba(100,160,255,0.6)' : 'rgba(100,220,100,0.5)',
+          weight: 1.5
+        };
+      },
+      onEachFeature: (f, layer) => {
+        const name = f.properties?.NAME || '';
+        const fips = f.id || '';
+        const state = fips.startsWith('29') ? 'MO' : 'IL';
+        layer.bindTooltip(`<strong>${name} County</strong><br><span style="font-size:0.75rem">${state}</span>`, {
+          className: 'leaflet-tooltip-dark',
+          sticky: true
+        });
+      }
+    }).addTo(map);
+
+    addReportMarkers();
+  } catch(e) {
+    console.log('GeoJSON load failed', e);
+    addReportMarkers();
+  }
+}
+
+// County center coordinates for markers
+const COUNTY_CENTERS = {
+  'Audrain, MO':[39.01,-91.85],'Bollinger, MO':[37.35,-89.94],'Boone, MO':[38.96,-92.32],'Butler, MO':[36.72,-90.40],
+  'Callaway, MO':[38.85,-91.91],'Cape Girardeau, MO':[37.38,-89.72],'Carter, MO':[36.95,-91.09],'Cole, MO':[38.57,-92.28],
+  'Crawford, MO':[37.99,-91.31],'Dent, MO':[37.60,-91.49],'Dunklin, MO':[36.12,-90.01],
+  'Franklin, MO':[38.40,-91.07],'Gasconade, MO':[38.49,-91.54],'Iron, MO':[37.51,-90.67],
+  'Jefferson, MO':[38.24,-90.54],'Lincoln, MO':[39.07,-90.95],'Madison, MO':[37.47,-90.30],
+  'Maries, MO':[38.14,-91.91],'Mississippi, MO':[36.83,-89.30],'Montgomery, MO':[38.95,-91.49],
+  'New Madrid, MO':[36.60,-89.59],'Osage, MO':[38.46,-91.86],'Perry, MO':[37.72,-89.85],
+  'Phelps, MO':[37.86,-91.77],'Pike, MO':[39.34,-90.92],'Reynolds, MO':[37.36,-91.24],
+  'Ripley, MO':[36.65,-90.88],'St. Charles, MO':[38.80,-90.60],'Ste. Genevieve, MO':[37.90,-90.17],
+  'St. Francois, MO':[37.78,-90.46],'St. Louis, MO':[38.64,-90.44],'St. Louis City, MO':[38.63,-90.24],
+  'Scott, MO':[37.05,-89.55],'Stoddard, MO':[36.84,-89.97],'Warren, MO':[38.77,-91.16],
+  'Washington, MO':[37.97,-90.87],'Wayne, MO':[37.11,-90.47],
+  'Adams, IL':[40.01,-91.19],'Alexander, IL':[37.12,-89.33],'Bond, IL':[38.88,-89.43],
+  'Calhoun, IL':[39.17,-90.66],'Clinton, IL':[38.60,-89.42],'Franklin, IL':[37.99,-88.92],
+  'Greene, IL':[39.36,-90.38],'Jackson, IL':[37.78,-89.36],'Jefferson, IL':[38.30,-88.92],
+  'Jersey, IL':[39.09,-90.35],'Johnson, IL':[37.45,-88.88],'Macoupin, IL':[39.26,-89.93],
+  'Madison, IL':[38.83,-89.92],'Monroe, IL':[38.27,-90.17],'Montgomery, IL':[39.24,-89.48],
+  'Perry, IL':[38.09,-89.36],'Pike, IL':[39.62,-90.91],'Randolph, IL':[37.96,-89.83],
+  'St. Clair, IL':[38.47,-90.01],'Union, IL':[37.47,-89.24],'Washington, IL':[38.35,-89.41],
+  'Williamson, IL':[37.73,-88.92]
+};
+
+let markerLayer = L.layerGroup().addTo(map);
+
+function addReportMarkers() {
+  markerLayer.clearLayers();
+  const reports = getReports();
+  const byCounty = {};
+  reports.forEach(r => {
+    const key = r.county;
+    if (!byCounty[key] || r.timestamp > byCounty[key].timestamp) byCounty[key] = r;
+  });
+
+  Object.values(byCounty).forEach(r => {
+    const coords = COUNTY_CENTERS[r.county];
+    if (!coords) return;
+    const condIcon = r.condition.split(' ')[0];
+    const isHot = r.temp >= 90;
+    const isCold = r.temp <= 32;
+    const color = isHot ? '#ff6b35' : isCold ? '#7ab4ff' : '#5ee080';
+
+    const icon = L.divIcon({
+      html: `<div style="background:rgba(8,12,24,0.9);border:2px solid ${color};border-radius:50%;width:42px;height:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;">
+        <span style="font-size:14px;line-height:1">${condIcon}</span>
+        <span style="font-size:9px;font-weight:700;color:${color};line-height:1">${r.temp}°</span>
+      </div>
+      <div style="background:rgba(8,12,24,0.85);color:#fff;font-family:'Barlow Condensed';font-size:9px;font-weight:700;text-align:center;padding:1px 4px;border-radius:2px;margin-top:1px;white-space:nowrap">${r.name}</div>`,
+      className: '',
+      iconSize: [42, 56],
+      iconAnchor: [21, 28]
+    });
+
+    const ago = getTimeAgo(r.timestamp);
+    L.marker(coords, {icon})
+      .addTo(markerLayer)
+      .bindPopup(`
+        <div style="font-family:'Barlow Condensed',sans-serif;min-width:160px">
+          <div style="font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem">${r.name}</div>
+          <div style="font-size:0.8rem;color:#888;margin-bottom:0.5rem">${r.county}</div>
+          <div style="font-size:1.1rem">${condIcon} ${r.condition}</div>
+          <div style="font-size:0.9rem;margin-top:0.3rem">🌡️ ${r.temp}°F${r.wind ? ' · 💨 ' + r.wind + ' mph' : ''}</div>
+          ${r.notes ? `<div style="font-size:0.8rem;font-style:italic;margin-top:0.4rem;color:#888">"${r.notes}"</div>` : ''}
+          <div style="font-size:0.75rem;color:#666;margin-top:0.4rem">${ago}</div>
+        </div>
+      `);
+  });
+}
+
+// Override updateMapMarkers to use Leaflet
+function updateMapMarkers() { addReportMarkers(); }
+
+// Add dark tooltip style
+const style = document.createElement('style');
+style.textContent = `.leaflet-tooltip-dark{background:rgba(8,12,24,0.9)!important;border:1px solid rgba(255,255,255,0.15)!important;color:#fff!important;font-family:'Barlow Condensed',sans-serif!important;font-size:0.78rem!important;font-weight:700!important;letter-spacing:0.06em!important;text-transform:uppercase!important;padding:0.4rem 0.7rem!important;border-radius:3px!important;} .leaflet-popup-content-wrapper{background:rgba(14,20,40,0.97)!important;border:1px solid rgba(255,255,255,0.15)!important;color:#fff!important;border-radius:4px!important;box-shadow:0 4px 20px rgba(0,0,0,0.5)!important} .leaflet-popup-tip{background:rgba(14,20,40,0.97)!important}`;
+document.head.appendChild(style);
+
+loadCountyBoundaries();
 </script>
 </body>
 </html>
