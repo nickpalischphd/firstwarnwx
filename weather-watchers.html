@@ -537,32 +537,35 @@ async function submitReport() {
   if (!temp) { alert('Please enter the temperature.'); return; }
   if (!condition) { alert('Please select current conditions.'); return; }
 
+  const reportTime = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+
   const report = {
-    id: Date.now(),
-    timestamp: Date.now(),
-    name, county, temp: parseInt(temp),
-    condition,
+    name, county, temp: parseInt(temp), condition,
     wind: document.getElementById('rWind').value || '',
     notes: document.getElementById('rNotes').value.trim(),
-    time: new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})
+    originalTime: reportTime
   };
 
-  // Save locally
-  saveReport(report);
+  // Build one-click approve link
+  const encoded = encodeURIComponent(btoa(JSON.stringify(report)));
+  const approveLink = `https://firstwarnwx.com/approve-report.html?data=${encoded}`;
 
-  // Send to Formspree
+  // Send to Formspree with approve link
   try {
     await fetch(FORMSPREE, {
       method: 'POST',
       headers: {'Content-Type':'application/json', 'Accept':'application/json'},
       body: JSON.stringify({
-        _subject: `Weather Report — ${county} — ${name}`,
-        Name: name, County: county,
+        _subject: `⚡ Weather Report — ${county} — ${name} — ${temp}°F`,
+        Name: name,
+        County: county,
         Temperature: temp + '°F',
         Conditions: condition,
         Wind: report.wind ? report.wind + ' mph' : 'Not reported',
         Notes: report.notes || 'None',
-        Time: report.time
+        Time: reportTime,
+        '✅ ONE-CLICK APPROVE': approveLink,
+        _message: `New weather report from ${name} in ${county}!\n\nTemp: ${temp}°F\nConditions: ${condition}\nWind: ${report.wind || 'Not reported'}\nNotes: ${report.notes || 'None'}\n\n✅ APPROVE THIS REPORT (click to post to live map):\n${approveLink}`
       })
     });
   } catch(e) {}
