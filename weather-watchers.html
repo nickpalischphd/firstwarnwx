@@ -537,12 +537,13 @@ async function submitReport() {
   if (!name) { alert('Please enter your first name.'); return; }
   if (!county) { alert('Please select your county.'); return; }
   if (!temp) { alert('Please enter the temperature.'); return; }
-  if (!condition) { alert('Please select current conditions.'); return; }
+  // Use selected condition or default to partly cloudy if none selected
+  const finalCondition = condition || selectedCondition || '⛅ Partly Cloudy';
 
   const reportTime = new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
 
   const report = {
-    name, county, temp: parseInt(temp), condition,
+    name, county, temp: parseInt(temp), condition: finalCondition,
     wind: document.getElementById('rWind').value || '',
     notes: document.getElementById('rNotes').value.trim(),
     originalTime: reportTime
@@ -559,7 +560,7 @@ async function submitReport() {
       name: name,
       county: county,
       temp: temp + '°F',
-      condition: condition,
+      condition: finalCondition,
       wind: report.wind ? report.wind + ' mph' : 'Not reported',
       notes: report.notes || 'None',
       time: reportTime,
