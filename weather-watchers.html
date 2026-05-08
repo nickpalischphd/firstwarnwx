@@ -248,7 +248,7 @@ footer a{color:var(--gold);text-decoration:none}
           <h2 class="sec-title">Submit Your <span>Weather Report</span></h2>
           <p style="font-size:0.88rem;color:var(--text-mid);line-height:1.8;margin-bottom:2rem">Tell us what you're seeing right now! Your report helps Dr. Nick build a complete picture of conditions across the coverage area.</p>
 
-          <div class="success-msg" id="reportSuccess">✓ Thank you for your report! It will appear on the map shortly.</div>
+          <div class="success-msg" id="reportSuccess">✓ Thank you for your report! It will appear on the map once approved by Dr. Nick — usually within a few minutes.</div>
           <div class="error-msg" id="reportError">Something went wrong. Please try again.</div>
 
           <div class="form-grid">
@@ -511,17 +511,17 @@ function selectCondition(condition, el) {
 function getReports() {
   try {
     const all = JSON.parse(localStorage.getItem(REPORTS_KEY)) || [];
-    const cutoff = Date.now() - (24 * 60 * 60 * 1000);
-    return all.filter(r => r.timestamp > cutoff);
+    const cutoff = Date.now() - (4 * 60 * 60 * 1000); // 4 hours
+    return all.filter(r => r.approved && r.timestamp > cutoff);
   } catch(e) { return []; }
 }
 
 function saveReport(report) {
   try {
-    const all = JSON.parse(localStorage.getItem(REPORTS_KEY)) || [];
-    all.unshift(report);
-    // Keep last 200 reports
-    localStorage.setItem(REPORTS_KEY, JSON.stringify(all.slice(0, 200)));
+    // Save to PENDING queue for manager approval
+    const pending = JSON.parse(localStorage.getItem('fwWatcherPending')) || [];
+    pending.unshift(report);
+    localStorage.setItem('fwWatcherPending', JSON.stringify(pending.slice(0, 100)));
   } catch(e) {}
 }
 
@@ -991,5 +991,3 @@ loadCountyBoundaries();
 </script>
 </body>
 </html>
-
-
