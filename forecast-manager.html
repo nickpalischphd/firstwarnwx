@@ -673,6 +673,37 @@ function getApprovedReports(){
   }catch(e){return[];}
 }
 
+async function publishReports(reports, message){
+  const s=JSON.parse(localStorage.getItem(GHK)||'{}');
+  if(!s.tok||!s.user||!s.repo){alert('Please set up GitHub Settings first!');goTab('settings');return false;}
+  try{
+    const getR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/reports.json`,{
+      headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+    });
+    let sha=null;
+    if(getR.ok){const d=await getR.json();sha=d.sha;}
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(reports,null,2))));
+    const putR=await fetch(`https://api.github.com/repos/${s.user}/${s.repo}/contents/reports.json`,{
+      method:'PUT',
+      headers:{'Authorization':`Bearer ${s.tok}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
+      body:JSON.stringify({message,content,...(sha?{sha}:{})})
+    });
+    return putR.ok;
+  }catch(e){return false;}
+}
+
+async function fetchLiveReports(){
+  const s=JSON.parse(localStorage.getItem(GHK)||'{}');
+  if(!s.user||!s.repo)return[];
+  try{
+    const r=await fetch(`https://raw.githubusercontent.com/${s.user}/${s.repo}/main/reports.json?v=${Date.now()}`);
+    if(!r.ok)return[];
+    const all=await r.json();
+    const cutoff=Date.now()-4*60*60*1000;
+    return all.filter(r=>r.timestamp>cutoff);
+  }catch(e){return[];}
+}
+
 function addManualReport(){
   const name=document.getElementById('wrName').value.trim();
   const county=document.getElementById('wrCounty').value;
@@ -689,37 +720,43 @@ function addManualReport(){
     time:new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
     approved:true
   };
-  try{
-    const all=JSON.parse(localStorage.getItem(WK))||[];
-    all.unshift(report);
-    localStorage.setItem(WK,JSON.stringify(all.slice(0,200)));
-  }catch(e){}
-  flash('wrOk',`✓ ${name} from ${county} posted to live map!`);
-  document.getElementById('wrName').value='';
-  document.getElementById('wrCounty').value='';
-  document.getElementById('wrTemp').value='';
-  document.getElementById('wrWind').value='';
-  document.getElementById('wrNotes').value='';
-  renderWatchers();
+  flash('wrOk','⏳ Publishing to live map...');
+  fetchLiveReports().then(existing=>{
+    existing.unshift(report);
+    publishReports(existing,`Weather report: ${name} - ${county}`).then(ok=>{
+      if(ok){
+        flash('wrOk',`✓ ${name} from ${county} posted to live map!`);
+        document.getElementById('wrName').value='';
+        document.getElementById('wrCounty').value='';
+        document.getElementById('wrTemp').value='';
+        document.getElementById('wrWind').value='';
+        document.getElementById('wrNotes').value='';
+        setTimeout(()=>renderWatchers(),2000);
+      } else {
+        flash('wrOk','❌ Failed to publish. Check GitHub settings.');
+      }
+    });
+  });
 }
 
-function removeReport(id){
+async function removeReport(id){
   if(!confirm('Remove this report from the map?'))return;
-  try{
-    const all=JSON.parse(localStorage.getItem(WK))||[];
-    localStorage.setItem(WK,JSON.stringify(all.filter(r=>r.id!==id)));
-  }catch(e){}
-  renderWatchers();
+  const reports=await fetchLiveReports();
+  const filtered=reports.filter(r=>r.id!==id);
+  const ok=await publishReports(filtered,'Remove weather report');
+  if(ok)setTimeout(()=>renderWatchers(),2000);
+  else alert('Failed to remove. Check GitHub settings.');
 }
 
-function clearAllReports(){
+async function clearAllReports(){
   if(!confirm('Clear ALL reports from the map? This cannot be undone.'))return;
-  localStorage.removeItem(WK);
-  renderWatchers();
+  const ok=await publishReports([],'Clear all weather reports');
+  if(ok){flash('wrOk','✓ All reports cleared!');setTimeout(()=>renderWatchers(),2000);}
+  else alert('Failed to clear. Check GitHub settings.');
 }
 
-function renderWatchers(){
-  const reports=getApprovedReports();
+async function renderWatchers(){
+  const reports=await fetchLiveReports();
   const counties=new Set(reports.map(r=>r.county));
   document.getElementById('wApproved').textContent=reports.length;
   document.getElementById('wCounties').textContent=counties.size;
@@ -754,8 +791,8 @@ function updatePendingBadge(){
 }
 
 // ── ANALYTICS ──
-function renderAnalytics(){
-  const reports=getApprovedReports();
+async function renderAnalytics(){
+  const reports=await fetchLiveReports();
   const counties=new Set(reports.map(r=>r.county));
   const watchers=new Set(reports.map(r=>r.name+r.county));
   const avgTemp=reports.length>0?Math.round(reports.reduce((s,r)=>s+r.temp,0)/reports.length):'—';
