@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>No Connection — First Warn Weather</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Barlow+Condensed:wght@400;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Barlow',sans-serif;background:#080c18;color:#e8eaf0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
+    .logo{height:60px;object-fit:contain;margin-bottom:2rem}
+    .icon{font-size:5rem;margin-bottom:1.5rem;opacity:0.7}
+    h1{font-family:'Oswald',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;margin-bottom:0.5rem}
+    h1 span{color:#cc1a1a}
+    .sub{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:#a8b4cc;margin-bottom:1.5rem}
+    p{font-size:0.95rem;color:#a8b4cc;line-height:1.8;max-width:440px;margin-bottom:2rem}
+    .btn{background:#cc1a1a;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:0.9rem 2.5rem;border:none;border-radius:2px;cursor:pointer;text-decoration:none;display:inline-block;transition:background 0.2s}
+    .btn:hover{background:#e82222}
+    .tips{margin-top:2.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:1.5rem;max-width:400px}
+    .tips h3{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#f0b020;margin-bottom:0.8rem}
+    .tips p{font-size:0.82rem;color:#a8b4cc;margin-bottom:0;line-height:1.7}
+    .stripe{height:4px;background:linear-gradient(90deg,#9e0e0e,#cc1a1a,#f0b020,#cc1a1a,#1a2a8f,#cc1a1a);position:fixed;top:0;left:0;right:0}
+    .tagline{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#cc1a1a;margin-top:2rem}
+  </style>
+</head>
+<body>
+  <div class="stripe"></div>
+  <img src="fw-logo.png" alt="First Warn Weather" class="logo" onerror="this.style.display='none'">
+  <div class="icon">📡</div>
+  <h1>No <span>Connection</span></h1>
+  <p class="sub">You're currently offline</p>
+  <p>First Warn Weather requires an internet connection to load live radar, NWS alerts, and Dr. Nick's forecast. Please check your connection and try again.</p>
+  <a href="/" class="btn" onclick="location.reload(); return false;">Try Again</a>
+  <div class="tips">
+    <h3>⚡ Severe Weather Tips While Offline</h3>
+    <p>
+      • Have a battery-powered NOAA Weather Radio<br>
+      • Know your county name for NWS alerts<br>
+      • Have a family emergency plan ready<br>
+      • Follow <strong>First Warn WX on Facebook</strong> for offline notifications
+    </p>
+  </div>
+  <p class="tagline">First. Accurate. Trusted.</p>
+</body>
+</html>
