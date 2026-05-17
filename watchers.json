@@ -4,27 +4,32 @@
     "name": "Dr. Nick Palisch",
     "location": "St. Louis, MO",
     "photo": "watchers/dr-nick.jpg",
-    "bio": "Dr. Nick Palisch is the chief meteorologist and founder of First Warn Weather. With a degree in Atmospheric Science, he has been tracking and reporting severe weather across Missouri and Southern Illinois for over a decade. Dr. Nick leads the First Warn Weather Watcher network and is a trained NWS SKYWARN storm spotter and coordinator.",
+    "bio": "Meteorologist Dr. Nick Palisch is a weather communicator, storm chaser, and educator with a passion for helping communities better understand the atmosphere and the science behind severe weather. He holds a Bachelor’s degree in Atmospheric Science with an emphasis in severe storms and has spent years studying and tracking impactful weather across the Midwest, including Missouri and Illinois.\n\nKnown for his relatable and educational forecasting style, Dr. Palisch combines meteorological science with public awareness to make complex weather information easier to understand. Through his First Warn Weather platform, writing, and community outreach, he focuses on severe weather preparedness, winter storms, climate patterns, and everyday weather education while maintaining a strong commitment to public safety and communication.",
     "badges": [
       "NWS SKYWARN",
-      "Lead Spotter"
+      "Lead Spotter",
+      "Police",
+      "Emergency Management",
+      "Meteorologist",
+      "Communications Operator"
     ],
     "specialties": [
       "Tornadoes",
-      "Severe Thunderstorms",
-      "Flash Flooding",
-      "Winter Weather"
+      "Mesoscale Forecasting",
+      "Severe Weather"
     ],
-    "featured": true,
+    "featured": false,
     "since": 2014
   },
   {
-    "name": "Jane Smith",
-    "location": "St. Charles County, MO",
+    "id": "jane-smith-1779030178806kzkp",
+    "name": "Brody",
+    "location": "Perry, MO",
     "photo": "watchers/jane-smith.jpg",
-    "bio": "Jane has been a trained NWS SKYWARN storm spotter since 2019, covering the St. Charles County area. She specializes in tornado and severe thunderstorm reports and operates a personal home weather station.",
+    "bio": "Brody is a  SKYWARN spotter trained. I am highly devoted to weather and aspire to be the best I can in order to help spread important and accurate information. I’m extremely trustworthy and dependable when it matter most, like in weather.",
     "badges": [
-      "NWS SKYWARN"
+      "NWS SKYWARN",
+      "Backyard Observer"
     ],
     "specialties": [
       "Tornadoes",
@@ -32,8 +37,7 @@
       "Home Weather Station"
     ],
     "featured": false,
-    "since": 2019,
-    "id": "jane-smith-1779030178806kzkp"
+    "since": 2026
   },
   {
     "name": "Mike Johnson",
