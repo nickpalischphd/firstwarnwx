@@ -1,11 +1,20 @@
 [
   {
+    "id": "dr-nick-palisch-1779030178806xre5",
     "name": "Dr. Nick Palisch",
     "location": "St. Louis, MO",
     "photo": "watchers/dr-nick.jpg",
-    "bio": "Dr. Nick Palisch is the chief meteorologist and founder of First Warn Weather. With a Ph.D. in Atmospheric Science, he has been tracking and reporting severe weather across Missouri and Southern Illinois for over a decade. Dr. Nick leads the First Warn Weather Watcher network and is a trained NWS SKYWARN storm spotter and coordinator.",
-    "badges": ["NWS SKYWARN", "Lead Spotter", "Ham Radio"],
-    "specialties": ["Tornadoes", "Severe Thunderstorms", "Flash Flooding", "Winter Weather"],
+    "bio": "Dr. Nick Palisch is the chief meteorologist and founder of First Warn Weather. With a degree in Atmospheric Science, he has been tracking and reporting severe weather across Missouri and Southern Illinois for over a decade. Dr. Nick leads the First Warn Weather Watcher network and is a trained NWS SKYWARN storm spotter and coordinator.",
+    "badges": [
+      "NWS SKYWARN",
+      "Lead Spotter"
+    ],
+    "specialties": [
+      "Tornadoes",
+      "Severe Thunderstorms",
+      "Flash Flooding",
+      "Winter Weather"
+    ],
     "featured": true,
     "since": 2014
   },
@@ -14,19 +23,34 @@
     "location": "St. Charles County, MO",
     "photo": "watchers/jane-smith.jpg",
     "bio": "Jane has been a trained NWS SKYWARN storm spotter since 2019, covering the St. Charles County area. She specializes in tornado and severe thunderstorm reports and operates a personal home weather station.",
-    "badges": ["NWS SKYWARN"],
-    "specialties": ["Tornadoes", "Severe Thunderstorms", "Home Weather Station"],
+    "badges": [
+      "NWS SKYWARN"
+    ],
+    "specialties": [
+      "Tornadoes",
+      "Severe Thunderstorms",
+      "Home Weather Station"
+    ],
     "featured": false,
-    "since": 2019
+    "since": 2019,
+    "id": "jane-smith-1779030178806kzkp"
   },
   {
     "name": "Mike Johnson",
     "location": "Jefferson County, MO",
     "photo": "watchers/mike-johnson.jpg",
     "bio": "Mike is a licensed ham radio operator and SKYWARN spotter covering Jefferson County. He has over eight years of experience reporting severe weather and assists with local emergency communications during major weather events.",
-    "badges": ["NWS SKYWARN", "Ham Radio"],
-    "specialties": ["Ham Radio Comms", "Flash Flooding", "Hail Reports"],
+    "badges": [
+      "NWS SKYWARN",
+      "Ham Radio"
+    ],
+    "specialties": [
+      "Ham Radio Comms",
+      "Flash Flooding",
+      "Hail Reports"
+    ],
     "featured": false,
-    "since": 2017
+    "since": 2017,
+    "id": "mike-johnson-17790301788062w0o"
   }
 ]
