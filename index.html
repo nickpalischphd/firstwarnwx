@@ -12,6 +12,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>First Warn Weather — First. Accurate. Trusted.</title>
   <meta name="description" content="First Warn Weather with Dr. Nick — live forecasts, radar, severe weather alerts for St. Louis, Central Missouri, Southeast Missouri, and Southern Illinois.">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#cc1a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FirstWarnWX">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
 :root{
@@ -915,6 +921,13 @@ document.getElementById('yr').textContent=new Date().getFullYear();
 loadNWSAlerts();loadForecast();loadWeatherBlog();loadHomepageWatchers();observeFadeUps();
 window.addEventListener('scroll',observeFadeUps,{passive:true});
 setInterval(loadNWSAlerts,300000);setInterval(loadHomepageWatchers,120000);
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
