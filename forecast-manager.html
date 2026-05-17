@@ -733,7 +733,16 @@ function renderBlogList(){
 }
 
 // ── WATCHER PROFILES ──
-function getProfiles(){try{return JSON.parse(localStorage.getItem(PK))||[];}catch(e){return[];}}
+function getProfiles(){
+  try{
+    const p=JSON.parse(localStorage.getItem(PK))||[];
+    // Ensure every profile has an id (handles data imported without ids)
+    let changed=false;
+    p.forEach(x=>{if(!x.id){x.id=(x.name||'watcher').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now()+Math.random().toString(36).slice(2,6);changed=true;}});
+    if(changed)localStorage.setItem(PK,JSON.stringify(p));
+    return p;
+  }catch(e){return[];}
+}
 function setProfiles(p){localStorage.setItem(PK,JSON.stringify(p));}
 
 function saveProfile(){
@@ -900,7 +909,9 @@ async function loadProfilesFromGitHub(){
     if(!r.ok)return;
     const data=await r.json();
     if(Array.isArray(data)&&data.length>0&&getProfiles().length===0){
-      setProfiles(data);
+      // Assign IDs to any profiles that don't have one
+      const withIds=data.map(p=>p.id?p:{...p,id:(p.name||'watcher').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now()+Math.random().toString(36).slice(2,6)});
+      setProfiles(withIds);
       renderProfileList();
     }
   }catch(e){}
