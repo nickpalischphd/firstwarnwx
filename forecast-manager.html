@@ -141,6 +141,13 @@ input:checked+.tog-slider:before{transform:translateX(20px)}
 .badge-ham{background:rgba(120,40,200,0.3);color:#c090ff;border:1px solid rgba(120,40,200,0.4)}
 .badge-ems{background:rgba(200,40,40,0.3);color:#ff8080;border:1px solid rgba(200,40,40,0.4)}
 .badge-lead{background:rgba(180,140,0,0.3);color:var(--gold);border:1px solid rgba(180,140,0,0.5)}
+.badge-fire{background:rgba(220,80,20,0.3);color:#ff7040;border:1px solid rgba(220,80,20,0.5)}
+.badge-police{background:rgba(20,60,180,0.3);color:#6090ff;border:1px solid rgba(20,60,180,0.5)}
+.badge-emgmt{background:rgba(120,60,180,0.3);color:#b080ff;border:1px solid rgba(120,60,180,0.5)}
+.badge-met{background:rgba(0,160,180,0.3);color:#40d0e8;border:1px solid rgba(0,160,180,0.5)}
+.badge-comms{background:rgba(20,140,80,0.3);color:#40d090;border:1px solid rgba(20,140,80,0.5)}
+.badge-pilot{background:rgba(80,80,80,0.3);color:#c0c8d8;border:1px solid rgba(80,80,80,0.5)}
+.badge-backyard{background:rgba(40,120,40,0.3);color:#80c860;border:1px solid rgba(40,120,40,0.5)}
 .wp-featured{background:rgba(240,176,32,0.15);border:1px solid rgba(240,176,32,0.4);color:var(--gold);font-size:0.62rem;font-weight:700;padding:0.1rem 0.5rem;border-radius:2px;display:inline-block;margin-left:0.4rem}
 
 /* CHECKBOXES */
@@ -413,9 +420,16 @@ input:checked+.tog-slider:before{transform:translateX(20px)}
         <label>Certifications / Badges</label>
         <div class="check-group">
           <div class="check-item"><input type="checkbox" id="b-skywarn"><label for="b-skywarn">NWS SKYWARN</label></div>
+          <div class="check-item"><input type="checkbox" id="b-lead"><label for="b-lead">Lead Spotter</label></div>
           <div class="check-item"><input type="checkbox" id="b-ham"><label for="b-ham">Ham Radio</label></div>
           <div class="check-item"><input type="checkbox" id="b-ems"><label for="b-ems">EMS</label></div>
-          <div class="check-item"><input type="checkbox" id="b-lead"><label for="b-lead">Lead Spotter</label></div>
+          <div class="check-item"><input type="checkbox" id="b-fire"><label for="b-fire">Fire</label></div>
+          <div class="check-item"><input type="checkbox" id="b-police"><label for="b-police">Police</label></div>
+          <div class="check-item"><input type="checkbox" id="b-emgmt"><label for="b-emgmt">Emergency Management</label></div>
+          <div class="check-item"><input type="checkbox" id="b-met"><label for="b-met">Meteorologist</label></div>
+          <div class="check-item"><input type="checkbox" id="b-comms"><label for="b-comms">Communications Operator</label></div>
+          <div class="check-item"><input type="checkbox" id="b-pilot"><label for="b-pilot">Pilot</label></div>
+          <div class="check-item"><input type="checkbox" id="b-backyard"><label for="b-backyard">Backyard Observer</label></div>
         </div>
       </div>
 
@@ -755,9 +769,16 @@ function saveProfile(){
 
   const badges=[];
   if(document.getElementById('b-skywarn').checked)badges.push('NWS SKYWARN');
+  if(document.getElementById('b-lead').checked)badges.push('Lead Spotter');
   if(document.getElementById('b-ham').checked)badges.push('Ham Radio');
   if(document.getElementById('b-ems').checked)badges.push('EMS');
-  if(document.getElementById('b-lead').checked)badges.push('Lead Spotter');
+  if(document.getElementById('b-fire').checked)badges.push('Fire');
+  if(document.getElementById('b-police').checked)badges.push('Police');
+  if(document.getElementById('b-emgmt').checked)badges.push('Emergency Management');
+  if(document.getElementById('b-met').checked)badges.push('Meteorologist');
+  if(document.getElementById('b-comms').checked)badges.push('Communications Operator');
+  if(document.getElementById('b-pilot').checked)badges.push('Pilot');
+  if(document.getElementById('b-backyard').checked)badges.push('Backyard Observer');
 
   const specialtiesRaw=document.getElementById('pSpecialties').value.trim();
   const specialties=specialtiesRaw?specialtiesRaw.split(',').map(s=>s.trim()).filter(Boolean):[];
@@ -802,9 +823,16 @@ function editProfile(id){
   document.getElementById('pFeatured').checked=p.featured||false;
   document.getElementById('pSpecialties').value=(p.specialties||[]).join(', ');
   document.getElementById('b-skywarn').checked=(p.badges||[]).includes('NWS SKYWARN');
+  document.getElementById('b-lead').checked=(p.badges||[]).includes('Lead Spotter');
   document.getElementById('b-ham').checked=(p.badges||[]).includes('Ham Radio');
   document.getElementById('b-ems').checked=(p.badges||[]).includes('EMS');
-  document.getElementById('b-lead').checked=(p.badges||[]).includes('Lead Spotter');
+  document.getElementById('b-fire').checked=(p.badges||[]).includes('Fire');
+  document.getElementById('b-police').checked=(p.badges||[]).includes('Police');
+  document.getElementById('b-emgmt').checked=(p.badges||[]).includes('Emergency Management');
+  document.getElementById('b-met').checked=(p.badges||[]).includes('Meteorologist');
+  document.getElementById('b-comms').checked=(p.badges||[]).includes('Communications Operator');
+  document.getElementById('b-pilot').checked=(p.badges||[]).includes('Pilot');
+  document.getElementById('b-backyard').checked=(p.badges||[]).includes('Backyard Observer');
   document.getElementById('profileFormLabel').textContent=`✏️ Editing: ${p.name}`;
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -836,7 +864,7 @@ function clearProfileForm(){
   document.getElementById('pSince').value='';
   document.getElementById('pFeatured').checked=false;
   document.getElementById('pSpecialties').value='';
-  ['b-skywarn','b-ham','b-ems','b-lead'].forEach(id=>document.getElementById(id).checked=false);
+  ['b-skywarn','b-lead','b-ham','b-ems','b-fire','b-police','b-emgmt','b-met','b-comms','b-pilot','b-backyard'].forEach(id=>document.getElementById(id).checked=false);
   document.getElementById('profileFormLabel').textContent='➕ Add New Watcher';
 }
 
@@ -849,7 +877,7 @@ function renderProfileList(){
 
   list.innerHTML=profiles.map((p,i)=>{
     const badgeHTML=(p.badges||[]).map(b=>{
-      const cls=b==='NWS SKYWARN'?'badge-skywarn':b==='Ham Radio'?'badge-ham':b==='EMS'?'badge-ems':'badge-lead';
+      const cls=b==='NWS SKYWARN'?'badge-skywarn':b==='Ham Radio'?'badge-ham':b==='EMS'?'badge-ems':b==='Lead Spotter'?'badge-lead':b==='Fire'?'badge-fire':b==='Police'?'badge-police':b==='Emergency Management'?'badge-emgmt':b==='Meteorologist'?'badge-met':b==='Communications Operator'?'badge-comms':b==='Pilot'?'badge-pilot':'badge-backyard';
       return `<span class="wp-badge ${cls}">${b}</span>`;
     }).join('');
     const photoHTML=p.photo

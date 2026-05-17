@@ -90,9 +90,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(8,12,24,0.97
 .watcher-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.2rem 0.6rem;border-radius:2px}
 .badge-skywarn{background:rgba(26,95,204,0.25);border:1px solid rgba(26,95,204,0.5);color:#6aabff}
 .badge-spotter{background:rgba(204,26,26,0.2);border:1px solid rgba(204,26,26,0.45);color:#ff8a8a}
-.badge-ham{background:rgba(45,138,78,0.2);border:1px solid rgba(45,138,78,0.4);color:#5ee080}
+.badge-ham{background:rgba(120,60,180,0.25);border:1px solid rgba(120,60,180,0.5);color:#b080ff}
 .badge-ems{background:rgba(240,176,32,0.15);border:1px solid rgba(240,176,32,0.35);color:#f0b020}
 .badge-lead{background:rgba(204,26,26,0.35);border:1px solid var(--red);color:#fff}
+.badge-fire{background:rgba(220,80,20,0.25);border:1px solid rgba(220,80,20,0.5);color:#ff7040}
+.badge-police{background:rgba(20,60,180,0.25);border:1px solid rgba(20,60,180,0.5);color:#6090ff}
+.badge-emgmt{background:rgba(120,60,180,0.25);border:1px solid rgba(120,60,180,0.5);color:#b080ff}
+.badge-met{background:rgba(0,160,180,0.25);border:1px solid rgba(0,160,180,0.5);color:#40d0e8}
+.badge-comms{background:rgba(20,140,80,0.25);border:1px solid rgba(20,140,80,0.5);color:#40d090}
+.badge-pilot{background:rgba(80,80,80,0.3);border:1px solid rgba(80,80,80,0.5);color:#c0c8d8}
+.badge-backyard{background:rgba(40,120,40,0.25);border:1px solid rgba(40,120,40,0.5);color:#80c860}
 .watcher-name{font-family:'Oswald',sans-serif;font-size:1.3rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;margin-bottom:0.15rem}
 .watcher-location{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.9rem;display:flex;align-items:center;gap:0.4rem}
 .watcher-bio{font-size:0.86rem;color:var(--text-mid);line-height:1.7;font-weight:300;margin-bottom:1rem}
@@ -542,7 +549,7 @@ async function loadWatchers(){
       card.style.transitionDelay=(i*0.08)+'s';
 
       const badgesHTML=(w.badges||[]).map(b=>{
-        const cls=b.includes('SKYWARN')||b.includes('NWS')?'badge-skywarn':b.includes('Spotter')||b.includes('Lead')?'badge-lead':b.includes('Ham')||b.includes('Radio')?'badge-ham':b.includes('EMS')||b.includes('Fire')||b.includes('Police')?'badge-ems':'badge-spotter';
+        const cls=b==='NWS SKYWARN'?'badge-skywarn':b==='Lead Spotter'?'badge-lead':b==='Ham Radio'?'badge-ham':b==='EMS'?'badge-ems':b==='Fire'?'badge-fire':b==='Police'?'badge-police':b==='Emergency Management'?'badge-emgmt':b==='Meteorologist'?'badge-met':b==='Communications Operator'?'badge-comms':b==='Pilot'?'badge-pilot':b==='Backyard Observer'?'badge-backyard':'badge-spotter';
         return `<span class="watcher-badge ${cls}">${esc(b)}</span>`;
       }).join('');
 
