@@ -812,13 +812,22 @@ async function loadNWSAlerts(){
     const MO_NAMES=['Audrain','Bollinger','Boone','Butler','Callaway','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Miller','Mississippi','Moniteau','Monroe','Montgomery','New Madrid','Osage','Pemiscot','Perry','Phelps','Pike','Ralls','Reynolds','Ripley','Scott','St. Charles','St. Francois','St. Louis','St. Louis City','Ste. Genevieve','Stoddard','Warren','Washington','Wayne'];
     const IL_NAMES=['Adams','Alexander','Bond','Calhoun','Clinton','Fayette','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Marion','Monroe','Montgomery','Perry','Pike','Pulaski','Randolph','Scott','St. Clair','Union','Washington'];
 
-    const coverageAlerts=allAlerts.filter(alert=>{
-      const areaDesc=alert.properties?.areaDesc||'';
-      return MO_NAMES.some(c=>areaDesc.includes(c+', MO'))||IL_NAMES.some(c=>areaDesc.includes(c+', IL'));
+    // Filter per-state so county names only match their own state
+    // Handles both warning format ("Boone, MO") and watch format ("Boone; Cole; ..., MO")
+    const matchMO=(desc,c)=>desc.includes(c+', MO')||desc.includes(c+'; ')||desc.endsWith(c);
+    const matchIL=(desc,c)=>desc.includes(c+', IL')||desc.includes(c+'; ')||desc.endsWith(c);
+
+    const moFiltered=(moData.features||[]).filter(a=>{
+      const desc=a.properties?.areaDesc||'';
+      return MO_NAMES.some(c=>matchMO(desc,c));
+    });
+    const ilFiltered=(ilData.features||[]).filter(a=>{
+      const desc=a.properties?.areaDesc||'';
+      return IL_NAMES.some(c=>matchIL(desc,c));
     });
 
     const seen=new Set();
-    const unique=coverageAlerts.filter(a=>{
+    const unique=[...moFiltered,...ilFiltered].filter(a=>{
       if(seen.has(a.id))return false;
       seen.add(a.id);return true;
     });
