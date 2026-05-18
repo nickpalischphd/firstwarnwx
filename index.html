@@ -359,7 +359,7 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
     <p class="sec-body">Interactive live radar for the St. Louis region and full coverage area — updated continuously.</p>
     <div class="radar-grid fade-up">
       <div class="radar-frame">
-        <iframe src="https://web.weatherwise.app/#map=3.69/27.46/-109.59&rt=KLSX&rp=REF0" title="First Warn Live Radar" allowfullscreen style="width:100%;height:500px;display:block;border:none"></iframe>
+        <iframe src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=%C2%B0F&metricWind=mph&zoom=7&overlay=radar&product=radar&level=surface&lat=38.627&lon=-90.197" title="First Warn Live Radar" allowfullscreen allow="fullscreen" style="width:100%;height:500px;display:block;border:none"></iframe>
       </div>
       <div class="radar-sidebar">
         <a href="https://web.weatherwise.app/#map=3.69/27.46/-109.59&rt=KLSX&rp=REF0" target="_blank" class="radar-card">
@@ -523,7 +523,7 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
       <div class="county-box">
         <h4>🏛️ Missouri Counties</h4>
         <div class="county-list">
-          Bollinger · Boone · Butler · Cape Girardeau · Carter · Cole · Crawford · Dent · Dunklin · Franklin · Gasconade · Iron · Jefferson · Lincoln · Madison · Maries · Mississippi · Montgomery · New Madrid · Osage · Perry · Phelps · Pike · Reynolds · Ripley · St. Charles · Ste. Genevieve · St. Francois · St. Louis · St. Louis City · Scott · Stoddard · Warren · Washington · Wayne
+          Bollinger · Boone · Butler · Calloway · Cape Girardeau · Carter · Cole · Crawford · Dent · Dunklin · Franklin · Gasconade · Iron · Jefferson · Lincoln · Madison · Maries · Mississippi · Montgomery · New Madrid · Osage · Perry · Phelps · Pike · Reynolds · Ripley · St. Charles · Ste. Genevieve · St. Francois · St. Louis · St. Louis City · Scott · Stoddard · Warren · Washington · Wayne
         </div>
       </div>
       <div class="county-box">
@@ -809,11 +809,12 @@ async function loadNWSAlerts(){
     const [moData,ilData]=await Promise.all([moRes.json(),ilRes.json()]);
     const allAlerts=[...(moData.features||[]),...(ilData.features||[])];
 
-    const ourCounties=['Bollinger','Boone','Butler','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','St. Charles','Ste. Genevieve','St. Francois','St. Louis','Scott','Stoddard','Warren','Washington','Wayne','Adams','Alexander','Bond','Calhoun','Clinton','Greene','Jackson','Jersey','Johnson','Macoupin','Monroe','Randolph','St. Clair','Union','Williamson'];
+    const MO_NAMES=['Bollinger','Boone','Butler','Calloway','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','Scott','St. Charles','St. Francois','St. Louis','St. Louis City','Ste. Genevieve','Stoddard','Warren','Washington','Wayne'];
+    const IL_NAMES=['Adams','Alexander','Bond','Calhoun','Clinton','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Monroe','Montgomery','Perry','Pike','Randolph','St. Clair','Union','Washington','Williamson'];
 
     const coverageAlerts=allAlerts.filter(alert=>{
       const areaDesc=alert.properties?.areaDesc||'';
-      return ourCounties.some(c=>areaDesc.includes(c));
+      return MO_NAMES.some(c=>areaDesc.includes(c+', MO'))||IL_NAMES.some(c=>areaDesc.includes(c+', IL'));
     });
 
     const seen=new Set();
