@@ -126,18 +126,25 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(8,12,24,0.97
 .window-illustration{position:relative}
 .window-frame{background:linear-gradient(180deg,#1a2a3a 0%,#0d1520 100%);border-radius:8px;overflow:hidden;border:3px solid #2a3a4a;box-shadow:0 20px 60px rgba(0,0,0,0.6),inset 0 0 40px rgba(0,0,0,0.3)}
 .window-top{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:#2a3a4a;padding:3px;padding-bottom:0}
-.window-pane{height:160px;background:linear-gradient(180deg,#1a3a5a 0%,#0d2030 40%,#1a2a1a 100%);position:relative;overflow:hidden}
-.window-pane::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.05) 0%,transparent 60%)}
-.window-clouds{position:absolute;top:15px;left:0;right:0;display:flex;gap:8px;padding:0 10px}
-.cloud{background:rgba(200,220,255,0.15);border-radius:20px;height:12px;animation:cloudmove 8s linear infinite}
-.cloud:nth-child(1){width:40px;animation-delay:0s}
-.cloud:nth-child(2){width:25px;animation-delay:-3s}
-.cloud:nth-child(3){width:35px;animation-delay:-6s}
-@keyframes cloudmove{0%{transform:translateX(-60px)}100%{transform:translateX(200px)}}
-.window-lightning{position:absolute;top:20px;right:20px;font-size:1.5rem;animation:lightning 4s infinite;opacity:0}
-@keyframes lightning{0%,85%,100%{opacity:0}86%,88%{opacity:1}87%,89%{opacity:0}}
-.window-rain{position:absolute;bottom:0;left:0;right:0;height:40px;overflow:hidden}
-.rain-drop{position:absolute;width:1px;height:8px;background:rgba(150,200,255,0.4);animation:rain 0.8s linear infinite}
+.window-pane{height:160px;background:linear-gradient(180deg,#060b14 0%,#0e1b2c 20%,#192130 42%,#232715 65%,#121407 85%,#080904 100%);position:relative;overflow:hidden}
+.window-pane::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(70,90,150,0.07) 0%,transparent 55%);z-index:5;pointer-events:none}
+.window-clouds{position:absolute;top:0;left:0;right:0;bottom:0}
+.cloud{position:absolute;border-radius:50%;filter:blur(7px)}
+.cloud:nth-child(1){width:112px;height:46px;top:-10px;left:-14px;background:radial-gradient(ellipse,rgba(28,34,46,0.97),rgba(18,22,32,0.72) 70%,transparent);animation:cloudDrift1 14s ease-in-out infinite alternate}
+.cloud:nth-child(2){width:82px;height:35px;top:3px;right:-6px;background:radial-gradient(ellipse,rgba(32,38,50,0.93),rgba(20,24,36,0.66) 70%,transparent);animation:cloudDrift2 11s ease-in-out infinite alternate}
+.cloud:nth-child(3){width:66px;height:29px;top:34px;left:30%;background:radial-gradient(ellipse,rgba(36,40,28,0.86),rgba(22,26,16,0.62) 70%,transparent);animation:cloudDrift3 9s ease-in-out infinite alternate}
+@keyframes cloudDrift1{0%{transform:translateX(0)}100%{transform:translateX(18px)}}
+@keyframes cloudDrift2{0%{transform:translateX(0)}100%{transform:translateX(-14px)}}
+@keyframes cloudDrift3{0%{transform:translateX(-10px)}100%{transform:translateX(10px)}}
+.window-horizon{position:absolute;bottom:0;left:0;right:0;height:26px;background:linear-gradient(180deg,transparent,#090c05 60%);z-index:3}
+.window-lightning{position:absolute;top:10px;left:38%;z-index:4;opacity:0;animation:boltFlash 4.5s infinite}
+.window-lightning svg{display:block;width:14px;height:36px}
+@keyframes boltFlash{0%,80%,100%{opacity:0}81%{opacity:1}82%{opacity:0.1}83%{opacity:0.9}84%{opacity:0}}
+.window-glow{position:absolute;bottom:0;left:0;right:0;height:50px;background:radial-gradient(ellipse at 42% 100%,rgba(180,210,255,0.22) 0%,transparent 70%);z-index:2;opacity:0;animation:glowFlash 4.5s infinite}
+@keyframes glowFlash{0%,80%,100%{opacity:0}81%,83%{opacity:1}82%,84%{opacity:0}}
+.window-rain{position:absolute;inset:0;z-index:3;overflow:hidden}
+.rain-drop{position:absolute;width:1px;height:12px;background:linear-gradient(180deg,transparent,rgba(160,210,255,0.68));animation:rainFall linear infinite;transform:rotate(14deg)}
+@keyframes rainFall{0%{top:-20px}100%{top:185px}}
 .window-bottom{background:#1a2a3a;padding:8px 3px 3px;border-top:none}
 .window-sill{background:linear-gradient(180deg,#2a3a2a,#1a2a1a);height:20px;border-radius:0 0 6px 6px;position:relative}
 .window-sill::after{content:'';position:absolute;top:6px;left:10px;right:10px;height:2px;background:rgba(255,255,255,0.1);border-radius:1px}
@@ -433,14 +440,23 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
                 <div class="cloud"></div>
                 <div class="cloud"></div>
               </div>
-              <div class="window-lightning">⚡</div>
+              <div class="window-glow"></div>
+              <div class="window-lightning">
+                <svg viewBox="0 0 14 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="9,0 3,18 7,18 1,36 11,14 7,14" fill="#d8eeff" opacity="0.95"/>
+                </svg>
+              </div>
               <div class="window-rain" id="windowRain"></div>
+              <div class="window-horizon"></div>
             </div>
             <div class="window-pane" id="rightPane">
               <div class="window-clouds">
                 <div class="cloud"></div>
                 <div class="cloud"></div>
               </div>
+              <div class="window-glow" style="animation-delay:2.2s"></div>
+              <div class="window-rain" id="windowRain2"></div>
+              <div class="window-horizon"></div>
             </div>
           </div>
           <div class="window-bottom">
@@ -1046,6 +1062,21 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 // ── INIT ──
 document.getElementById('yr').textContent=new Date().getFullYear();
+// Default storm rain — always visible regardless of forecast data
+(function initWindowRain(){
+  function makeDrops(n){
+    let s='';
+    for(let i=0;i<n;i++){
+      const h=10+Math.random()*8;
+      s+=`<div class="rain-drop" style="left:${Math.random()*105}%;top:${Math.random()*80}%;height:${h}px;animation-delay:${(Math.random()*0.9).toFixed(2)}s;animation-duration:${(0.45+Math.random()*0.45).toFixed(2)}s"></div>`;
+    }
+    return s;
+  }
+  const r1=document.getElementById('windowRain');
+  const r2=document.getElementById('windowRain2');
+  if(r1)r1.innerHTML=makeDrops(20);
+  if(r2)r2.innerHTML=makeDrops(16);
+})();
 loadNWSAlerts();
 loadForecast();
 loadWeatherBlog();
