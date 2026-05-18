@@ -814,8 +814,8 @@ async function loadNWSAlerts(){
 
     // Filter per-state so county names only match their own state
     // Handles both warning format ("Boone, MO") and watch format ("Boone; Cole; ..., MO")
-    const matchMO=(desc,c)=>desc.includes(c+', MO')||desc.includes(c+'; ')||desc.endsWith(c);
-    const matchIL=(desc,c)=>desc.includes(c+', IL')||desc.includes(c+'; ')||desc.endsWith(c);
+    const matchMO=(desc,c)=>desc.includes(c+', MO')||desc.includes(c+' County, MO')||desc.includes(c+'; ')||desc.includes(c+' County; ')||desc.endsWith(c)||desc.endsWith(c+' County');
+    const matchIL=(desc,c)=>desc.includes(c+', IL')||desc.includes(c+' County, IL')||desc.includes(c+'; ')||desc.includes(c+' County; ')||desc.endsWith(c)||desc.endsWith(c+' County');
 
     const moFiltered=(moData.features||[]).filter(a=>{
       const desc=a.properties?.areaDesc||'';
