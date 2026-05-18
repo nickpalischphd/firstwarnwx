@@ -523,13 +523,13 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
       <div class="county-box">
         <h4>🏛️ Missouri Counties</h4>
         <div class="county-list">
-          Bollinger · Boone · Butler · Calloway · Cape Girardeau · Carter · Cole · Crawford · Dent · Dunklin · Franklin · Gasconade · Iron · Jefferson · Lincoln · Madison · Maries · Mississippi · Montgomery · New Madrid · Osage · Perry · Phelps · Pike · Reynolds · Ripley · St. Charles · Ste. Genevieve · St. Francois · St. Louis · St. Louis City · Scott · Stoddard · Warren · Washington · Wayne
+          Audrain · Bollinger · Boone · Butler · Callaway · Cape Girardeau · Carter · Cole · Crawford · Dent · Dunklin · Franklin · Gasconade · Iron · Jefferson · Lincoln · Madison · Maries · Miller · Mississippi · Moniteau · Monroe · Montgomery · New Madrid · Osage · Pemiscot · Perry · Phelps · Pike · Ralls · Reynolds · Ripley · Scott · St. Charles · St. Francois · St. Louis · St. Louis City · Ste. Genevieve · Stoddard · Warren · Washington · Wayne
         </div>
       </div>
       <div class="county-box">
         <h4>🌾 Illinois Counties</h4>
         <div class="county-list">
-          Adams · Alexander · Bond · Calhoun · Clinton · Franklin · Greene · Jackson · Jefferson · Jersey · Johnson · Macoupin · Madison · Monroe · Montgomery · Perry · Pike · Randolph · St. Clair · Union · Washington · Williamson
+          Adams · Alexander · Bond · Calhoun · Clinton · Fayette · Franklin · Greene · Jackson · Jefferson · Jersey · Johnson · Macoupin · Madison · Marion · Monroe · Montgomery · Perry · Pike · Pulaski · Randolph · Scott · St. Clair · Union · Washington
         </div>
       </div>
     </div>
@@ -809,8 +809,8 @@ async function loadNWSAlerts(){
     const [moData,ilData]=await Promise.all([moRes.json(),ilRes.json()]);
     const allAlerts=[...(moData.features||[]),...(ilData.features||[])];
 
-    const MO_NAMES=['Bollinger','Boone','Butler','Calloway','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Mississippi','Montgomery','New Madrid','Osage','Perry','Phelps','Pike','Reynolds','Ripley','Scott','St. Charles','St. Francois','St. Louis','St. Louis City','Ste. Genevieve','Stoddard','Warren','Washington','Wayne'];
-    const IL_NAMES=['Adams','Alexander','Bond','Calhoun','Clinton','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Monroe','Montgomery','Perry','Pike','Randolph','St. Clair','Union','Washington','Williamson'];
+    const MO_NAMES=['Audrain','Bollinger','Boone','Butler','Callaway','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Miller','Mississippi','Moniteau','Monroe','Montgomery','New Madrid','Osage','Pemiscot','Perry','Phelps','Pike','Ralls','Reynolds','Ripley','Scott','St. Charles','St. Francois','St. Louis','St. Louis City','Ste. Genevieve','Stoddard','Warren','Washington','Wayne'];
+    const IL_NAMES=['Adams','Alexander','Bond','Calhoun','Clinton','Fayette','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Marion','Monroe','Montgomery','Perry','Pike','Pulaski','Randolph','Scott','St. Clair','Union','Washington'];
 
     const coverageAlerts=allAlerts.filter(alert=>{
       const areaDesc=alert.properties?.areaDesc||'';
