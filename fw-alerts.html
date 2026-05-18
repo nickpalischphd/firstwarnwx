@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Active Alerts Map — First Warn Weather</title>
+<meta name="description" content="Live severe weather alerts map for Missouri and Southern Illinois — warnings, watches, and advisories from the National Weather Service.">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --red:#cc1a1a;--red-dark:#9e0e0e;--red-bright:#e82222;
+  --blue:#1a2a8f;--blue-mid:#1e3aab;--blue-light:#2a4fd4;--blue-sky:#1a5fcc;
+  --gold:#f0b020;--gold-light:#f5c840;--silver:#c8d4e8;
+  --orange:#ff8c00;--orange-dark:#cc6e00;
+  --dark:#080c18;--dark-mid:#0e1428;--dark-blue:#0a1030;
+  --text:#e8eaf0;--text-mid:#a8b4cc;--border:rgba(255,255,255,0.12);
+  --shadow:0 4px 32px rgba(0,0,0,0.5);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(8,12,24,0.97);backdrop-filter:blur(12px);border-bottom:2px solid var(--red);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:0.8rem;text-decoration:none}
+.nav-brand img{height:40px;object-fit:contain}
+.nav-brand-text{font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:0.05em;line-height:1.2}
+.nav-brand-text span{color:var(--gold);display:block;font-size:0.6rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase}
+.nav-links{display:flex;gap:1.5rem;list-style:none;align-items:center}
+.nav-links a{font-family:'Barlow',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover{color:var(--gold)}
+.nav-links a.active{color:#fff}
+.nav-alert-btn{background:var(--red);color:#fff!important;padding:0.35rem 1rem;border-radius:2px;animation:navpulse 2s infinite}
+@keyframes navpulse{0%,100%{opacity:1}50%{opacity:0.8}}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:201}
+.hamburger span{display:block;width:24px;height:2px;background:white}
+.mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(8,12,24,0.99);padding:1.5rem 2rem;z-index:199;border-bottom:1px solid var(--border)}
+.mobile-menu a{display:block;font-family:'Barlow',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid);text-decoration:none;padding:0.8rem 0;border-bottom:1px solid var(--border)}
+.mobile-menu a:hover{color:var(--gold)}
+
+/* PAGE HEADER */
+.page-header{background:linear-gradient(180deg,var(--dark-mid) 0%,var(--dark) 100%);padding:5rem 2rem 2rem;margin-top:64px;border-bottom:1px solid var(--border)}
+.page-header-inner{max-width:1200px;margin:0 auto}
+.page-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem;display:flex;align-items:center;gap:0.6rem}
+.page-eyebrow::before{content:'';display:block;width:24px;height:2px;background:var(--red)}
+.page-title{font-family:'Oswald',sans-serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;line-height:1;margin-bottom:0.6rem}
+.page-title em{color:var(--red);font-style:normal}
+.page-subtitle{font-size:0.9rem;color:var(--text-mid);line-height:1.7;max-width:700px}
+.refresh-row{display:flex;align-items:center;gap:1rem;margin-top:1.2rem;flex-wrap:wrap}
+.last-updated{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-mid)}
+.last-updated span{color:var(--gold)}
+.btn-refresh{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;background:rgba(255,255,255,0.07);border:1px solid var(--border);color:var(--text-mid);padding:0.4rem 1rem;border-radius:2px;cursor:pointer;transition:all 0.2s}
+.btn-refresh:hover{border-color:var(--gold);color:var(--gold)}
+
+/* SUMMARY BAR */
+.summary-bar{background:var(--dark-mid);border-bottom:1px solid var(--border);padding:0.8rem 2rem}
+.summary-inner{max-width:1200px;margin:0 auto;display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap}
+.summary-chip{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 1rem;border-radius:2px;display:flex;align-items:center;gap:0.5rem}
+.chip-warning{background:rgba(204,26,26,0.2);border:1px solid rgba(204,26,26,0.4);color:#ff6b6b}
+.chip-watch{background:rgba(255,140,0,0.15);border:1px solid rgba(255,140,0,0.4);color:#ffaa44}
+.chip-advisory{background:rgba(240,176,32,0.12);border:1px solid rgba(240,176,32,0.35);color:#f0c040}
+.chip-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.chip-dot.warning{background:#cc1a1a;animation:blink 1s infinite}
+.chip-dot.watch{background:#ff8c00;animation:blink 1.4s infinite}
+.chip-dot.advisory{background:#f0b020;animation:blink 1.8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* MAIN CONTENT */
+.main-content{max-width:1200px;margin:0 auto;padding:2rem}
+
+/* MAP SECTION */
+.map-section{margin-bottom:3rem}
+.map-section-header{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.map-type-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:0.35rem 1.2rem;border-radius:2px}
+.badge-warning{background:var(--red);color:#fff}
+.badge-watch{background:var(--orange);color:#fff}
+.badge-advisory{background:var(--gold);color:#000}
+.map-section-title{font-family:'Oswald',sans-serif;font-size:1.4rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff}
+.map-section-count{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-mid);background:rgba(255,255,255,0.07);border:1px solid var(--border);padding:0.25rem 0.7rem;border-radius:2px}
+.map-wrap{border-radius:4px;overflow:hidden;border:1px solid var(--border);position:relative}
+.map-wrap.warning-map{border-color:rgba(204,26,26,0.4)}
+.map-wrap.watch-map{border-color:rgba(255,140,0,0.4)}
+.map-wrap.advisory-map{border-color:rgba(240,176,32,0.3)}
+.leaflet-map{width:100%;height:420px}
+
+/* ALERT LIST BELOW MAP */
+.alert-list{margin-top:0.8rem;display:flex;flex-direction:column;gap:0.5rem}
+.alert-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-left:3px solid #666;border-radius:3px;padding:0.9rem 1.2rem;cursor:pointer;transition:all 0.15s;display:flex;align-items:flex-start;gap:1rem}
+.alert-card:hover{background:rgba(255,255,255,0.08)}
+.alert-card.warning{border-left-color:var(--red)}
+.alert-card.watch{border-left-color:var(--orange)}
+.alert-card.advisory{border-left-color:var(--gold)}
+.alert-card-icon{font-size:1.4rem;flex-shrink:0;line-height:1}
+.alert-card-body{flex:1;min-width:0}
+.alert-card-event{font-family:'Barlow Condensed',sans-serif;font-size:0.92rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fff;margin-bottom:0.2rem}
+.alert-card-area{font-size:0.78rem;color:var(--text-mid);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-card-expires{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid);margin-top:0.3rem}
+.alert-card-tap{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.3);flex-shrink:0;align-self:center}
+
+/* NO ALERTS STATE */
+.no-alerts{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:4px;padding:2rem;text-align:center}
+.no-alerts-icon{font-size:2.5rem;display:block;margin-bottom:0.6rem;opacity:0.4}
+.no-alerts-text{font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-mid)}
+
+/* LOADING STATE */
+.map-loading{position:absolute;inset:0;background:rgba(8,12,24,0.85);display:flex;align-items:center;justify-content:center;z-index:400;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mid)}
+.map-loading.hidden{display:none}
+
+/* DIVIDER */
+.section-divider{height:1px;background:var(--border);margin:2rem 0}
+
+/* ALERT MODAL */
+#alertModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;overflow-y:auto;padding:2rem 1rem}
+#alertModal.open{display:flex;align-items:flex-start;justify-content:center}
+.alert-modal-inner{background:var(--dark-mid);border:1px solid var(--border);border-radius:6px;max-width:700px;width:100%;padding:2rem;position:relative;margin:auto}
+.modal-close{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--text-mid);font-size:1rem;width:32px;height:32px;border-radius:50%;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* FOOTER */
+footer{background:var(--dark-blue);border-top:1px solid var(--border);padding:3rem 2rem 1.5rem;margin-top:3rem}
+.footer-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;margin-bottom:2rem}
+.footer-brand img{height:50px;object-fit:contain;margin-bottom:1rem;display:block}
+.footer-brand p{font-size:0.82rem;color:var(--text-mid);line-height:1.7}
+.footer-col h4{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+.footer-col a{display:block;font-size:0.82rem;color:var(--text-mid);text-decoration:none;margin-bottom:0.5rem;transition:color 0.2s}
+.footer-col a:hover{color:#fff}
+.footer-bottom{max-width:1200px;margin:0 auto;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.footer-bottom p{font-size:0.75rem;color:var(--text-mid)}
+.footer-tagline{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--red)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .footer-grid{grid-template-columns:1fr;gap:1.5rem}
+  .leaflet-map{height:320px}
+  .main-content{padding:1rem}
+  .alert-card-tap{display:none}
+}
+@media(max-width:600px){
+  .summary-inner{gap:0.8rem}
+  .map-section-header{gap:0.6rem}
+  .leaflet-map{height:260px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">
+    <img src="fw-logo.png" alt="First Warn Weather">
+    <div class="nav-brand-text">First Warn Weather<span>First. Accurate. Trusted.</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html#radar">Radar</a></li>
+    <li><a href="index.html#forecast">Forecast</a></li>
+    <li><a href="fw-alerts.html" class="active nav-alert-btn">⚡ Alerts</a></li>
+    <li><a href="index.html#window">Dr. Nick's Window</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="index.html#pollen">Pollen</a></li>
+    <li><a href="index.html#connect">Contact</a></li>
+    <li><a href="https://inspirewithdrnick.com" target="_blank">Inspire</a></li>
+  </ul>
+  <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html" onclick="toggleMenu()">🏠 Home</a>
+  <a href="index.html#radar" onclick="toggleMenu()">📡 Radar</a>
+  <a href="index.html#forecast" onclick="toggleMenu()">⛅ Forecast</a>
+  <a href="fw-alerts.html" onclick="toggleMenu()">⚡ Active Alerts</a>
+  <a href="index.html#window" onclick="toggleMenu()">🪟 Dr. Nick's Window</a>
+  <a href="index.html#about" onclick="toggleMenu()">👤 About Dr. Nick</a>
+  <a href="index.html#pollen" onclick="toggleMenu()">🌿 Pollen</a>
+  <a href="index.html#connect" onclick="toggleMenu()">📧 Contact</a>
+</div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">Live Alert Maps</div>
+    <h1 class="page-title">Active <em>Alerts</em></h1>
+    <p class="page-subtitle">Real-time warnings, watches, and advisories from the National Weather Service for First Warn Weather's coverage area across Missouri and Southern Illinois. Maps update automatically every 3 minutes.</p>
+    <div class="refresh-row">
+      <div class="last-updated">Last updated: <span id="lastUpdated">Loading…</span></div>
+      <button class="btn-refresh" onclick="loadAllAlerts()">↻ Refresh Now</button>
+      <a href="index.html" style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-mid);text-decoration:none">← Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<div class="summary-bar">
+  <div class="summary-inner">
+    <div class="summary-chip chip-warning"><span class="chip-dot warning"></span><span id="warnCount">– </span>Warning(s)</div>
+    <div class="summary-chip chip-watch"><span class="chip-dot watch"></span><span id="watchCount">– </span>Watch(es)</div>
+    <div class="summary-chip chip-advisory"><span class="chip-dot advisory"></span><span id="advCount">– </span>Advisory/Statement(s)</div>
+  </div>
+</div>
+
+<div class="main-content">
+
+  <!-- WARNINGS MAP -->
+  <div class="map-section" id="warnSection">
+    <div class="map-section-header">
+      <span class="map-type-badge badge-warning">⚠ Warnings</span>
+      <h2 class="map-section-title">Active Warnings</h2>
+      <span class="map-section-count" id="warnMapCount">Loading…</span>
+    </div>
+    <div class="map-wrap warning-map">
+      <div id="warnMap" class="leaflet-map"></div>
+      <div id="warnLoading" class="map-loading">Loading warning data…</div>
+    </div>
+    <div id="warnList" class="alert-list"></div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- WATCHES MAP -->
+  <div class="map-section" id="watchSection">
+    <div class="map-section-header">
+      <span class="map-type-badge badge-watch">👁 Watches</span>
+      <h2 class="map-section-title">Active Watches</h2>
+      <span class="map-section-count" id="watchMapCount">Loading…</span>
+    </div>
+    <div class="map-wrap watch-map">
+      <div id="watchMap" class="leaflet-map"></div>
+      <div id="watchLoading" class="map-loading">Loading watch data…</div>
+    </div>
+    <div id="watchList" class="alert-list"></div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- ADVISORIES MAP -->
+  <div class="map-section" id="advSection">
+    <div class="map-section-header">
+      <span class="map-type-badge badge-advisory">ℹ Advisories</span>
+      <h2 class="map-section-title">Advisories &amp; Statements</h2>
+      <span class="map-section-count" id="advMapCount">Loading…</span>
+    </div>
+    <div class="map-wrap advisory-map">
+      <div id="advMap" class="leaflet-map"></div>
+      <div id="advLoading" class="map-loading">Loading advisory data…</div>
+    </div>
+    <div id="advList" class="alert-list"></div>
+  </div>
+
+</div>
+
+<!-- ALERT DETAIL MODAL -->
+<div id="alertModal" onclick="if(event.target===this)closeModal()">
+  <div class="alert-modal-inner">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="alertModalContent"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <img src="fw-logo.png" alt="First Warn Weather">
+      <p>Your source for clear, timely, and reliable weather information across Missouri and Southern Illinois. First. Accurate. Trusted.</p>
+      <div style="margin-top:1rem">
+        <img src="wrn-logo.jpg" alt="Weather-Ready Nation Ambassador" style="height:40px;object-fit:contain;background:#fff;padding:4px;border-radius:3px">
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="index.html#radar">Live Radar</a>
+      <a href="index.html#forecast">Today's Forecast</a>
+      <a href="fw-alerts.html">Active Alert Maps</a>
+      <a href="index.html#window">Dr. Nick's Window</a>
+      <a href="index.html#coverage">Coverage Area</a>
+      <a href="index.html#pollen">Pollen &amp; Air Quality</a>
+      <a href="index.html#connect">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <a href="https://facebook.com/nickswx" target="_blank">📘 Facebook Weather</a>
+      <a href="https://tiktok.com/@nickwx" target="_blank">🎵 TikTok @nickwx</a>
+      <a href="https://inspirewithdrnick.com" target="_blank">✍️ Inspire with Dr. Nick</a>
+      <a href="https://facebook.com/drnicksmatterofperspective" target="_blank">📘 Matter of Perspective</a>
+      <a href="https://instagram.com/PalischCorgilife" target="_blank">📸 @PalischCorgilife</a>
+      <a href="mailto:nickpalischphd@gmail.com">📧 Email Dr. Nick</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© <span id="yr"></span> First Warn Weather · Nicholas G. Palisch · PhD · EJD · Meteorologist · NWS WRN Ambassador</p>
+    <span class="footer-tagline">First. Accurate. Trusted.</span>
+  </div>
+</footer>
+
+<script>
+document.getElementById('yr').textContent=new Date().getFullYear();
+
+function toggleMenu(){
+  const m=document.getElementById('mobileMenu');
+  m.style.display=m.style.display==='block'?'none':'block';
+}
+
+// ── COUNTY LISTS ──
+const MO_NAMES=['Audrain','Bollinger','Boone','Butler','Callaway','Cape Girardeau','Carter','Cole','Crawford','Dent','Dunklin','Franklin','Gasconade','Iron','Jefferson','Lincoln','Madison','Maries','Miller','Mississippi','Moniteau','Monroe','Montgomery','New Madrid','Osage','Pemiscot','Perry','Phelps','Pike','Ralls','Reynolds','Ripley','Scott','St. Charles','St. Francois','St. Louis','St. Louis City','Ste. Genevieve','Stoddard','Warren','Washington','Wayne'];
+const IL_NAMES=['Adams','Alexander','Bond','Calhoun','Clinton','Fayette','Franklin','Greene','Jackson','Jefferson','Jersey','Johnson','Macoupin','Madison','Marion','Monroe','Montgomery','Perry','Pike','Pulaski','Randolph','Scott','St. Clair','Union','Washington'];
+
+const matchMO=(desc,c)=>desc.includes(c+', MO')||desc.includes(c+' County, MO')||desc.includes(c+'; ')||desc.includes(c+' County; ')||desc.endsWith(c)||desc.endsWith(c+' County');
+const matchIL=(desc,c)=>desc.includes(c+', IL')||desc.includes(c+' County, IL')||desc.includes(c+'; ')||desc.includes(c+' County; ')||desc.endsWith(c)||desc.endsWith(c+' County');
+
+// ── LEAFLET MAP SETUP ──
+const TILE='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const TILE_ATTR='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+const CENTER=[37.9,−90.5];
+const ZOOM=6;
+
+function makeMap(id){
+  const m=L.map(id,{zoomControl:true,scrollWheelZoom:false}).setView(CENTER,ZOOM);
+  L.tileLayer(TILE,{attribution:TILE_ATTR,maxZoom:18,subdomains:'abcd'}).addTo(m);
+  return m;
+}
+
+const warnMap=makeMap('warnMap');
+const watchMap=makeMap('watchMap');
+const advMap=makeMap('advMap');
+
+// Store alert data for modal
+let allAlertsStore=[];
+
+// ── HELPERS ──
+function alertIcon(event){
+  const e=event.toLowerCase();
+  if(e.includes('tornado'))return'🌪️';
+  if(e.includes('thunder')||e.includes('severe'))return'⚡';
+  if(e.includes('flood'))return'🌊';
+  if(e.includes('wind'))return'🌬️';
+  if(e.includes('winter')||e.includes('snow')||e.includes('ice')||e.includes('blizzard')||e.includes('freeze')||e.includes('frost'))return'❄️';
+  if(e.includes('heat'))return'🔥';
+  if(e.includes('fog'))return'🌫️';
+  if(e.includes('fire'))return'🔥';
+  return'⚠️';
+}
+
+function alertType(event){
+  const e=event.toLowerCase();
+  if(e.includes('warning'))return'warning';
+  if(e.includes('watch'))return'watch';
+  return'advisory';
+}
+
+function fmtDate(iso){
+  if(!iso)return'';
+  return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+}
+
+function polyStyle(type){
+  if(type==='warning')return{color:'#cc1a1a',fillColor:'#cc1a1a',fillOpacity:0.25,weight:2};
+  if(type==='watch')return{color:'#ff8c00',fillColor:'#ff8c00',fillOpacity:0.18,weight:2};
+  return{color:'#f0b020',fillColor:'#f0b020',fillOpacity:0.15,weight:1.5};
+}
+
+function openModal(idx){
+  const a=allAlertsStore[idx];
+  if(!a)return;
+  const p=a.properties;
+  const event=p.event||'Alert';
+  const type=alertType(event);
+  const icon=alertIcon(event);
+  const typeColor=type==='warning'?'#cc1a1a':type==='watch'?'#ff8c00':'#f0b020';
+  const typeBg=type==='warning'?'rgba(204,26,26,0.2)':type==='watch'?'rgba(255,140,0,0.15)':'rgba(240,176,32,0.12)';
+  const desc=(p.description||'').replace(/\n/g,'<br>');
+  const instr=(p.instruction||'').replace(/\n/g,'<br>');
+  const areas=(p.areaDesc||'').split(';').map(s=>s.trim()).filter(Boolean);
+
+  document.getElementById('alertModalContent').innerHTML=`
+    <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.5rem">
+      <div style="font-size:2rem">${icon}</div>
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:${typeColor};background:${typeBg};border:1px solid ${typeColor}44;display:inline-block;padding:0.2rem 0.8rem;border-radius:2px;margin-bottom:0.4rem">${type.toUpperCase()}</div>
+        <div style="font-family:'Oswald',sans-serif;font-size:1.3rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#fff;border-left:3px solid ${typeColor};padding-left:0.8rem">${event}</div>
+      </div>
+    </div>
+    ${p.headline?`<div style="font-size:0.9rem;color:#e8eaf0;line-height:1.7;margin-bottom:1.2rem;padding:0.8rem 1rem;background:rgba(255,255,255,0.04);border-radius:3px;border-left:2px solid ${typeColor}">${p.headline}</div>`:''}
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem">
+      ${p.effective?`<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:#a8b4cc;padding:0.25rem 0.6rem;border-radius:2px">Issued: ${fmtDate(p.effective)}</div>`:''}
+      ${p.onset?`<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:#a8b4cc;padding:0.25rem 0.6rem;border-radius:2px">Onset: ${fmtDate(p.onset)}</div>`:''}
+      ${p.expires?`<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:rgba(204,26,26,0.15);border:1px solid rgba(204,26,26,0.3);color:#ff9090;padding:0.25rem 0.6rem;border-radius:2px">Expires: ${fmtDate(p.expires)}</div>`:''}
+    </div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem">
+      ${p.severity?`<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#a8b4cc;padding:0.2rem 0.6rem;border-radius:2px">Severity: ${p.severity}</div>`:''}
+      ${p.certainty?`<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#a8b4cc;padding:0.2rem 0.6rem;border-radius:2px">Certainty: ${p.certainty}</div>`:''}
+      ${p.urgency?`<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#a8b4cc;padding:0.2rem 0.6rem;border-radius:2px">Urgency: ${p.urgency}</div>`:''}
+    </div>
+    ${areas.length?`
+    <div style="margin-bottom:1.2rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:${typeColor};margin-bottom:0.5rem">Affected Areas</div>
+      <div style="font-size:0.82rem;color:#a8b4cc;line-height:1.8">${areas.join(' &middot; ')}</div>
+    </div>`:''}
+    ${desc?`
+    <div style="margin-bottom:1.2rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-mid);margin-bottom:0.5rem">Full Description</div>
+      <div style="font-size:0.82rem;color:#c0cce0;line-height:1.85;max-height:300px;overflow-y:auto;padding-right:0.5rem">${desc}</div>
+    </div>`:''}
+    ${instr?`
+    <div style="background:rgba(240,176,32,0.08);border:1px solid rgba(240,176,32,0.25);border-radius:3px;padding:1rem;margin-bottom:1rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem">Protective Actions</div>
+      <div style="font-size:0.82rem;color:#c0cce0;line-height:1.85">${instr}</div>
+    </div>`:''}
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);text-align:right">Source: National Weather Service · api.weather.gov</div>
+  `;
+  document.getElementById('alertModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(){
+  document.getElementById('alertModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ── RENDER ALERTS TO LIST ──
+function renderList(containerId, alerts){
+  const el=document.getElementById(containerId);
+  if(!alerts.length){
+    el.innerHTML=`<div class="no-alerts"><span class="no-alerts-icon">✅</span><div class="no-alerts-text">No active alerts of this type in coverage area</div></div>`;
+    return;
+  }
+  el.innerHTML=alerts.map(a=>{
+    const p=a.properties;
+    const event=p.event||'Alert';
+    const type=alertType(event);
+    const icon=alertIcon(event);
+    const area=(p.areaDesc||'').split(';').slice(0,5).join(' · ');
+    const expires=p.expires?fmtDate(p.expires):'';
+    const idx=allAlertsStore.indexOf(a);
+    return `<div class="alert-card ${type}" onclick="openModal(${idx})">
+      <div class="alert-card-icon">${icon}</div>
+      <div class="alert-card-body">
+        <div class="alert-card-event">${event}</div>
+        <div class="alert-card-area">${area}</div>
+        ${expires?`<div class="alert-card-expires">Expires: ${expires}</div>`:''}
+      </div>
+      <div class="alert-card-tap">Tap for details →</div>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER POLYGONS TO MAP ──
+function renderPolygons(map, alerts, type){
+  alerts.forEach((a,i)=>{
+    const geo=a.geometry;
+    if(!geo)return;
+    const style=polyStyle(type);
+    try{
+      const layer=L.geoJSON(geo,{
+        style:()=>style,
+        onEachFeature:(feature,layer)=>{
+          const p=a.properties;
+          const event=p.event||'Alert';
+          const area=(p.areaDesc||'').split(';').slice(0,3).join(', ');
+          const expires=p.expires?fmtDate(p.expires):'';
+          layer.bindPopup(`
+            <div style="font-family:'Barlow Condensed',sans-serif;min-width:180px">
+              <div style="font-size:0.85rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fff;margin-bottom:0.3rem">${alertIcon(event)} ${event}</div>
+              <div style="font-size:0.72rem;color:#a8b4cc;line-height:1.5;margin-bottom:0.4rem">${area}</div>
+              ${expires?`<div style="font-size:0.65rem;color:#ff9090">Expires: ${expires}</div>`:''}
+              <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:0.4rem;cursor:pointer" onclick="openModal(${allAlertsStore.indexOf(a)})">Click card below for full details</div>
+            </div>
+          `,{className:'alert-popup'});
+          layer.on('click',()=>map.fitBounds(layer.getBounds(),{padding:[20,20]}));
+        }
+      }).addTo(map);
+    }catch(e){/* skip malformed geometry */}
+  });
+}
+
+// ── MAIN LOAD ──
+async function loadAllAlerts(){
+  document.getElementById('lastUpdated').textContent='Loading…';
+  ['warnLoading','watchLoading','advLoading'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.remove('hidden');
+  });
+
+  try{
+    const [moRes,ilRes]=await Promise.all([
+      fetch('https://api.weather.gov/alerts/active?area=MO'),
+      fetch('https://api.weather.gov/alerts/active?area=IL')
+    ]);
+    const [moData,ilData]=await Promise.all([moRes.json(),ilRes.json()]);
+
+    const moFiltered=(moData.features||[]).filter(a=>{
+      const desc=a.properties?.areaDesc||'';
+      return MO_NAMES.some(c=>matchMO(desc,c));
+    });
+    const ilFiltered=(ilData.features||[]).filter(a=>{
+      const desc=a.properties?.areaDesc||'';
+      return IL_NAMES.some(c=>matchIL(desc,c));
+    });
+
+    const seen=new Set();
+    const unique=[...moFiltered,...ilFiltered].filter(a=>{
+      if(seen.has(a.id))return false;
+      seen.add(a.id);return true;
+    });
+
+    // Classify
+    const warnings=unique.filter(a=>alertType(a.properties?.event||'')===  'warning');
+    const watches=unique.filter(a=>alertType(a.properties?.event||'')===  'watch');
+    const advisories=unique.filter(a=>alertType(a.properties?.event||'')==='advisory');
+
+    // Store all for modal index
+    allAlertsStore=[...warnings,...watches,...advisories];
+
+    // Update summary chips
+    document.getElementById('warnCount').textContent=warnings.length+' ';
+    document.getElementById('watchCount').textContent=watches.length+' ';
+    document.getElementById('advCount').textContent=advisories.length+' ';
+    document.getElementById('warnMapCount').textContent=warnings.length+' Active';
+    document.getElementById('watchMapCount').textContent=watches.length+' Active';
+    document.getElementById('advMapCount').textContent=advisories.length+' Active';
+
+    // Clear old layers (remove all non-tile layers)
+    [warnMap,watchMap,advMap].forEach(m=>{
+      m.eachLayer(l=>{if(!(l instanceof L.TileLayer))m.removeLayer(l);});
+    });
+
+    // Render polygons
+    renderPolygons(warnMap,warnings,'warning');
+    renderPolygons(watchMap,watches,'watch');
+    renderPolygons(advMap,advisories,'advisory');
+
+    // Render lists (store must be set before this)
+    renderList('warnList',warnings);
+    renderList('watchList',watches);
+    renderList('advList',advisories);
+
+    document.getElementById('lastUpdated').textContent=new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+  }catch(err){
+    console.error('Alert load failed',err);
+    document.getElementById('lastUpdated').textContent='Load failed — check connection';
+  }
+
+  ['warnLoading','watchLoading','advLoading'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.add('hidden');
+  });
+}
+
+// Initial load + auto-refresh every 3 minutes
+loadAllAlerts();
+setInterval(loadAllAlerts,180000);
+
+// Custom popup style injection
+const popupStyle=document.createElement('style');
+popupStyle.textContent=`.leaflet-popup-content-wrapper{background:#0e1428;border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:#e8eaf0;box-shadow:0 4px 20px rgba(0,0,0,0.7)}.leaflet-popup-tip{background:#0e1428}.leaflet-popup-content{margin:10px 14px;font-size:13px}`;
+document.head.appendChild(popupStyle);
+</script>
+</body>
+</html>
