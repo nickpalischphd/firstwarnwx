@@ -898,10 +898,11 @@ async function loadForecast(){
     const i10=d['Forecast-10-day']||d.img_10||d.image10day||null;
     const i4=d['Forecast-4']||d.img_extra1||null;
     const i5=d['Forecast-5']||d.img_extra2||null;
-    if(i24)document.getElementById('fg24hr').innerHTML=`<img src="${i24}" alt="24-Hour Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
-    if(i4)document.getElementById('fg4day').innerHTML=`<img src="${i4}" alt="Forecast Graphic" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
-    if(i5)document.getElementById('fg5day').innerHTML=`<img src="${i5}" alt="Forecast Graphic" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
-    if(i10)document.getElementById('fg10day').innerHTML=`<img src="${i10}" alt="10-Day Forecast" style="width:100%;border-radius:4px;margin-top:1rem">`;
+    const cb=d.updated?'?v='+new Date(d.updated).getTime():'?v='+Date.now();
+    if(i24)document.getElementById('fg24hr').innerHTML=`<img src="${i24}${cb}" alt="24-Hour Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
+    if(i4)document.getElementById('fg4day').innerHTML=`<img src="${i4}${cb}" alt="Forecast Graphic" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
+    if(i5)document.getElementById('fg5day').innerHTML=`<img src="${i5}${cb}" alt="Forecast Graphic" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
+    if(i10)document.getElementById('fg10day').innerHTML=`<img src="${i10}${cb}" alt="10-Day Forecast" style="width:100%;border-radius:4px;margin-top:1rem">`;
 
     // Alert day banner
     if(d.alertDay){
