@@ -412,6 +412,8 @@ footer{background:var(--dark-blue);border-top:3px solid var(--red);padding:2.5re
           <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold)" id="forecastDateLabel"></span>
         </div>
         <div class="forecast-graphic" id="fg24hr"></div>
+        <div class="forecast-graphic" id="fg4day"></div>
+        <div class="forecast-graphic" id="fg5day"></div>
         <div class="forecast-narrative">
           <h3>Dr. Nick's <span>Discussion</span></h3>
           <div id="forecastNarrativeText"></div>
@@ -892,11 +894,17 @@ async function loadForecast(){
     document.getElementById('forecastDateLabel').textContent='Posted: '+(d.date||'Today')+' · Dr. Nick';
     document.getElementById('forecastNarrativeText').textContent=d.narrative;
 
-    if(d.image24hr){
-      document.getElementById('fg24hr').innerHTML=`<img src="${d.image24hr}" alt="24-Hour Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
+    if(d['Forecast-24']){
+      document.getElementById('fg24hr').innerHTML=`<img src="${d['Forecast-24']}" alt="24-Hour Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
     }
-    if(d.image10day){
-      document.getElementById('fg10day').innerHTML=`<img src="${d.image10day}" alt="10-Day Forecast" style="width:100%;border-radius:4px;margin-top:1rem">`;
+    if(d['Forecast-4']){
+      document.getElementById('fg4day').innerHTML=`<img src="${d['Forecast-4']}" alt="4-Day Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
+    }
+    if(d['Forecast-5']){
+      document.getElementById('fg5day').innerHTML=`<img src="${d['Forecast-5']}" alt="5-Day Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
+    }
+    if(d['Forecast-10-day']){
+      document.getElementById('fg10day').innerHTML=`<img src="${d['Forecast-10-day']}" alt="10-Day Forecast" style="width:100%;border-radius:4px;margin-top:1rem">`;
     }
 
     // Alert day banner
