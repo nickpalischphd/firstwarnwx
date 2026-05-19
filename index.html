@@ -892,11 +892,11 @@ async function loadForecast(){
     document.getElementById('forecastDateLabel').textContent='Posted: '+(d.date||'Today')+' · Dr. Nick';
     document.getElementById('forecastNarrativeText').textContent=d.narrative;
 
-    if(d.img_24){
-      document.getElementById('fg24hr').innerHTML=`<img src="${d.img_24}" alt="24-Hour Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
+    if(d.image24hr){
+      document.getElementById('fg24hr').innerHTML=`<img src="${d.image24hr}" alt="24-Hour Forecast" style="width:100%;border-radius:4px;margin-bottom:1.2rem">`;
     }
-    if(d.img_10){
-      document.getElementById('fg10day').innerHTML=`<img src="${d.img_10}" alt="10-Day Forecast" style="width:100%;border-radius:4px;margin-top:1rem">`;
+    if(d.image10day){
+      document.getElementById('fg10day').innerHTML=`<img src="${d.image10day}" alt="10-Day Forecast" style="width:100%;border-radius:4px;margin-top:1rem">`;
     }
 
     // Alert day banner
