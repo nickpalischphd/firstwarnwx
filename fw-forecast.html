@@ -323,18 +323,15 @@ async function loadForecast() {
   document.getElementById('forecastDateLine').textContent = 'Posted: ' + (data.date || 'Today') + ' · Dr. Nick';
   document.getElementById('narrativeText').textContent = data.narrative;
 
+  // Cache-bust using the forecast's updated timestamp so new images always load
+  const cb = data.updated ? '?v=' + new Date(data.updated).getTime() : '?v=' + Date.now();
+
   // Helper to show/hide graphic slot
   function setGraphic(id, src) {
     const el = document.getElementById(id);
     if (!el) return;
-    if (src) {
-      const fullSrc = src.startsWith('http') ? src : '/' + src;
-      el.innerHTML = `<img src="${fullSrc}" alt="" style="width:100%;display:block" onerror="this.parentElement.style.display='none'">`;
-      el.style.display='block';
-    } else {
-      el.innerHTML = '';
-      el.style.display='none';
-    }
+    if (src) { el.innerHTML = `<img src="${src}${cb}" alt="" style="width:100%;display:block">`; el.style.display='block'; }
+    else { el.innerHTML = ''; el.style.display='none'; }
   }
 
   setGraphic('graphic24hr', data.img_24);
