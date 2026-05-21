@@ -1,78 +1,50 @@
-[
-  {
-    "id": "dr-nick-palisch-1779030178806xre5",
-    "name": "Dr. Nick Palisch",
-    "location": "St. Louis, MO",
-    "photo": "watchers/dr-nick.jpg",
-    "bio": "Meteorologist Dr. Nick Palisch is a weather communicator, storm chaser, and educator with a passion for helping communities better understand the atmosphere and the science behind severe weather. He holds a Bachelor’s degree in Atmospheric Science with an emphasis in severe storms and has spent years studying and tracking impactful weather across the Midwest, including Missouri and Illinois.\n\nKnown for his relatable and educational forecasting style, Dr. Palisch combines meteorological science with public awareness to make complex weather information easier to understand. Through his First Warn Weather platform, writing, and community outreach, he focuses on severe weather preparedness, winter storms, climate patterns, and everyday weather education while maintaining a strong commitment to public safety and communication.",
-    "badges": [
-      "NWS SKYWARN",
-      "Lead Spotter",
-      "Police",
-      "Emergency Management",
-      "Meteorologist",
-      "Communications Operator"
-    ],
-    "specialties": [
-      "Tornadoes",
-      "Mesoscale Forecasting",
-      "Severe Weather"
-    ],
-    "featured": false,
-    "since": 2014
-  },
-  {
-    "id": "jane-smith-1779030178806kzkp",
-    "name": "Brody",
-    "location": "Perry, MO",
-    "photo": "watchers/brody-1.jpg",
-    "bio": "Brody is a  SKYWARN spotter trained. I am highly devoted to weather and aspire to be the best I can in order to help spread important and accurate information. I’m extremely trustworthy and dependable when it matter most, like in weather.",
-    "badges": [
-      "NWS SKYWARN",
-      "Backyard Observer"
-    ],
-    "specialties": [
-      "Tornadoes",
-      "Severe Thunderstorms",
-      "Home Weather Station"
-    ],
-    "featured": false,
-    "since": 2026
-  },
-  {
-    "name": "Mike Johnson",
-    "location": "Jefferson County, MO",
-    "photo": "watchers/mike-johnson.jpg",
-    "bio": "Mike is a licensed ham radio operator and SKYWARN spotter covering Jefferson County. He has over eight years of experience reporting severe weather and assists with local emergency communications during major weather events.",
-    "badges": [
-      "NWS SKYWARN",
-      "Ham Radio"
-    ],
-    "specialties": [
-      "Ham Radio Comms",
-      "Flash Flooding",
-      "Hail Reports"
-    ],
-    "featured": false,
-    "since": 2017,
-    "id": "mike-johnson-17790301788062w0o"
-  },
-  {
-    "id": "brody-1779293170970",
-    "name": "Brody",
-    "location": "Perry, MO",
-    "photo": "watchers/.brody-1.jpg",
-    "bio": "Brody is a  SKYWARN spotter trained. I am highly devoted to weather and aspire to be the best I can in order to help spread important and accurate information. I’m extremely trustworthy and dependable when it matter most, like in weather.",
-    "badges": [
-      "NWS SKYWARN",
-      "Backyard Observer"
-    ],
-    "specialties": [
-      "Tornadoes",
-      "Severe Thunderstorms",
-      "Home Weather Station"
-    ],
-    "featured": false,
-    "since": 2026
-  }
-]
+	
+0	
+id	"dr-nick-palisch-1779030178806xre5"
+name	"Dr. Nick Palisch"
+location	"St. Louis, MO"
+photo	"watchers/dr-nick.jpg"
+bio	"Meteorologist Dr. Nick Palisch is a weather communicator, storm chaser, and educator with a passion for helping communities better understand the atmosphere and the science behind severe weather. He holds a Bachelor's degree in Atmospheric Science with an emphasis in severe storms and has spent years studying and tracking impactful weather across the Midwest, including Missouri and Illinois.\n\nKnown for his relatable and educational forecasting style, Dr. Palisch combines meteorological science with public awareness to make complex weather information easier to understand. Through his First Warn Weather platform, writing, and community outreach, he focuses on severe weather preparedness, winter storms, climate patterns, and everyday weather education while maintaining a strong commitment to public safety and communication."
+badges	
+0	"NWS SKYWARN"
+1	"Lead Spotter"
+2	"Police"
+3	"Emergency Management"
+4	"Meteorologist"
+5	"Communications Operator"
+specialties	
+0	"Tornadoes"
+1	"Mesoscale Forecasting"
+2	"Severe Weather"
+featured	false
+since	2014
+1	
+id	"jane-smith-1779030178806kzkp"
+name	"Brody"
+location	"Perry, MO"
+photo	"watchers/Brody-1.jpg"
+bio	"Brody is a SKYWARN spotter trained. I am highly devoted to weather and aspire to be the best I can in order to help spread important and accurate information. I'm extremely trustworthy and dependable when it matter most, like in weather."
+badges	
+0	"NWS SKYWARN"
+1	"Backyard Observer"
+specialties	
+0	"Tornadoes"
+1	"Severe Thunderstorms"
+2	"Home Weather Station"
+featured	false
+since	2026
+2	
+id	"mike-johnson-17790301788062w0o"
+name	"Mike Johnson"
+location	"Jefferson County, MO"
+photo	"watchers/mike-johnson.jpg"
+bio	"Mike is a licensed ham radio operator and SKYWARN spotter covering Jefferson County. He has over eight years of experience reporting severe weather and assists with local emergency communications during major weather events."
+badges	
+0	"NWS SKYWARN"
+1	"Ham Radio"
+specialties	
+0	"Ham Radio Comms"
+1	"Flash Flooding"
+2	"Hail Reports"
+featured	false
+since	2017
