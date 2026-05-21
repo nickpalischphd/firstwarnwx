@@ -25,7 +25,7 @@
     "id": "jane-smith-1779030178806kzkp",
     "name": "Brody",
     "location": "Perry, MO",
-    "photo": "watchers/jane-smith.jpg",
+    "photo": "watchers/brody-1.jpg",
     "bio": "Brody is a  SKYWARN spotter trained. I am highly devoted to weather and aspire to be the best I can in order to help spread important and accurate information. I’m extremely trustworthy and dependable when it matter most, like in weather.",
     "badges": [
       "NWS SKYWARN",
@@ -56,5 +56,23 @@
     "featured": false,
     "since": 2017,
     "id": "mike-johnson-17790301788062w0o"
+  },
+  {
+    "id": "brody-1779293170970",
+    "name": "Brody",
+    "location": "Perry, MO",
+    "photo": "watchers/.brody-1.jpg",
+    "bio": "Brody is a  SKYWARN spotter trained. I am highly devoted to weather and aspire to be the best I can in order to help spread important and accurate information. I’m extremely trustworthy and dependable when it matter most, like in weather.",
+    "badges": [
+      "NWS SKYWARN",
+      "Backyard Observer"
+    ],
+    "specialties": [
+      "Tornadoes",
+      "Severe Thunderstorms",
+      "Home Weather Station"
+    ],
+    "featured": false,
+    "since": 2026
   }
 ]
