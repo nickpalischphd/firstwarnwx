@@ -15,5 +15,8 @@
   "img_extra3": "Forecast-7",
   "img_extra4": "",
   "img_extra5": "",
-  "img_extra6": ""
+  "img_extra6": "",
+  "alertDay": true,
+  "alertMessage": "POTENTIAL SIGNIFICANT SEVERE WEATHER EVENT THIS AFTERNOON-TONIGHT.",
+  "alertType": "🌪️ Tornado Threat"
 }
